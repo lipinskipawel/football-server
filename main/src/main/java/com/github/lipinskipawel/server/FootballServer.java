@@ -5,16 +5,21 @@ import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 
 import java.net.InetSocketAddress;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class FootballServer extends WebSocketServer {
+    private final Map<String, WebSocket> resourceDescriptorWithConnection;
 
     public FootballServer(final InetSocketAddress address) {
         super(address);
+        this.resourceDescriptorWithConnection = new ConcurrentHashMap<>(64);
     }
 
     @Override
     public void onOpen(WebSocket conn, ClientHandshake handshake) {
         final var url = conn.getResourceDescriptor();
+        this.resourceDescriptorWithConnection.compute(url, (k, v) -> conn);
         System.out.printf("Server onOpen: %s%n", url);
     }
 
@@ -26,7 +31,7 @@ public final class FootballServer extends WebSocketServer {
     @Override
     public void onMessage(WebSocket conn, String message) {
         System.out.printf("Server onMessage: %s%n", message);
-        broadcast(message);
+        this.resourceDescriptorWithConnection.get(conn.getResourceDescriptor()).send(message);
     }
 
     @Override

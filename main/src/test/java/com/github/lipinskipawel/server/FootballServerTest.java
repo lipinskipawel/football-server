@@ -13,6 +13,7 @@ import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 final class FootballServerTest {
     private static final ExecutorService pool = Executors.newFixedThreadPool(1);
@@ -42,8 +43,24 @@ final class FootballServerTest {
 
         firstClient.closeBlocking();
         secondClient.closeBlocking();
-        latch.await();
-        Assertions.assertThat(secondClient.onMessageCount).isEqualTo(1);
+        final var await = latch.await(1, TimeUnit.SECONDS);
+        Assertions.assertThat(await).isTrue();
+    }
+
+    @Test
+    void shouldNotReceivedMsgWhenConnectedToDifferentUri() throws InterruptedException {
+        final var latch = new CountDownLatch(1);
+        final var firstClient = createClient(URI.create("ws://localhost:8090/some"), null);
+        final var secondClient = createClient(URI.create("ws://localhost:8090/other"), latch);
+        firstClient.connectBlocking();
+        secondClient.connectBlocking();
+
+        firstClient.send("msg");
+
+        firstClient.closeBlocking();
+        secondClient.closeBlocking();
+        final var await = latch.await(1, TimeUnit.SECONDS);
+        Assertions.assertThat(await).isFalse();
     }
 
     private WebSocketClientWrapper createClient(final URI uri, final CountDownLatch latch) {
@@ -52,11 +69,9 @@ final class FootballServerTest {
 
     static class WebSocketClientWrapper extends WebSocketClient {
         private final Optional<CountDownLatch> latch;
-        private int onMessageCount;
 
         WebSocketClientWrapper(final URI uri, final CountDownLatch latch) {
             super(uri);
-            this.onMessageCount = 0;
             this.latch = Optional.ofNullable(latch);
         }
 
@@ -68,7 +83,6 @@ final class FootballServerTest {
         @Override
         public void onMessage(String message) {
             System.out.println("Client onMessage: " + message);
-            onMessageCount++;
             latch.ifPresent(CountDownLatch::countDown);
         }
 
