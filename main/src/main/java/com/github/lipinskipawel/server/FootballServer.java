@@ -14,7 +14,8 @@ public final class FootballServer extends WebSocketServer {
 
     @Override
     public void onOpen(WebSocket conn, ClientHandshake handshake) {
-        System.out.println("Server onOpen");
+        final var url = conn.getResourceDescriptor();
+        System.out.printf("Server onOpen: %s%n", url);
     }
 
     @Override
