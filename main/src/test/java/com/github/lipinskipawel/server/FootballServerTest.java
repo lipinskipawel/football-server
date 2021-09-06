@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Test;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -29,9 +31,10 @@ final class FootballServerTest {
 
     @Test
     void shouldClientReceivedMessageFromOtherClient() throws InterruptedException {
+        final var latch = new CountDownLatch(1);
         final var commonUri = URI.create("ws://localhost:8090/some");
-        final var firstClient = createClient(commonUri);
-        final var secondClient = createClient(commonUri);
+        final var firstClient = createClient(commonUri, null);
+        final var secondClient = createClient(commonUri, latch);
         firstClient.connectBlocking();
         secondClient.connectBlocking();
 
@@ -39,19 +42,22 @@ final class FootballServerTest {
 
         firstClient.closeBlocking();
         secondClient.closeBlocking();
+        latch.await();
         Assertions.assertThat(secondClient.onMessageCount).isEqualTo(1);
     }
 
-    private WebSocketClientWrapper createClient(final URI uri) {
-        return new WebSocketClientWrapper(uri);
+    private WebSocketClientWrapper createClient(final URI uri, final CountDownLatch latch) {
+        return new WebSocketClientWrapper(uri, latch);
     }
 
     static class WebSocketClientWrapper extends WebSocketClient {
+        private final Optional<CountDownLatch> latch;
         private int onMessageCount;
 
-        WebSocketClientWrapper(final URI uri) {
+        WebSocketClientWrapper(final URI uri, final CountDownLatch latch) {
             super(uri);
             this.onMessageCount = 0;
+            this.latch = Optional.ofNullable(latch);
         }
 
         @Override
@@ -63,6 +69,7 @@ final class FootballServerTest {
         public void onMessage(String message) {
             System.out.println("Client onMessage: " + message);
             onMessageCount++;
+            latch.ifPresent(CountDownLatch::countDown);
         }
 
         @Override

@@ -20,12 +20,13 @@ public final class FootballServer extends WebSocketServer {
 
     @Override
     public void onClose(WebSocket conn, int code, String reason, boolean remote) {
-        System.out.printf("Server onClose: %d, reason: %s", code, reason);
+        System.out.printf("Server onClose: %d, reason: %s%n", code, reason);
     }
 
     @Override
     public void onMessage(WebSocket conn, String message) {
         System.out.printf("Server onMessage: %s%n", message);
+        broadcast(message);
     }
 
     @Override
