@@ -1,2 +1,2 @@
 rootProject.name = "football-server"
-include("main")
+include("app")
