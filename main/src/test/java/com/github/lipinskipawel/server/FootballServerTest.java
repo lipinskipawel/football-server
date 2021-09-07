@@ -1,6 +1,5 @@
 package com.github.lipinskipawel.server;
 
-import org.assertj.core.api.Assertions;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 import org.junit.jupiter.api.AfterAll;
@@ -14,6 +13,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 final class FootballServerTest {
     private static final ExecutorService pool = Executors.newFixedThreadPool(1);
@@ -33,7 +34,7 @@ final class FootballServerTest {
     @Test
     void shouldClientReceivedMessageFromOtherClient() throws InterruptedException {
         final var latch = new CountDownLatch(1);
-        final var commonUri = URI.create("ws://localhost:8090/some");
+        final var commonUri = URI.create("ws://localhost:8090/chat/123");
         final var firstClient = createClient(commonUri, null);
         final var secondClient = createClient(commonUri, latch);
         firstClient.connectBlocking();
@@ -44,14 +45,14 @@ final class FootballServerTest {
         firstClient.closeBlocking();
         secondClient.closeBlocking();
         final var await = latch.await(1, TimeUnit.SECONDS);
-        Assertions.assertThat(await).isTrue();
+        assertThat(await).isTrue();
     }
 
     @Test
     void shouldNotReceivedMsgWhenConnectedToDifferentUri() throws InterruptedException {
         final var latch = new CountDownLatch(1);
-        final var firstClient = createClient(URI.create("ws://localhost:8090/some"), null);
-        final var secondClient = createClient(URI.create("ws://localhost:8090/other"), latch);
+        final var firstClient = createClient(URI.create("ws://localhost:8090/chat/123"), null);
+        final var secondClient = createClient(URI.create("ws://localhost:8090/chat/other"), latch);
         firstClient.connectBlocking();
         secondClient.connectBlocking();
 
@@ -60,7 +61,7 @@ final class FootballServerTest {
         firstClient.closeBlocking();
         secondClient.closeBlocking();
         final var await = latch.await(1, TimeUnit.SECONDS);
-        Assertions.assertThat(await).isFalse();
+        assertThat(await).isFalse();
     }
 
     private WebSocketClientWrapper createClient(final URI uri, final CountDownLatch latch) {
