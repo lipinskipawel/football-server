@@ -18,7 +18,9 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 final class FootballServerTest {
     private static final ExecutorService pool = Executors.newFixedThreadPool(1);
-    private static final FootballServer server = new FootballServer(new InetSocketAddress("localhost", 8090));
+    private static final FootballServer server = new FootballServer(
+            new InetSocketAddress("localhost", 8090), new Table()
+    );
 
     @BeforeAll
     static void setUp() {
@@ -62,6 +64,20 @@ final class FootballServerTest {
         secondClient.closeBlocking();
         final var await = latch.await(1, TimeUnit.SECONDS);
         assertThat(await).isFalse();
+    }
+
+    @Test
+    void shouldAllowOnlyTwoClientsConnectToTheSameEndpoint() throws InterruptedException {
+        final var uri = URI.create("ws://localhost:8090/chat/one");
+        final var firstClient = createClient(uri, null);
+        final var secondClient = createClient(uri, null);
+        firstClient.connectBlocking();
+        secondClient.connectBlocking();
+
+        final var thirdClient = createClient(uri, null);
+        thirdClient.connectBlocking();
+
+        assertThat(thirdClient.isOpen()).isFalse();
     }
 
     private WebSocketClientWrapper createClient(final URI uri, final CountDownLatch latch) {
