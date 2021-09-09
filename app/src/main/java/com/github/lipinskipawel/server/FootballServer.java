@@ -6,6 +6,8 @@ import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.handshake.ServerHandshakeBuilder;
 import org.java_websocket.server.WebSocketServer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.util.Map;
@@ -15,6 +17,7 @@ import static com.github.lipinskipawel.server.HandshakePolicy.webConnectionPolic
 import static org.java_websocket.framing.CloseFrame.POLICY_VALIDATION;
 
 public final class FootballServer extends WebSocketServer {
+    private static final Logger LOGGER = LoggerFactory.getLogger(FootballServer.class);
     private final Map<String, WebSocket> resourceDescriptorWithConnection;
     private final Table table;
 
@@ -30,35 +33,35 @@ public final class FootballServer extends WebSocketServer {
         if (!this.table.canConnect(url)) {
             final var message = "Server does not allow more than 2 clients to connect to the same endpoint";
             conn.closeConnection(POLICY_VALIDATION, message);
-            System.out.println(message);
-            System.out.println("Connection has been closed");
+            LOGGER.info(message);
+            LOGGER.info("Connection has been closed");
             return;
         }
-        this.resourceDescriptorWithConnection.compute(url, (k, v) -> conn);
         this.table.add(url);
-        System.out.printf("Server onOpen: %s%n", url);
+        this.resourceDescriptorWithConnection.compute(url, (k, v) -> conn);
+        LOGGER.info("Server onOpen: {}", url);
     }
 
     @Override
     public void onClose(WebSocket conn, int code, String reason, boolean remote) {
         this.table.remove(conn.getResourceDescriptor());
-        System.out.printf("Server onClose: %d, reason: %s%n", code, reason);
+        LOGGER.info("Server onClose: {}, reason: {}", code, reason);
     }
 
     @Override
     public void onMessage(WebSocket conn, String message) {
-        System.out.printf("Server onMessage: %s%n", message);
         this.resourceDescriptorWithConnection.get(conn.getResourceDescriptor()).send(message);
+        LOGGER.info("Server onMessage: {}", message);
     }
 
     @Override
     public void onError(WebSocket conn, Exception ex) {
-        System.out.printf("Server onError: %s%n", ex);
+        LOGGER.error("Server onError: ", ex);
     }
 
     @Override
     public void onStart() {
-        System.out.println("Server onStart");
+        LOGGER.info("Server onStart");
     }
 
     @Override

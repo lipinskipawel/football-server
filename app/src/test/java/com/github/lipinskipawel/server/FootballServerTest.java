@@ -5,6 +5,8 @@ import org.java_websocket.handshake.ServerHandshake;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -17,6 +19,7 @@ import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 final class FootballServerTest {
+    private static final Logger LOGGER = LoggerFactory.getLogger(FootballServerTest.class);
     private static final ExecutorService pool = Executors.newFixedThreadPool(1);
     private static final FootballServer server = new FootballServer(
             new InetSocketAddress("localhost", 8090), new Table()
@@ -94,23 +97,23 @@ final class FootballServerTest {
 
         @Override
         public void onOpen(ServerHandshake handshakedata) {
-            System.out.println("client onOpen");
+            LOGGER.info("Client onOpen");
         }
 
         @Override
         public void onMessage(String message) {
-            System.out.println("Client onMessage: " + message);
+            LOGGER.info("Client onMessage: " + message);
             latch.ifPresent(CountDownLatch::countDown);
         }
 
         @Override
         public void onClose(int code, String reason, boolean remote) {
-            System.out.println("Client: onClose");
+            LOGGER.info("Client onClose");
         }
 
         @Override
         public void onError(Exception ex) {
-
+            LOGGER.error("Client onError: ", ex);
         }
     }
 }
