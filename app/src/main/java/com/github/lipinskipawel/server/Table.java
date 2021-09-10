@@ -18,19 +18,24 @@ public final class Table {
         this.urlsToNumber = new ConcurrentHashMap<>(64);
     }
 
-    void add(final String url) {
-        this.urlsToNumber.merge(url, 1, Integer::sum);
+    boolean playIfThereIsAPlace(final String url) {
+        if (this.canConnect(url)) {
+            this.urlsToNumber.merge(url, 1, Integer::sum);
+            return true;
+        } else {
+            return false;
+        }
     }
 
-    void remove(final String url) {
-        this.urlsToNumber.remove(url);
-    }
-
-    boolean canConnect(final String url) {
+    private boolean canConnect(final String url) {
         if (this.urlsToNumber.containsKey(url)) {
             return this.urlsToNumber.get(url) < 2;
         } else {
             return true;
         }
+    }
+
+    void leaveTheTable(final String url) {
+        this.urlsToNumber.remove(url);
     }
 }

@@ -30,21 +30,21 @@ public final class FootballServer extends WebSocketServer {
     @Override
     public void onOpen(WebSocket conn, ClientHandshake handshake) {
         final var url = conn.getResourceDescriptor();
-        if (!this.table.canConnect(url)) {
+        final var isAdded = this.table.playIfThereIsAPlace(url);
+        if (!isAdded) {
             final var message = "Server does not allow more than 2 clients to connect to the same endpoint";
             conn.closeConnection(POLICY_VALIDATION, message);
             LOGGER.info(message);
             LOGGER.info("Connection has been closed");
             return;
         }
-        this.table.add(url);
         this.resourceDescriptorWithConnection.compute(url, (k, v) -> conn);
         LOGGER.info("Server onOpen: {}", url);
     }
 
     @Override
     public void onClose(WebSocket conn, int code, String reason, boolean remote) {
-        this.table.remove(conn.getResourceDescriptor());
+        this.table.leaveTheTable(conn.getResourceDescriptor());
         LOGGER.info("Server onClose: {}, reason: {}", code, reason);
     }
 
