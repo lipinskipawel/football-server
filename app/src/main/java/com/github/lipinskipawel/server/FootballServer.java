@@ -10,48 +10,46 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static com.github.lipinskipawel.server.HandshakePolicy.webConnectionPolicy;
+import static com.github.lipinskipawel.server.MinimalisticClientContext.createMinimalisticClientContext;
 import static org.java_websocket.framing.CloseFrame.POLICY_VALIDATION;
 
 public final class FootballServer extends WebSocketServer {
     private static final Logger LOGGER = LoggerFactory.getLogger(FootballServer.class);
-    private final Map<String, WebSocket> resourceDescriptorWithConnection;
-    private final Table table;
+    private final DualConnection dualConnection;
 
-    public FootballServer(final InetSocketAddress address, final Table table) {
+    public FootballServer(final InetSocketAddress address, final DualConnection dualConnection) {
         super(address);
-        this.table = table;
-        this.resourceDescriptorWithConnection = new ConcurrentHashMap<>(64);
+        this.dualConnection = dualConnection;
     }
 
     @Override
     public void onOpen(WebSocket conn, ClientHandshake handshake) {
         final var url = conn.getResourceDescriptor();
-        final var isAdded = this.table.playIfThereIsAPlace(url);
+        LOGGER.info("Server onOpen: {}", url);
+        final var client = createMinimalisticClientContext(conn);
+        final var isAdded = this.dualConnection.accept(client);
         if (!isAdded) {
             final var message = "Server does not allow more than 2 clients to connect to the same endpoint";
             conn.closeConnection(POLICY_VALIDATION, message);
             LOGGER.info(message);
             LOGGER.info("Connection has been closed");
-            return;
         }
-        this.resourceDescriptorWithConnection.compute(url, (k, v) -> conn);
-        LOGGER.info("Server onOpen: {}", url);
     }
 
     @Override
     public void onClose(WebSocket conn, int code, String reason, boolean remote) {
-        this.table.leaveTheTable(conn.getResourceDescriptor());
         LOGGER.info("Server onClose: {}, reason: {}", code, reason);
+        final var client = createMinimalisticClientContext(conn);
+        this.dualConnection.dropConnectionFor(client);
     }
 
     @Override
     public void onMessage(WebSocket conn, String message) {
-        this.resourceDescriptorWithConnection.get(conn.getResourceDescriptor()).send(message);
         LOGGER.info("Server onMessage: {}", message);
+        final var client = createMinimalisticClientContext(conn);
+        this.dualConnection.sendMessageTo(message, client);
     }
 
     @Override

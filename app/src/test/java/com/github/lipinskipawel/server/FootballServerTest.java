@@ -22,7 +22,7 @@ final class FootballServerTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(FootballServerTest.class);
     private static final ExecutorService pool = Executors.newFixedThreadPool(1);
     private static final FootballServer server = new FootballServer(
-            new InetSocketAddress("localhost", 8090), new Table()
+            new InetSocketAddress("localhost", 8090), new DualConnection()
     );
 
     @BeforeAll
@@ -38,61 +38,72 @@ final class FootballServerTest {
 
     @Test
     void shouldClientReceivedMessageFromOtherClient() throws InterruptedException {
-        final var latch = new CountDownLatch(1);
+        final var onMessage = new CountDownLatch(1);
         final var commonUri = URI.create("ws://localhost:8090/chat/123");
         final var firstClient = createClient(commonUri, null);
-        final var secondClient = createClient(commonUri, latch);
+        final var secondClient = createClient(commonUri, onMessage);
         firstClient.connectBlocking();
         secondClient.connectBlocking();
 
         firstClient.send("msg");
 
+        final var gotMessage = onMessage.await(1, TimeUnit.SECONDS);
+        assertThat(gotMessage).isTrue();
         firstClient.closeBlocking();
         secondClient.closeBlocking();
-        final var await = latch.await(1, TimeUnit.SECONDS);
-        assertThat(await).isTrue();
     }
 
     @Test
     void shouldNotReceivedMsgWhenConnectedToDifferentUri() throws InterruptedException {
-        final var latch = new CountDownLatch(1);
+        final var onMessage = new CountDownLatch(1);
         final var firstClient = createClient(URI.create("ws://localhost:8090/chat/123"), null);
-        final var secondClient = createClient(URI.create("ws://localhost:8090/chat/other"), latch);
+        final var secondClient = createClient(URI.create("ws://localhost:8090/chat/other"), onMessage);
         firstClient.connectBlocking();
         secondClient.connectBlocking();
 
         firstClient.send("msg");
 
+        final var gotMessage = onMessage.await(1, TimeUnit.SECONDS);
+        assertThat(gotMessage).isFalse();
         firstClient.closeBlocking();
         secondClient.closeBlocking();
-        final var await = latch.await(1, TimeUnit.SECONDS);
-        assertThat(await).isFalse();
     }
 
     @Test
     void shouldAllowOnlyTwoClientsConnectToTheSameEndpoint() throws InterruptedException {
+        final var onClose = new CountDownLatch(1);
         final var uri = URI.create("ws://localhost:8090/chat/one");
         final var firstClient = createClient(uri, null);
         final var secondClient = createClient(uri, null);
         firstClient.connectBlocking();
         secondClient.connectBlocking();
 
-        final var thirdClient = createClient(uri, null);
+        final var thirdClient = createClient(uri, null, onClose);
         thirdClient.connectBlocking();
 
-        assertThat(thirdClient.isOpen()).isFalse();
+        final var notConnected = onClose.await(1, TimeUnit.SECONDS);
+        assertThat(notConnected).isTrue();
+        assertThat(thirdClient.isClosed()).isTrue();
+        firstClient.closeBlocking();
+        secondClient.closeBlocking();
     }
 
     private WebSocketClientWrapper createClient(final URI uri, final CountDownLatch latch) {
-        return new WebSocketClientWrapper(uri, latch);
+        return createClient(uri, latch, null);
+    }
+
+    private WebSocketClientWrapper createClient(final URI uri, final CountDownLatch latch, final CountDownLatch onClose) {
+        return new WebSocketClientWrapper(uri, latch, onClose);
     }
 
     static class WebSocketClientWrapper extends WebSocketClient {
         private final Optional<CountDownLatch> latch;
+        private final Optional<CountDownLatch> onClose;
 
-        WebSocketClientWrapper(final URI uri, final CountDownLatch latch) {
+        WebSocketClientWrapper(final URI uri, final CountDownLatch latch, final CountDownLatch onClose) {
             super(uri);
             this.latch = Optional.ofNullable(latch);
+            this.onClose = Optional.ofNullable(onClose);
         }
 
         @Override
@@ -109,6 +120,7 @@ final class FootballServerTest {
         @Override
         public void onClose(int code, String reason, boolean remote) {
             LOGGER.info("Client onClose");
+            onClose.ifPresent(CountDownLatch::countDown);
         }
 
         @Override
