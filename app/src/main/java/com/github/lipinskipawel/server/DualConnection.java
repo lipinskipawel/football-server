@@ -15,19 +15,23 @@ import java.util.Map;
 @ThreadSafe
 public final class DualConnection {
     private final Map<String, List<ConnectedClient>> clientsPerUrl;
+    private final Object lock;
 
     public DualConnection() {
         this.clientsPerUrl = new HashMap<>();
+        this.lock = new Object();
     }
 
     boolean accept(final ConnectedClient client) {
-        var connectedClients = clientsPerUrl.computeIfAbsent(client.getUrl(), url -> new ArrayList<>());
-        if (connectedClients.size() < 2) {
-            connectedClients.add(client);
-            clientsPerUrl.put(client.getUrl(), connectedClients);
-            return true;
-        } else {
-            return false;
+        synchronized (lock) {
+            var connectedClients = clientsPerUrl.computeIfAbsent(client.getUrl(), url -> new ArrayList<>());
+            if (connectedClients.size() < 2) {
+                connectedClients.add(client);
+                clientsPerUrl.put(client.getUrl(), connectedClients);
+                return true;
+            } else {
+                return false;
+            }
         }
     }
 
@@ -48,6 +52,8 @@ public final class DualConnection {
     }
 
     void dropConnectionFor(final ConnectedClient toLeave) {
-        clientsPerUrl.get(toLeave.getUrl()).removeIf(client -> client.equals(toLeave));
+        synchronized (lock) {
+            clientsPerUrl.get(toLeave.getUrl()).removeIf(client -> client.equals(toLeave));
+        }
     }
 }
