@@ -1,5 +1,9 @@
 package com.github.lipinskipawel.server;
 
+import com.github.lipinskipawel.server.api.WaitingPlayers;
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.reflect.TypeToken;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 import org.junit.jupiter.api.AfterAll;
@@ -89,7 +93,7 @@ final class FootballServerTest {
         firstClient.connectBlocking();
         secondClient.connectBlocking();
 
-        final var thirdClient = createClient(uri, null, onClose);
+        final var thirdClient = createClient(uri, null, onClose, null);
         thirdClient.connectBlocking();
 
         final var notConnected = onClose.await(1, TimeUnit.SECONDS);
@@ -99,22 +103,85 @@ final class FootballServerTest {
         assertThat(thirdClient.isClosed()).isTrue();
     }
 
-    private WebSocketClientWrapper createClient(final URI uri, final CountDownLatch latch) {
-        return createClient(uri, latch, null);
+    @Test
+    void shouldReceivedListOfPlayerWhenConnectedOnlyOneClient() throws InterruptedException {
+        final var onPlayerList = new CountDownLatch(1);
+        final var uri = URI.create("ws://localhost:8090/chat/one");
+        final var client = createClient(uri, null, null, onPlayerList);
+        client.connectBlocking();
+
+        final var receivedMessage = onPlayerList.await(1, TimeUnit.SECONDS);
+
+        client.closeBlocking();
+        assertThat(receivedMessage).isTrue();
+        assertThat(client.playersList.players().size()).isEqualTo(1);
+        client.playersList.players().forEach(it -> System.out.println(it.getUrl()));
     }
 
-    private WebSocketClientWrapper createClient(final URI uri, final CountDownLatch latch, final CountDownLatch onClose) {
-        return new WebSocketClientWrapper(uri, latch, onClose);
+    @Test
+    void shouldReceivedListOfPlayerWhenTwoClientsAreConnected() throws InterruptedException {
+        final var onPlayerList = new CountDownLatch(1);
+        final var firstUri = URI.create("ws://localhost:8090/chat/one");
+        final var secondUri = URI.create("ws://localhost:8090/chat/two");
+        final var firstClient = createClient(firstUri, null, null, null);
+        final var secondClient = createClient(secondUri, null, null, onPlayerList);
+        firstClient.connectBlocking();
+        secondClient.connectBlocking();
+
+        final var receivedMessage = onPlayerList.await(1, TimeUnit.SECONDS);
+
+        firstClient.closeBlocking();
+        secondClient.closeBlocking();
+        assertThat(receivedMessage).isTrue();
+        assertThat(secondClient.playersList.players().size()).isEqualTo(2);
+        secondClient.playersList.players().forEach(it -> System.out.println(it.getUrl()));
+    }
+
+    @Test
+    void shouldReceivedListOfPlayerWhenSecondClientIsConnected() throws InterruptedException {
+        final var onPlayerList = new CountDownLatch(2);
+        final var firstUri = URI.create("ws://localhost:8090/chat/one");
+        final var secondUri = URI.create("ws://localhost:8090/chat/two");
+        final var firstClient = createClient(firstUri, null, null, onPlayerList);
+        final var secondClient = createClient(secondUri, null, null, onPlayerList);
+        firstClient.connectBlocking();
+        secondClient.connectBlocking();
+
+        final var receivedMessage = onPlayerList.await(1, TimeUnit.SECONDS);
+
+        firstClient.closeBlocking();
+        secondClient.closeBlocking();
+        assertThat(receivedMessage).isTrue();
+        assertThat(firstClient.playersList.players().size()).isEqualTo(2);
+        firstClient.playersList.players().forEach(it -> System.out.println(it.getUrl()));
+    }
+
+    private WebSocketClientWrapper createClient(final URI uri, final CountDownLatch onMessage) {
+        return createClient(uri, onMessage, null, null);
+    }
+
+    private WebSocketClientWrapper createClient(final URI uri, final CountDownLatch onMessage, final CountDownLatch onClose,
+                                                final CountDownLatch onPlayerList) {
+        return new WebSocketClientWrapper(uri, onMessage, onClose, onPlayerList);
     }
 
     static class WebSocketClientWrapper extends WebSocketClient {
-        private final Optional<CountDownLatch> latch;
+        private final Optional<CountDownLatch> onMessage;
         private final Optional<CountDownLatch> onClose;
+        private final Optional<CountDownLatch> onPlayerList;
+        private final Gson parser;
+        WaitingPlayers playersList;
 
-        WebSocketClientWrapper(final URI uri, final CountDownLatch latch, final CountDownLatch onClose) {
+        WebSocketClientWrapper(final URI uri,
+                               final CountDownLatch onMessage,
+                               final CountDownLatch onClose,
+                               final CountDownLatch onPlayerList) {
             super(uri);
-            this.latch = Optional.ofNullable(latch);
+            this.onMessage = Optional.ofNullable(onMessage);
             this.onClose = Optional.ofNullable(onClose);
+            this.onPlayerList = Optional.ofNullable(onPlayerList);
+            this.parser = new Gson();
+            this.playersList = null;
         }
 
         @Override
@@ -125,7 +192,15 @@ final class FootballServerTest {
         @Override
         public void onMessage(String message) {
             LOGGER.info("Client onMessage: " + message);
-            latch.ifPresent(CountDownLatch::countDown);
+            var type = new TypeToken<WaitingPlayers>() {
+            }.getType();
+            try {
+                this.playersList = this.parser.fromJson(message, type);
+                onPlayerList.ifPresent(CountDownLatch::countDown);
+                return;
+            } catch (JsonSyntaxException ignore) {
+            }
+            onMessage.ifPresent(CountDownLatch::countDown);
         }
 
         @Override

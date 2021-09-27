@@ -3,9 +3,11 @@ package com.github.lipinskipawel.server;
 import com.github.lipinskipawel.util.ThreadSafe;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * This class represent a DualConnection where two clients are connected to each other. Therefore, it manages number of
@@ -49,6 +51,21 @@ public final class DualConnection {
 
     private boolean findSender(ConnectedClient client, ConnectedClient receiver) {
         return !client.equals(receiver);
+    }
+
+    List<ConnectedClient> nonePairClients() {
+        synchronized (lock) {
+            return clientsPerUrl
+                    .values()
+                    .stream()
+                    .filter(this::pickOnlyClientsWithoutSecondConnectedClient)
+                    .flatMap(Collection::stream)
+                    .collect(Collectors.toList());
+        }
+    }
+
+    private boolean pickOnlyClientsWithoutSecondConnectedClient(List<ConnectedClient> connectedClients) {
+        return connectedClients.size() == 1;
     }
 
     void dropConnectionFor(final ConnectedClient toLeave) {

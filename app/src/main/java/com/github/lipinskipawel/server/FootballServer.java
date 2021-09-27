@@ -1,5 +1,8 @@
 package com.github.lipinskipawel.server;
 
+import com.github.lipinskipawel.server.api.Player;
+import com.github.lipinskipawel.server.api.WaitingPlayers;
+import com.google.gson.Gson;
 import org.java_websocket.WebSocket;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.exceptions.InvalidDataException;
@@ -10,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
+import java.util.stream.Collectors;
 
 import static com.github.lipinskipawel.server.HandshakePolicy.webConnectionPolicy;
 import static com.github.lipinskipawel.server.MinimalisticClientContext.createMinimalisticClientContext;
@@ -17,11 +21,13 @@ import static org.java_websocket.framing.CloseFrame.POLICY_VALIDATION;
 
 public final class FootballServer extends WebSocketServer {
     private static final Logger LOGGER = LoggerFactory.getLogger(FootballServer.class);
+    private final Gson parser;
     private final DualConnection dualConnection;
 
     public FootballServer(final InetSocketAddress address, final DualConnection dualConnection) {
         super(address);
         this.dualConnection = dualConnection;
+        this.parser = new Gson();
     }
 
     @Override
@@ -36,6 +42,19 @@ public final class FootballServer extends WebSocketServer {
             LOGGER.info(message);
             LOGGER.info("Connection has been closed");
         }
+        sendPlayerJoinedMessageToAllWaitingClients();
+    }
+
+    private void sendPlayerJoinedMessageToAllWaitingClients() {
+        final var nonePairClients = dualConnection
+                .nonePairClients();
+        final var waitingPlayers = WaitingPlayers.fromPlayers(nonePairClients
+                .stream()
+                .map(ConnectedClient::getUrl)
+                .map(Player::fromUrl)
+                .collect(Collectors.toList()));
+
+        nonePairClients.forEach(it -> it.send(this.parser.toJson(waitingPlayers)));
     }
 
     @Override
