@@ -37,6 +37,17 @@ final class FootballServerTest {
     }
 
     @Test
+    void shouldRejectClientWhenURIDoNotMeetPolicy() throws InterruptedException {
+        final var client = createClient(URI.create("ws://localhost:8090/example"), null);
+
+        client.connectBlocking();
+
+        final var connectionClose = client.isOpen();
+        client.closeBlocking();
+        assertThat(connectionClose).isFalse();
+    }
+
+    @Test
     void shouldClientReceivedMessageFromOtherClient() throws InterruptedException {
         final var onMessage = new CountDownLatch(1);
         final var commonUri = URI.create("ws://localhost:8090/chat/123");
