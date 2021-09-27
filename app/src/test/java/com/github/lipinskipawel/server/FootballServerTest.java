@@ -48,9 +48,9 @@ final class FootballServerTest {
         firstClient.send("msg");
 
         final var gotMessage = onMessage.await(1, TimeUnit.SECONDS);
-        assertThat(gotMessage).isTrue();
         firstClient.closeBlocking();
         secondClient.closeBlocking();
+        assertThat(gotMessage).isTrue();
     }
 
     @Test
@@ -64,9 +64,9 @@ final class FootballServerTest {
         firstClient.send("msg");
 
         final var gotMessage = onMessage.await(1, TimeUnit.SECONDS);
-        assertThat(gotMessage).isFalse();
         firstClient.closeBlocking();
         secondClient.closeBlocking();
+        assertThat(gotMessage).isFalse();
     }
 
     @Test
@@ -82,10 +82,10 @@ final class FootballServerTest {
         thirdClient.connectBlocking();
 
         final var notConnected = onClose.await(1, TimeUnit.SECONDS);
-        assertThat(notConnected).isTrue();
-        assertThat(thirdClient.isClosed()).isTrue();
         firstClient.closeBlocking();
         secondClient.closeBlocking();
+        assertThat(notConnected).isTrue();
+        assertThat(thirdClient.isClosed()).isTrue();
     }
 
     private WebSocketClientWrapper createClient(final URI uri, final CountDownLatch latch) {
