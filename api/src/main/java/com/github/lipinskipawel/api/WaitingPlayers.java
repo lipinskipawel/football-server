@@ -1,4 +1,4 @@
-package com.github.lipinskipawel.server.api;
+package com.github.lipinskipawel.api;
 
 import java.util.ArrayList;
 import java.util.List;

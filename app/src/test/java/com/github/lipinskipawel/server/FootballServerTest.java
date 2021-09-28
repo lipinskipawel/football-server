@@ -1,6 +1,6 @@
 package com.github.lipinskipawel.server;
 
-import com.github.lipinskipawel.server.api.WaitingPlayers;
+import com.github.lipinskipawel.api.WaitingPlayers;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;

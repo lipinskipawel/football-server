@@ -1,7 +1,7 @@
 package com.github.lipinskipawel.server;
 
-import com.github.lipinskipawel.server.api.Player;
-import com.github.lipinskipawel.server.api.WaitingPlayers;
+import com.github.lipinskipawel.api.Player;
+import com.github.lipinskipawel.api.WaitingPlayers;
 import com.google.gson.Gson;
 import org.java_websocket.WebSocket;
 import org.java_websocket.drafts.Draft;
