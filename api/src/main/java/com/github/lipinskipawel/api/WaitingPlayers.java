@@ -39,4 +39,11 @@ public final class WaitingPlayers {
     public int hashCode() {
         return Objects.hash(players);
     }
+
+    @Override
+    public String toString() {
+        return "WaitingPlayers{" +
+                "players=" + players +
+                '}';
+    }
 }

@@ -36,4 +36,11 @@ public final class Player {
     public int hashCode() {
         return Objects.hash(url);
     }
+
+    @Override
+    public String toString() {
+        return "Player{" +
+                "url='" + url + '\'' +
+                '}';
+    }
 }

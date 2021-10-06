@@ -1,7 +1,10 @@
 package com.github.lipinskipawel.server;
 
+import org.java_websocket.WebSocket;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 final class TestConnectedClient implements ConnectedClient {
     private final String url;
@@ -20,5 +23,14 @@ final class TestConnectedClient implements ConnectedClient {
     @Override
     public String getUrl() {
         return this.url;
+    }
+
+    @Override
+    public WebSocket getWebSocket() {
+        return null;
+    }
+
+    public List<String> getMessages() {
+        return new ArrayList<>(messages);
     }
 }

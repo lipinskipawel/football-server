@@ -70,7 +70,10 @@ public final class DualConnection {
 
     void dropConnectionFor(final ConnectedClient toLeave) {
         synchronized (lock) {
-            clientsPerUrl.get(toLeave.getUrl()).removeIf(client -> client.equals(toLeave));
+            final var connectedClients = clientsPerUrl.get(toLeave.getUrl());
+            if (connectedClients != null) {
+                connectedClients.removeIf(client -> client.equals(toLeave));
+            }
         }
     }
 }
