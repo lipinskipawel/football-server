@@ -26,11 +26,6 @@ final class MinimalisticClientContext implements ConnectedClient {
     }
 
     @Override
-    public WebSocket getWebSocket() {
-        return connection;
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;

@@ -13,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import static com.github.lipinskipawel.server.HandshakePolicy.webConnectionPolicy;
 import static com.github.lipinskipawel.server.MinimalisticClientContext.createMinimalisticClientContext;
@@ -30,7 +29,7 @@ public final class FootballServer extends WebSocketServer {
         super(address);
         this.dualConnection = dualConnection;
         this.parser = new Gson();
-        this.lobby = new Lobby(new CopyOnWriteArrayList<>());
+        this.lobby = Lobby.of(parser::toJson);
     }
 
     @Override
@@ -39,11 +38,7 @@ public final class FootballServer extends WebSocketServer {
         LOGGER.info("Server onOpen: {}", url);
         final var client = createMinimalisticClientContext(conn);
         if (url.equals("/lobby")) {
-            final var clients = this.lobby.accept(client);
-            final var webSocketClients = clients.stream().map(ConnectedClient::getWebSocket).collect(toList());
-            final var clientsToPlayers = clients.stream().map(it -> Player.fromUrl(it.getUrl())).collect(toList());
-            final var messageToBroadcast = this.parser.toJson(WaitingPlayers.fromPlayers(clientsToPlayers));
-            broadcast(messageToBroadcast, webSocketClients);
+            this.lobby.accept(client, this::broadcast);
             return;
         }
         final var isAdded = this.dualConnection.accept(client);

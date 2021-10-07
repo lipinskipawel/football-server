@@ -5,8 +5,12 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.Objects;
+import java.util.function.Consumer;
 
 class LobbyTest implements WithAssertions {
+    private static final Consumer<String> NO_OP = data -> {
+    };
 
     @Nested
     class AcceptingClients {
@@ -14,9 +18,9 @@ class LobbyTest implements WithAssertions {
         void shouldAcceptOneClient() {
             final var list = new ArrayList<ConnectedClient>();
             final var client = new TestConnectedClient("/lobby");
-            final var lobby = new Lobby(list);
+            final var lobby = Lobby.notThreadSafe(list, Objects::toString);
 
-            lobby.accept(client);
+            lobby.accept(client, NO_OP);
 
             assertThat(list)
                     .hasSize(1)
@@ -28,10 +32,10 @@ class LobbyTest implements WithAssertions {
             final var numberOfConnectedClients = new ArrayList<ConnectedClient>();
             final var firstClient = new TestConnectedClient("/lobby");
             final var secondClient = new TestConnectedClient("/lobby");
-            final var lobby = new Lobby(numberOfConnectedClients);
+            final var lobby = Lobby.notThreadSafe(numberOfConnectedClients, Objects::toString);
 
-            lobby.accept(firstClient);
-            lobby.accept(secondClient);
+            lobby.accept(firstClient, NO_OP);
+            lobby.accept(secondClient, NO_OP);
 
             assertThat(numberOfConnectedClients)
                     .hasSize(2)
@@ -45,7 +49,7 @@ class LobbyTest implements WithAssertions {
         void shouldNotThrowExceptionWhenRemovingClientWhenClientIsNotInTheLobby() {
             final var numberOfConnectedClients = new ArrayList<ConnectedClient>();
             final var client = new TestConnectedClient("/lobby");
-            final var lobby = new Lobby(numberOfConnectedClients);
+            final var lobby = Lobby.notThreadSafe(numberOfConnectedClients, Objects::toString);
 
             lobby.dropConnectionFor(client);
 
@@ -56,9 +60,9 @@ class LobbyTest implements WithAssertions {
         void shouldNoOneBeInTheLobbyWhenOneJoinsAndLeave() {
             final var numberOfConnectedClients = new ArrayList<ConnectedClient>();
             final var client = new TestConnectedClient("/lobby");
-            final var lobby = new Lobby(numberOfConnectedClients);
+            final var lobby = Lobby.notThreadSafe(numberOfConnectedClients, Objects::toString);
 
-            lobby.accept(client);
+            lobby.accept(client, NO_OP);
             lobby.dropConnectionFor(client);
 
             assertThat(numberOfConnectedClients).hasSize(0);
