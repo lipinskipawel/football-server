@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 import java.net.InetSocketAddress;
 
 import static com.github.lipinskipawel.server.HandshakePolicy.webConnectionPolicy;
-import static com.github.lipinskipawel.server.MinimalisticClientContext.createMinimalisticClientContext;
+import static com.github.lipinskipawel.server.MinimalisticClientContext.from;
 import static java.util.stream.Collectors.toList;
 import static org.java_websocket.framing.CloseFrame.POLICY_VALIDATION;
 
@@ -36,7 +36,7 @@ public final class FootballServer extends WebSocketServer {
     public void onOpen(WebSocket conn, ClientHandshake handshake) {
         final var url = conn.getResourceDescriptor();
         LOGGER.info("Server onOpen: {}", url);
-        final var client = createMinimalisticClientContext(conn);
+        final var client = from(conn);
         if (url.equals("/lobby")) {
             this.lobby.accept(client, this::broadcast);
             return;
@@ -67,7 +67,7 @@ public final class FootballServer extends WebSocketServer {
     @Override
     public void onClose(WebSocket conn, int code, String reason, boolean remote) {
         LOGGER.info("Server onClose: {}, reason: {}", code, reason);
-        final var client = createMinimalisticClientContext(conn);
+        final var client = from(conn);
         this.dualConnection.dropConnectionFor(client);
         this.lobby.dropConnectionFor(client);
     }
@@ -75,7 +75,7 @@ public final class FootballServer extends WebSocketServer {
     @Override
     public void onMessage(WebSocket conn, String message) {
         LOGGER.info("Server onMessage: {}", message);
-        final var client = createMinimalisticClientContext(conn);
+        final var client = from(conn);
         this.dualConnection.sendMessageTo(message, client);
     }
 
