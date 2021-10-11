@@ -81,7 +81,7 @@ public final class FootballServer extends WebSocketServer {
         if (conn.getResourceDescriptor().equals("/lobby")) {
             final var requestToPlay = this.parser.fromJson(message, RequestToPlay.class);
             final var optionalOpponentClient = findBy(requestToPlay.getOpponent());
-            optionalOpponentClient.ifPresent(opponent -> this.lobby.pair(client, opponent));
+            optionalOpponentClient.ifPresent(opponent -> this.lobby.pair(() -> "/endpoint", client, opponent));
             return;
         }
         this.dualConnection.sendMessageTo(message, client);
