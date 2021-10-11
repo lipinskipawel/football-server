@@ -1,5 +1,6 @@
 package com.github.lipinskipawel.server;
 
+import com.github.lipinskipawel.api.PlayPairing;
 import com.github.lipinskipawel.api.Player;
 import com.github.lipinskipawel.api.WaitingPlayers;
 import com.github.lipinskipawel.util.ThreadSafe;
@@ -18,19 +19,19 @@ import java.util.stream.Collectors;
 @ThreadSafe
 final class Lobby {
     private final List<ConnectedClient> connectedClients;
-    private final Parser<WaitingPlayers> parser;
+    private final Parser parser;
 
-    static Lobby of(final Parser<WaitingPlayers> parser) {
+    static Lobby of(final Parser parser) {
         return new Lobby(new CopyOnWriteArrayList<>(), parser);
     }
 
     private Lobby(final List<ConnectedClient> connectedClients,
-                  final Parser<WaitingPlayers> parser) {
+                  final Parser parser) {
         this.connectedClients = connectedClients;
         this.parser = parser;
     }
 
-    static Lobby notThreadSafe(final List<ConnectedClient> connectedClients, final Parser<WaitingPlayers> parser) {
+    static Lobby notThreadSafe(final List<ConnectedClient> connectedClients, final Parser parser) {
         return new Lobby(connectedClients, parser);
     }
 
@@ -53,8 +54,14 @@ final class Lobby {
         if (areBothInLobby) {
             final var firstConnectedClient = this.connectedClients.get(this.connectedClients.indexOf(first));
             final var secondConnectedClient = this.connectedClients.get(this.connectedClients.indexOf(second));
-            firstConnectedClient.send("API - first");
-            secondConnectedClient.send("API - second");
+            final var reply = PlayPairing
+                    .aPlayPairing()
+                    .withRedirectEndpoint("/generatedEndpoint")
+                    .withFirst(Player.fromUrl(first.getUrl()))
+                    .withSecond(Player.fromUrl(second.getUrl()))
+                    .build();
+            firstConnectedClient.send(this.parser.toJson(reply));
+            secondConnectedClient.send(this.parser.toJson(reply));
             first.close();
             second.close();
             this.connectedClients.remove(first);

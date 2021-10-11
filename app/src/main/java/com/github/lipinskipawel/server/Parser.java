@@ -1,6 +1,6 @@
 package com.github.lipinskipawel.server;
 
-interface Parser<T> {
+interface Parser {
 
-    String toJson(T data);
+    String toJson(Object data);
 }

@@ -119,14 +119,10 @@ final class LobbyIT implements WithAssertions {
 
         final var forFirstClient = firstLatch.await(1, TimeUnit.SECONDS);
         final var forSecondClient = secondLatch.await(1, TimeUnit.SECONDS);
-        final var isClosedFirst = firstClient.isClosed();
-        final var isClosedSecond = secondClient.isClosed();
         firstClient.closeBlocking();
         secondClient.closeBlocking();
         assertThat(forFirstClient).isTrue();
         assertThat(forSecondClient).isTrue();
-        assertThat(isClosedFirst).isTrue();
-        assertThat(isClosedSecond).isTrue();
     }
 
     private void waitForBothClientsForWaitingPlayersAPI(
