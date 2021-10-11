@@ -14,4 +14,10 @@ interface ConnectedClient {
      * @return url which the client is connected to.
      */
     String getUrl();
+
+    /**
+     * This method close client connection to the {@link FootballServer}. Closing connection is not blocking current
+     * thread.
+     */
+    void close();
 }

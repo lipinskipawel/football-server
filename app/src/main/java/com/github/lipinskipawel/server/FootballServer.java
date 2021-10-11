@@ -1,6 +1,7 @@
 package com.github.lipinskipawel.server;
 
 import com.github.lipinskipawel.api.Player;
+import com.github.lipinskipawel.api.RequestToPlay;
 import com.github.lipinskipawel.api.WaitingPlayers;
 import com.google.gson.Gson;
 import org.java_websocket.WebSocket;
@@ -15,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import java.net.InetSocketAddress;
 
 import static com.github.lipinskipawel.server.HandshakePolicy.webConnectionPolicy;
+import static com.github.lipinskipawel.server.MinimalisticClientContext.findBy;
 import static com.github.lipinskipawel.server.MinimalisticClientContext.from;
 import static java.util.stream.Collectors.toList;
 import static org.java_websocket.framing.CloseFrame.POLICY_VALIDATION;
@@ -38,7 +40,7 @@ public final class FootballServer extends WebSocketServer {
         LOGGER.info("Server onOpen: {}", url);
         final var client = from(conn);
         if (url.equals("/lobby")) {
-            this.lobby.accept(client, this::broadcast);
+            this.lobby.accept(client);
             return;
         }
         final var isAdded = this.dualConnection.accept(client);
@@ -76,6 +78,12 @@ public final class FootballServer extends WebSocketServer {
     public void onMessage(WebSocket conn, String message) {
         LOGGER.info("Server onMessage: {}", message);
         final var client = from(conn);
+        if (conn.getResourceDescriptor().equals("/lobby")) {
+            final var requestToPlay = this.parser.fromJson(message, RequestToPlay.class);
+            final var optionalOpponentClient = findBy(requestToPlay.getOpponent());
+            optionalOpponentClient.ifPresent(opponent -> this.lobby.pair(client, opponent));
+            return;
+        }
         this.dualConnection.sendMessageTo(message, client);
     }
 

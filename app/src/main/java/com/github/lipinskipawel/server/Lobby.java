@@ -6,7 +6,6 @@ import com.github.lipinskipawel.util.ThreadSafe;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -35,17 +34,35 @@ final class Lobby {
         return new Lobby(connectedClients, parser);
     }
 
-    void accept(final ConnectedClient client, Consumer<String> consumer) {
+    void accept(final ConnectedClient client) {
         this.connectedClients.add(client);
         final var players = this.connectedClients
                 .stream()
                 .map(it -> Player.fromUrl(it.getUrl()))
                 .collect(Collectors.toList());
         final var dataToSend = this.parser.toJson(WaitingPlayers.fromPlayers(players));
-        consumer.accept(dataToSend);
+        this.connectedClients.forEach(it -> it.send(dataToSend));
     }
 
     void dropConnectionFor(final ConnectedClient leaveLobby) {
         this.connectedClients.removeIf(it -> it.equals(leaveLobby));
+    }
+
+    void pair(final ConnectedClient first, final ConnectedClient second) {
+        final var areBothInLobby = checkWhetherAreInLobby(first, second);
+        if (areBothInLobby) {
+            final var firstConnectedClient = this.connectedClients.get(this.connectedClients.indexOf(first));
+            final var secondConnectedClient = this.connectedClients.get(this.connectedClients.indexOf(second));
+            firstConnectedClient.send("API - first");
+            secondConnectedClient.send("API - second");
+            first.close();
+            second.close();
+            this.connectedClients.remove(first);
+            this.connectedClients.remove(second);
+        }
+    }
+
+    private boolean checkWhetherAreInLobby(final ConnectedClient first, final ConnectedClient second) {
+        return connectedClients.contains(first) && connectedClients.contains(second);
     }
 }

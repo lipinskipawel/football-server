@@ -18,7 +18,7 @@ final class MinimalisticClientContextTest implements WithAssertions {
 
     @Test
     void shouldCreateConnectedClientWhenGivenWebSocket() {
-        final WebSocket webSocket = new TestWebSocket();
+        final WebSocket webSocket = new TestWebSocket("/lobby");
 
         final var client = MinimalisticClientContext.from(webSocket);
 
@@ -27,7 +27,7 @@ final class MinimalisticClientContextTest implements WithAssertions {
 
     @Test
     void shouldReturnCachedConnectedClientWhenGivenTheSameWebSocket() {
-        final WebSocket webSocket = new TestWebSocket();
+        final WebSocket webSocket = new TestWebSocket("/lobby");
 
         final var firstClient = MinimalisticClientContext.from(webSocket);
         final var secondClient = MinimalisticClientContext.from(webSocket);
@@ -39,7 +39,7 @@ final class MinimalisticClientContextTest implements WithAssertions {
 
     @Test
     void shouldReturnNewConnectedClientWhenGivenWasClosed() {
-        final WebSocket webSocket = new TestWebSocket();
+        final WebSocket webSocket = new TestWebSocket("/lobby");
 
         final var firstClient = MinimalisticClientContext.from(webSocket);
         webSocket.close();
@@ -51,7 +51,12 @@ final class MinimalisticClientContextTest implements WithAssertions {
     }
 
     private static class TestWebSocket implements WebSocket {
+        private final String resourceDescriptor;
         private boolean isClosed = false;
+
+        public TestWebSocket(String resourceDescriptor) {
+            this.resourceDescriptor = resourceDescriptor;
+        }
 
         @Override
         public void close(int code, String message) {
@@ -155,7 +160,7 @@ final class MinimalisticClientContextTest implements WithAssertions {
 
         @Override
         public String getResourceDescriptor() {
-            return null;
+            return resourceDescriptor;
         }
 
         @Override

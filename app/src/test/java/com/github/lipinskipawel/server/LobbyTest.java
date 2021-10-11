@@ -1,16 +1,14 @@
 package com.github.lipinskipawel.server;
 
+import org.assertj.core.api.InstanceOfAssertFactories;
 import org.assertj.core.api.WithAssertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Objects;
-import java.util.function.Consumer;
 
 class LobbyTest implements WithAssertions {
-    private static final Consumer<String> NO_OP = data -> {
-    };
 
     @Nested
     class AcceptingClients {
@@ -20,7 +18,7 @@ class LobbyTest implements WithAssertions {
             final var client = new TestConnectedClient("/lobby");
             final var lobby = Lobby.notThreadSafe(list, Objects::toString);
 
-            lobby.accept(client, NO_OP);
+            lobby.accept(client);
 
             assertThat(list)
                     .hasSize(1)
@@ -34,8 +32,23 @@ class LobbyTest implements WithAssertions {
             final var secondClient = new TestConnectedClient("/lobby");
             final var lobby = Lobby.notThreadSafe(numberOfConnectedClients, Objects::toString);
 
-            lobby.accept(firstClient, NO_OP);
-            lobby.accept(secondClient, NO_OP);
+            lobby.accept(firstClient);
+            lobby.accept(secondClient);
+
+            assertThat(numberOfConnectedClients)
+                    .hasSize(2)
+                    .containsExactly(firstClient, secondClient);
+        }
+
+        @Test
+        void shouldSendMessagesWhenTwoClientsJoins() {
+            final var numberOfConnectedClients = new ArrayList<ConnectedClient>();
+            final var firstClient = new TestConnectedClient("/lobby");
+            final var secondClient = new TestConnectedClient("/lobby");
+            final var lobby = Lobby.notThreadSafe(numberOfConnectedClients, Objects::toString);
+
+            lobby.accept(firstClient);
+            lobby.accept(secondClient);
 
             assertThat(numberOfConnectedClients)
                     .hasSize(2)
@@ -62,10 +75,31 @@ class LobbyTest implements WithAssertions {
             final var client = new TestConnectedClient("/lobby");
             final var lobby = Lobby.notThreadSafe(numberOfConnectedClients, Objects::toString);
 
-            lobby.accept(client, NO_OP);
+            lobby.accept(client);
             lobby.dropConnectionFor(client);
 
             assertThat(numberOfConnectedClients).hasSize(0);
+        }
+    }
+
+    @Nested
+    class PairingClients {
+        @Test
+        void shouldPairTwoClientsWhenRequested() {
+            final var numberOfConnectedClients = new ArrayList<ConnectedClient>();
+            final var firstClient = new TestConnectedClient("/lobby");
+            final var secondClient = new TestConnectedClient("/lobby");
+            final var lobby = Lobby.notThreadSafe(numberOfConnectedClients, Objects::toString);
+            lobby.accept(firstClient);
+            lobby.accept(secondClient);
+
+            lobby.pair(firstClient, secondClient);
+
+            assertThat(numberOfConnectedClients).hasSize(0);
+            assertThat(firstClient)
+                    .extracting(TestConnectedClient::isClosed, as(InstanceOfAssertFactories.BOOLEAN)).isTrue();
+            assertThat(secondClient)
+                    .extracting(TestConnectedClient::isClosed, as(InstanceOfAssertFactories.BOOLEAN)).isTrue();
         }
     }
 }
