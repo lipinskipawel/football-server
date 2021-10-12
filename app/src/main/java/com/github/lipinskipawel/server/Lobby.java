@@ -62,7 +62,12 @@ final class Lobby {
     }
 
     void dropConnectionFor(final ConnectedClient leaveLobby) {
-        executesUnderLock(() -> this.connectedClients.removeIf(it -> it.equals(leaveLobby)));
+        executesUnderLock(() -> {
+            if (this.connectedClients.contains(leaveLobby)) {
+                this.connectedClients.remove(leaveLobby);
+                leaveLobby.close();
+            }
+        });
     }
 
     private <T> T executesUnderLock(final Supplier<T> code) {
