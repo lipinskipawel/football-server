@@ -42,8 +42,7 @@ final class LobbyIT implements WithAssertions {
     @Test
     void shouldAllowToConnectToLobby() throws InterruptedException {
         final var onMessage = new CountDownLatch(1);
-        final var uri = URI.create("ws://localhost:%d/lobby".formatted(PORT));
-        final var client = createClient(uri, onMessage);
+        final var client = createClient(onMessage);
         client.connectBlocking();
 
         final var isOpen = client.isOpen();
@@ -56,8 +55,7 @@ final class LobbyIT implements WithAssertions {
     void shouldReceiveWaitingPlayersMessageWhenOnlyOnePlayerIsInTheLobby() throws InterruptedException {
         final var expectedWaitingPlayers = WaitingPlayers.fromPlayers(List.of(Player.fromUrl("/lobby")));
         final var onMessage = new CountDownLatch(1);
-        final var uri = URI.create("ws://localhost:%d/lobby".formatted(PORT));
-        final var client = createClient(uri, onMessage);
+        final var client = createClient(onMessage);
         client.connectBlocking();
 
         final var messageReceived = onMessage.await(1, TimeUnit.SECONDS);
@@ -70,12 +68,11 @@ final class LobbyIT implements WithAssertions {
     }
 
     @Test
-    void shouldReceivedWaitingPlayersMessageWithOneEntryWhenOneClientIsAlreadyConnected() throws InterruptedException {
+    void shouldReceivedWaitingPlayersMessageWithTwoEntriesWhenTwoClientAreInLobby() throws InterruptedException {
         final var expected = Player.fromUrl("/lobby");
         final var onMessage = new CountDownLatch(1);
-        final var uri = URI.create("ws://localhost:%d/lobby".formatted(PORT));
-        final var client = createClient(uri, null);
-        final var secondClient = createClient(uri, onMessage);
+        final var client = createClient();
+        final var secondClient = createClient(onMessage);
         client.connectBlocking();
         secondClient.connectBlocking();
 
@@ -97,9 +94,8 @@ final class LobbyIT implements WithAssertions {
     void shouldPairBothClientsWhenRequested() throws InterruptedException {
         var firstLatch = new CountDownLatch(1);
         var secondLatch = new CountDownLatch(1);
-        final var uri = URI.create("ws://localhost:%d/lobby".formatted(PORT));
-        final var firstClient = createClient(uri, firstLatch);
-        final var secondClient = createClient(uri, secondLatch);
+        final var firstClient = createClient(firstLatch);
+        final var secondClient = createClient(secondLatch);
         firstClient.connectBlocking();
         final var firstEntry = firstLatch.await(1, TimeUnit.SECONDS);
         assertThat(firstEntry).isTrue();
@@ -141,16 +137,21 @@ final class LobbyIT implements WithAssertions {
         secondClient.latchOnMessage(secondLatch);
     }
 
-    private static TestWebSocketClient createClient(final URI uri, CountDownLatch onMessage) {
-        return new TestWebSocketClient(uri, onMessage == null ? new CountDownLatch(0) : onMessage);
+    private static TestWebSocketClient createClient() {
+        return new TestWebSocketClient(new CountDownLatch(0));
+    }
+
+    private static TestWebSocketClient createClient(final CountDownLatch onMessage) {
+        return new TestWebSocketClient(onMessage == null ? new CountDownLatch(0) : onMessage);
     }
 
     private static class TestWebSocketClient extends WebSocketClient {
+        private static final URI SERVER_URI = URI.create("ws://localhost:%d/lobby".formatted(PORT));
         private CountDownLatch onMessage;
         List<String> messages;
 
-        public TestWebSocketClient(URI serverUri, CountDownLatch onMessage) {
-            super(serverUri);
+        public TestWebSocketClient(final CountDownLatch onMessage) {
+            super(SERVER_URI);
             this.onMessage = onMessage;
             this.messages = new ArrayList<>();
         }
@@ -162,7 +163,6 @@ final class LobbyIT implements WithAssertions {
 
         @Override
         public void onMessage(String message) {
-            System.out.println("TestWebSocketClient onMessage: " + message);
             this.messages.add(message);
             this.onMessage.countDown();
         }

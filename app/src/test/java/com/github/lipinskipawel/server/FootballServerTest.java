@@ -25,8 +25,9 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 final class FootballServerTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(FootballServerTest.class);
     private static final ExecutorService pool = Executors.newFixedThreadPool(1);
+    private static final int PORT = 8090;
     private static final FootballServer server = new FootballServer(
-            new InetSocketAddress("localhost", 8090), new DualConnection()
+            new InetSocketAddress("localhost", PORT), new DualConnection()
     );
 
     @BeforeAll
@@ -42,7 +43,7 @@ final class FootballServerTest {
 
     @Test
     void shouldRejectClientWhenURIDoNotMeetPolicy() throws InterruptedException {
-        final var client = createClient(URI.create("ws://localhost:8090/example"), null);
+        final var client = createClient("/example", null);
 
         client.connectBlocking();
 
@@ -54,9 +55,9 @@ final class FootballServerTest {
     @Test
     void shouldClientReceivedMessageFromOtherClient() throws InterruptedException {
         final var onMessage = new CountDownLatch(1);
-        final var commonUri = URI.create("ws://localhost:8090/chat/123");
-        final var firstClient = createClient(commonUri, null);
-        final var secondClient = createClient(commonUri, onMessage);
+        final var endpoint = "/chat/123";
+        final var firstClient = createClient(endpoint, null);
+        final var secondClient = createClient(endpoint, onMessage);
         firstClient.connectBlocking();
         secondClient.connectBlocking();
 
@@ -71,8 +72,8 @@ final class FootballServerTest {
     @Test
     void shouldNotReceivedMsgWhenConnectedToDifferentUri() throws InterruptedException {
         final var onMessage = new CountDownLatch(1);
-        final var firstClient = createClient(URI.create("ws://localhost:8090/chat/123"), null);
-        final var secondClient = createClient(URI.create("ws://localhost:8090/chat/other"), onMessage);
+        final var firstClient = createClient("/chat/123", null);
+        final var secondClient = createClient("/chat/other", onMessage);
         firstClient.connectBlocking();
         secondClient.connectBlocking();
 
@@ -87,13 +88,13 @@ final class FootballServerTest {
     @Test
     void shouldAllowOnlyTwoClientsConnectToTheSameEndpoint() throws InterruptedException {
         final var onClose = new CountDownLatch(1);
-        final var uri = URI.create("ws://localhost:8090/chat/one");
-        final var firstClient = createClient(uri, null);
-        final var secondClient = createClient(uri, null);
+        final var endpoint = "/chat/one";
+        final var firstClient = createClient(endpoint, null);
+        final var secondClient = createClient(endpoint, null);
         firstClient.connectBlocking();
         secondClient.connectBlocking();
 
-        final var thirdClient = createClient(uri, null, onClose, null);
+        final var thirdClient = createClient(endpoint, null, onClose, null);
         thirdClient.connectBlocking();
 
         final var notConnected = onClose.await(1, TimeUnit.SECONDS);
@@ -106,8 +107,8 @@ final class FootballServerTest {
     @Test
     void shouldReceivedListOfPlayerWhenConnectedOnlyOneClient() throws InterruptedException {
         final var onPlayerList = new CountDownLatch(1);
-        final var uri = URI.create("ws://localhost:8090/chat/one");
-        final var client = createClient(uri, null, null, onPlayerList);
+        final var endpoint = "/chat/one";
+        final var client = createClient(endpoint, null, null, onPlayerList);
         client.connectBlocking();
 
         final var receivedMessage = onPlayerList.await(1, TimeUnit.SECONDS);
@@ -121,10 +122,10 @@ final class FootballServerTest {
     @Test
     void shouldReceivedListOfPlayerWhenTwoClientsAreConnected() throws InterruptedException {
         final var onPlayerList = new CountDownLatch(1);
-        final var firstUri = URI.create("ws://localhost:8090/chat/one");
-        final var secondUri = URI.create("ws://localhost:8090/chat/two");
-        final var firstClient = createClient(firstUri, null, null, null);
-        final var secondClient = createClient(secondUri, null, null, onPlayerList);
+        final var firstEndpoint = "/chat/one";
+        final var secondEndpoint = "/chat/two";
+        final var firstClient = createClient(firstEndpoint, null, null, null);
+        final var secondClient = createClient(secondEndpoint, null, null, onPlayerList);
         firstClient.connectBlocking();
         secondClient.connectBlocking();
 
@@ -140,10 +141,10 @@ final class FootballServerTest {
     @Test
     void shouldReceivedListOfPlayerWhenSecondClientIsConnected() throws InterruptedException {
         final var onPlayerList = new CountDownLatch(2);
-        final var firstUri = URI.create("ws://localhost:8090/chat/one");
-        final var secondUri = URI.create("ws://localhost:8090/chat/two");
-        final var firstClient = createClient(firstUri, null, null, onPlayerList);
-        final var secondClient = createClient(secondUri, null, null, onPlayerList);
+        final var firstEndpoint = "/chat/one";
+        final var secondEndpoint = "/chat/two";
+        final var firstClient = createClient(firstEndpoint, null, null, onPlayerList);
+        final var secondClient = createClient(secondEndpoint, null, null, onPlayerList);
         firstClient.connectBlocking();
         secondClient.connectBlocking();
 
@@ -156,12 +157,13 @@ final class FootballServerTest {
         firstClient.playersList.players().forEach(it -> System.out.println(it.getUrl()));
     }
 
-    private WebSocketClientWrapper createClient(final URI uri, final CountDownLatch onMessage) {
-        return createClient(uri, onMessage, null, null);
+    private WebSocketClientWrapper createClient(final String endpoint, final CountDownLatch onMessage) {
+        return createClient(endpoint, onMessage, null, null);
     }
 
-    private WebSocketClientWrapper createClient(final URI uri, final CountDownLatch onMessage, final CountDownLatch onClose,
+    private WebSocketClientWrapper createClient(final String endpoint, final CountDownLatch onMessage, final CountDownLatch onClose,
                                                 final CountDownLatch onPlayerList) {
+        final var uri = URI.create(WebSocketClientWrapper.SERVER_URI.concat(endpoint));
         return new WebSocketClientWrapper(uri, onMessage, onClose, onPlayerList);
     }
 
@@ -170,6 +172,7 @@ final class FootballServerTest {
         private final Optional<CountDownLatch> onClose;
         private final Optional<CountDownLatch> onPlayerList;
         private final Gson parser;
+        static final String SERVER_URI = "ws://localhost:%d".formatted(PORT);
         WaitingPlayers playersList;
 
         WebSocketClientWrapper(final URI uri,
