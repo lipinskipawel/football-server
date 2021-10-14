@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.fail;
 final class HandshakePolicyTest {
 
     @Nested
-    class ChatEndpoint {
+    class GameEndpoint {
         @Test
         void shouldNotPassTheWebConnectionPolicyWhenResourceIsRoot() {
             final var policy = createClientHandshakeMock("/");
@@ -29,26 +29,26 @@ final class HandshakePolicyTest {
         }
 
         @Test
-        void shouldNotPassTheWebConnectionPolicyWhenResourceIsChat() {
-            final var policy = createClientHandshakeMock("/chat");
+        void shouldNotPassTheWebConnectionPolicyWhenResourceIsGame() {
+            final var policy = createClientHandshakeMock("/game");
 
             Assertions.assertThatThrownBy(() -> HandshakePolicy.webConnectionPolicy(policy));
         }
 
         @Test
-        void shouldPassTheWebConnectionPolicyWhenResourceIsChatWithNextLevelNestedPath() {
-            final var policy = createClientHandshakeMock("/chat/12546");
+        void shouldPassTheWebConnectionPolicyWhenResourceIsGameWithNextLevelNestedPath() {
+            final var policy = createClientHandshakeMock("/game/12546");
 
             try {
                 HandshakePolicy.webConnectionPolicy(policy);
             } catch (InvalidDataException e) {
-                fail("Policy should allow one level under the chat endpoint");
+                fail("Policy should allow one level under the game endpoint");
             }
         }
 
         @Test
-        void shouldNotPassTheWebConnectionPolicyWhenResourceChatWithTwoMoreNestedPaths() {
-            final var policy = createClientHandshakeMock("/chat/123123/abc");
+        void shouldNotPassTheWebConnectionPolicyWhenResourceGameWithTwoMoreNestedPaths() {
+            final var policy = createClientHandshakeMock("/game/123123/abc");
 
             Assertions.assertThatThrownBy(() -> HandshakePolicy.webConnectionPolicy(policy));
         }
@@ -63,7 +63,7 @@ final class HandshakePolicyTest {
             try {
                 HandshakePolicy.webConnectionPolicy(policy);
             } catch (InvalidDataException e) {
-                fail("Policy should allow one level under the chat endpoint");
+                fail("Policy should allow one level under the game endpoint");
             }
         }
 

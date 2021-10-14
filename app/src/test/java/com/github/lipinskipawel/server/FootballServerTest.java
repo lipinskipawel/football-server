@@ -55,7 +55,7 @@ final class FootballServerTest {
     @Test
     void shouldClientReceivedMessageFromOtherClient() throws InterruptedException {
         final var onMessage = new CountDownLatch(1);
-        final var endpoint = "/chat/123";
+        final var endpoint = "/game/123";
         final var firstClient = createClient(endpoint, null);
         final var secondClient = createClient(endpoint, onMessage);
         firstClient.connectBlocking();
@@ -72,8 +72,8 @@ final class FootballServerTest {
     @Test
     void shouldNotReceivedMsgWhenConnectedToDifferentUri() throws InterruptedException {
         final var onMessage = new CountDownLatch(1);
-        final var firstClient = createClient("/chat/123", null);
-        final var secondClient = createClient("/chat/other", onMessage);
+        final var firstClient = createClient("/game/123", null);
+        final var secondClient = createClient("/game/other", onMessage);
         firstClient.connectBlocking();
         secondClient.connectBlocking();
 
@@ -88,7 +88,7 @@ final class FootballServerTest {
     @Test
     void shouldAllowOnlyTwoClientsConnectToTheSameEndpoint() throws InterruptedException {
         final var onClose = new CountDownLatch(1);
-        final var endpoint = "/chat/one";
+        final var endpoint = "/game/one";
         final var firstClient = createClient(endpoint, null);
         final var secondClient = createClient(endpoint, null);
         firstClient.connectBlocking();
@@ -107,7 +107,7 @@ final class FootballServerTest {
     @Test
     void shouldReceivedListOfPlayerWhenConnectedOnlyOneClient() throws InterruptedException {
         final var onPlayerList = new CountDownLatch(1);
-        final var endpoint = "/chat/one";
+        final var endpoint = "/game/one";
         final var client = createClient(endpoint, null, null, onPlayerList);
         client.connectBlocking();
 
@@ -122,8 +122,8 @@ final class FootballServerTest {
     @Test
     void shouldReceivedListOfPlayerWhenTwoClientsAreConnected() throws InterruptedException {
         final var onPlayerList = new CountDownLatch(1);
-        final var firstEndpoint = "/chat/one";
-        final var secondEndpoint = "/chat/two";
+        final var firstEndpoint = "/game/one";
+        final var secondEndpoint = "/game/two";
         final var firstClient = createClient(firstEndpoint, null, null, null);
         final var secondClient = createClient(secondEndpoint, null, null, onPlayerList);
         firstClient.connectBlocking();
@@ -141,8 +141,8 @@ final class FootballServerTest {
     @Test
     void shouldReceivedListOfPlayerWhenSecondClientIsConnected() throws InterruptedException {
         final var onPlayerList = new CountDownLatch(2);
-        final var firstEndpoint = "/chat/one";
-        final var secondEndpoint = "/chat/two";
+        final var firstEndpoint = "/game/one";
+        final var secondEndpoint = "/game/two";
         final var firstClient = createClient(firstEndpoint, null, null, onPlayerList);
         final var secondClient = createClient(secondEndpoint, null, null, onPlayerList);
         firstClient.connectBlocking();

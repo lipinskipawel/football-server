@@ -8,7 +8,7 @@ final class HandshakePolicy {
 
     /**
      * Defines the policy under the {@link FootballServer} should run. Allows connections to:
-     * - /chat/{id}
+     * - /game/{id}
      * - /lobby
      * prevents connecting to any other endpoint.
      *
@@ -22,11 +22,11 @@ final class HandshakePolicy {
         if (resourceDescriptor.equals("/lobby")) {
             return;
         }
-        if (resourceDescriptor.equals("/chat") ||
-                !resourceDescriptor.startsWith("/chat") ||
+        if (resourceDescriptor.equals("/game") ||
+                !resourceDescriptor.startsWith("/game") ||
                 resourceDescriptor.split("/").length > 3) {
             throw new InvalidDataException(
-                    CloseFrame.POLICY_VALIDATION, "WebSocket connection is allowed only at /chat{id} or /lobby"
+                    CloseFrame.POLICY_VALIDATION, "WebSocket connection is allowed only at /game{id} or /lobby"
             );
         }
     }
