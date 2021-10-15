@@ -104,59 +104,6 @@ final class FootballServerTest {
         assertThat(thirdClient.isClosed()).isTrue();
     }
 
-    @Test
-    void shouldReceivedListOfPlayerWhenConnectedOnlyOneClient() throws InterruptedException {
-        final var onPlayerList = new CountDownLatch(1);
-        final var endpoint = "/game/one";
-        final var client = createClient(endpoint, null, null, onPlayerList);
-        client.connectBlocking();
-
-        final var receivedMessage = onPlayerList.await(1, TimeUnit.SECONDS);
-
-        client.closeBlocking();
-        assertThat(receivedMessage).isTrue();
-        assertThat(client.playersList.players().size()).isEqualTo(1);
-        client.playersList.players().forEach(it -> System.out.println(it.getUrl()));
-    }
-
-    @Test
-    void shouldReceivedListOfPlayerWhenTwoClientsAreConnected() throws InterruptedException {
-        final var onPlayerList = new CountDownLatch(1);
-        final var firstEndpoint = "/game/one";
-        final var secondEndpoint = "/game/two";
-        final var firstClient = createClient(firstEndpoint, null, null, null);
-        final var secondClient = createClient(secondEndpoint, null, null, onPlayerList);
-        firstClient.connectBlocking();
-        secondClient.connectBlocking();
-
-        final var receivedMessage = onPlayerList.await(1, TimeUnit.SECONDS);
-
-        firstClient.closeBlocking();
-        secondClient.closeBlocking();
-        assertThat(receivedMessage).isTrue();
-        assertThat(secondClient.playersList.players().size()).isEqualTo(2);
-        secondClient.playersList.players().forEach(it -> System.out.println(it.getUrl()));
-    }
-
-    @Test
-    void shouldReceivedListOfPlayerWhenSecondClientIsConnected() throws InterruptedException {
-        final var onPlayerList = new CountDownLatch(2);
-        final var firstEndpoint = "/game/one";
-        final var secondEndpoint = "/game/two";
-        final var firstClient = createClient(firstEndpoint, null, null, onPlayerList);
-        final var secondClient = createClient(secondEndpoint, null, null, onPlayerList);
-        firstClient.connectBlocking();
-        secondClient.connectBlocking();
-
-        final var receivedMessage = onPlayerList.await(1, TimeUnit.SECONDS);
-
-        firstClient.closeBlocking();
-        secondClient.closeBlocking();
-        assertThat(receivedMessage).isTrue();
-        assertThat(firstClient.playersList.players().size()).isEqualTo(2);
-        firstClient.playersList.players().forEach(it -> System.out.println(it.getUrl()));
-    }
-
     private WebSocketClientWrapper createClient(final String endpoint, final CountDownLatch onMessage) {
         return createClient(endpoint, onMessage, null, null);
     }

@@ -1,8 +1,6 @@
 package com.github.lipinskipawel.server;
 
-import com.github.lipinskipawel.api.Player;
 import com.github.lipinskipawel.api.RequestToPlay;
-import com.github.lipinskipawel.api.WaitingPlayers;
 import com.google.gson.Gson;
 import org.java_websocket.WebSocket;
 import org.java_websocket.drafts.Draft;
@@ -18,7 +16,6 @@ import java.net.InetSocketAddress;
 import static com.github.lipinskipawel.server.HandshakePolicy.webConnectionPolicy;
 import static com.github.lipinskipawel.server.MinimalisticClientContext.findBy;
 import static com.github.lipinskipawel.server.MinimalisticClientContext.from;
-import static java.util.stream.Collectors.toList;
 import static org.java_websocket.framing.CloseFrame.POLICY_VALIDATION;
 
 public final class FootballServer extends WebSocketServer {
@@ -50,20 +47,6 @@ public final class FootballServer extends WebSocketServer {
             LOGGER.info(message);
             LOGGER.info("Connection has been closed");
         }
-        sendPlayerJoinedMessageToAllWaitingClients();
-    }
-
-    private void sendPlayerJoinedMessageToAllWaitingClients() {
-        System.out.println("Will no execute");
-        final var nonePairClients = dualConnection
-                .nonePairClients();
-        final var waitingPlayers = WaitingPlayers.fromPlayers(nonePairClients
-                .stream()
-                .map(ConnectedClient::getUrl)
-                .map(Player::fromUrl)
-                .collect(toList()));
-
-        nonePairClients.forEach(it -> it.send(this.parser.toJson(waitingPlayers)));
     }
 
     @Override
