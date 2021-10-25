@@ -1,6 +1,6 @@
 # Football Server
 
-This project is the server for [football-game] and [LAN-Game] projects.
+This project is the server for [football-web] and [football-desktop] projects.
 
-[football-game]: https://github.com/lipinskipawel/football-game
-[lan-game]: https://github.com/lipinskipawel/LAN-Game
+[football-web]: https://github.com/lipinskipawel/football-web
+[football-desktop]: https://github.com/lipinskipawel/football-desktop
