@@ -1,6 +1,7 @@
 package com.github.lipinskipawel.server;
 
 import com.github.lipinskipawel.api.WaitingPlayers;
+import com.github.lipinskipawel.api.move.GameMove;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
@@ -14,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -29,6 +31,7 @@ final class FootballServerTest {
     private static final FootballServer server = new FootballServer(
             new InetSocketAddress("localhost", PORT), new DualConnection()
     );
+    private static final Gson parser = new Gson();
 
     @BeforeAll
     static void setUp() {
@@ -53,7 +56,7 @@ final class FootballServerTest {
     }
 
     @Test
-    void shouldClientReceivedMessageFromOtherClient() throws InterruptedException {
+    void shouldClientNotReceivedMessageWhenNotAGameMove() throws InterruptedException {
         final var onMessage = new CountDownLatch(1);
         final var endpoint = "/game/123";
         final var firstClient = createClient(endpoint, null);
@@ -63,10 +66,10 @@ final class FootballServerTest {
 
         firstClient.send("msg");
 
-        final var gotMessage = onMessage.await(1, TimeUnit.SECONDS);
+        final var notReceived = onMessage.await(1, TimeUnit.SECONDS);
         firstClient.closeBlocking();
         secondClient.closeBlocking();
-        assertThat(gotMessage).isTrue();
+        assertThat(notReceived).isFalse();
     }
 
     @Test
@@ -77,12 +80,14 @@ final class FootballServerTest {
         firstClient.connectBlocking();
         secondClient.connectBlocking();
 
-        firstClient.send("msg");
+        final var move = GameMove.from(List.of("N")).get();
+        final var message = parser.toJson(move);
+        firstClient.send(message);
 
-        final var gotMessage = onMessage.await(1, TimeUnit.SECONDS);
+        final var notReceived = onMessage.await(1, TimeUnit.SECONDS);
         firstClient.closeBlocking();
         secondClient.closeBlocking();
-        assertThat(gotMessage).isFalse();
+        assertThat(notReceived).isFalse();
     }
 
     @Test

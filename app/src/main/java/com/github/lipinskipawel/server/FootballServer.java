@@ -1,7 +1,9 @@
 package com.github.lipinskipawel.server;
 
 import com.github.lipinskipawel.api.RequestToPlay;
+import com.github.lipinskipawel.api.move.GameMove;
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import org.java_websocket.WebSocket;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.exceptions.InvalidDataException;
@@ -65,6 +67,12 @@ public final class FootballServer extends WebSocketServer {
             final var requestToPlay = this.parser.fromJson(message, RequestToPlay.class);
             final var optionalOpponentClient = findBy(requestToPlay.getOpponent());
             optionalOpponentClient.ifPresent(opponent -> this.lobby.pair(() -> "/endpoint", client, opponent));
+            return;
+        }
+        try {
+            this.parser.fromJson(message, GameMove.class);
+        } catch (JsonSyntaxException exception) {
+            LOGGER.error("Can not parse given message to GameMove object. {}", message);
             return;
         }
         this.dualConnection.sendMessageTo(message, client);
