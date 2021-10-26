@@ -29,13 +29,10 @@ public final class GameMove {
     }
 
     public static Optional<GameMove> from(final List<String> move) {
-        Objects.requireNonNull(move);
-        if (move.isEmpty()) {
+        if (move == null || move.isEmpty()) {
             return Optional.empty();
         }
-        final var isIncorrectDirection = move
-                .stream()
-                .anyMatch(GameMove::isIncorrectDirection);
+        final var isIncorrectDirection = move.stream().anyMatch(GameMove::isIncorrectDirection);
         if (isIncorrectDirection) {
             return Optional.empty();
         }

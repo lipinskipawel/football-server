@@ -14,6 +14,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.Optional;
 
 import static com.github.lipinskipawel.server.HandshakePolicy.webConnectionPolicy;
 import static com.github.lipinskipawel.server.MinimalisticClientContext.findBy;
@@ -25,12 +29,14 @@ public final class FootballServer extends WebSocketServer {
     private final Gson parser;
     private final DualConnection dualConnection;
     private final Lobby lobby;
+    private final GameLifeCycle gameHandler;
 
     public FootballServer(final InetSocketAddress address, final DualConnection dualConnection) {
         super(address);
         this.dualConnection = dualConnection;
         this.parser = new Gson();
         this.lobby = Lobby.of(parser::toJson);
+        this.gameHandler = new GameLifeCycle(this.dualConnection, parser::toJson);
     }
 
     @Override
@@ -42,7 +48,7 @@ public final class FootballServer extends WebSocketServer {
             this.lobby.accept(client);
             return;
         }
-        final var isAdded = this.dualConnection.accept(client);
+        final var isAdded = this.gameHandler.accept(client);
         if (!isAdded) {
             final var message = "Server does not allow more than 2 clients to connect to the same endpoint";
             conn.closeConnection(POLICY_VALIDATION, message);
@@ -66,16 +72,28 @@ public final class FootballServer extends WebSocketServer {
         if (conn.getResourceDescriptor().equals("/lobby")) {
             final var requestToPlay = this.parser.fromJson(message, RequestToPlay.class);
             final var optionalOpponentClient = findBy(requestToPlay.getOpponent());
-            optionalOpponentClient.ifPresent(opponent -> this.lobby.pair(() -> "/endpoint", client, opponent));
+            optionalOpponentClient.ifPresent(opponent -> {
+                // TODO: right now the dualConnection is empty, both clients connection was closed
+                // TODO: let onOpen knows that we have two redirected clients
+                // TODO: accept both clients only if they provide token. (first token, second token <- next milestone)
+                this.lobby.pair(() -> "/endpoint", client, opponent);
+            });
             return;
         }
+        parseToGameMove(message)
+                .ifPresentOrElse(
+                        move -> this.gameHandler.makeMove(move, client),
+                        () -> LOGGER.error("Can not parse given message to GameMove object. {}", message)
+                );
+    }
+
+    private Optional<GameMove> parseToGameMove(final String json) {
         try {
-            this.parser.fromJson(message, GameMove.class);
+            final var value = this.parser.fromJson(json, GameMove.class);
+            return GameMove.from(value.getMove());
         } catch (JsonSyntaxException exception) {
-            LOGGER.error("Can not parse given message to GameMove object. {}", message);
-            return;
+            return Optional.empty();
         }
-        this.dualConnection.sendMessageTo(message, client);
     }
 
     @Override

@@ -50,6 +50,8 @@ final class GamePlayIT implements WithAssertions {
         firstClient.send(message);
 
         final var gotMessage = onMessage.await(1, TimeUnit.SECONDS);
+        firstClient.closeBlocking();
+        secondClient.closeBlocking();
         assertThat(gotMessage).isTrue();
         assertThat(secondClient)
                 .extracting(it -> it.messages)
@@ -66,19 +68,22 @@ final class GamePlayIT implements WithAssertions {
         firstClient.connectBlocking();
         secondClient.connectBlocking();
 
-        final var moveToSecond = GameMove.from(List.of("N"));
+        final var moveToSecond = GameMove.from(List.of("N")).get();
         final var messageForSecond = parser.toJson(moveToSecond);
         firstClient.send(messageForSecond);
         var gotMessage = onMessage.await(1, TimeUnit.SECONDS);
         assertThat(gotMessage).isTrue();
-        final var moveToFirst = GameMove.from(List.of("S"));
+        final var moveToFirst = GameMove.from(List.of("E")).get();
         final var messageForFirst = parser.toJson(moveToFirst);
+
         onMessage = new CountDownLatch(1);
         firstClient.latchOnMessage(onMessage);
         secondClient.send(messageForFirst);
         gotMessage = onMessage.await(1, TimeUnit.SECONDS);
         assertThat(gotMessage).isTrue();
 
+        firstClient.closeBlocking();
+        secondClient.closeBlocking();
         assertThat(secondClient)
                 .extracting(it -> it.messages)
                 .asList()
@@ -89,6 +94,40 @@ final class GamePlayIT implements WithAssertions {
                 .asList()
                 .hasSize(1)
                 .containsExactly(messageForFirst);
+    }
+
+    @Test
+    void shouldNotAllowToMoveTwiceByTheSamePlayer() throws InterruptedException {
+        var onMessage = new CountDownLatch(1);
+        final var firstClient = createClient("/game/two");
+        final var secondClient = createClient("/game/two", onMessage);
+        firstClient.connectBlocking();
+        secondClient.connectBlocking();
+
+        final var moveToSecond = GameMove.from(List.of("N")).get();
+        final var messageForSecond = parser.toJson(moveToSecond);
+        firstClient.send(messageForSecond);
+        var gotMessage = onMessage.await(1, TimeUnit.SECONDS);
+        assertThat(gotMessage).isTrue();
+
+        onMessage = new CountDownLatch(1);
+        final var moveToSecondAgain = GameMove.from(List.of("N")).get();
+        final var messageForSecondAgain = parser.toJson(moveToSecondAgain);
+        firstClient.send(messageForSecondAgain);
+        gotMessage = onMessage.await(1, TimeUnit.SECONDS);
+        assertThat(gotMessage).isFalse();
+
+        firstClient.closeBlocking();
+        secondClient.closeBlocking();
+        assertThat(secondClient)
+                .extracting(it -> it.messages)
+                .asList()
+                .hasSize(1)
+                .containsExactly(messageForSecond);
+        assertThat(firstClient)
+                .extracting(it -> it.messages)
+                .asList()
+                .hasSize(0);
     }
 
     private TestWebSocketClient createClient(final String endpoint) {

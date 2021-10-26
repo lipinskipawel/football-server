@@ -37,6 +37,10 @@ public final class DualConnection {
         }
     }
 
+    List<ConnectedClient> getBothClients(final String endpoint) {
+        return clientsPerUrl.get(endpoint);
+    }
+
     void sendMessageTo(final String message, final ConnectedClient receiver) {
         final var connectedClients = clientsPerUrl.get(receiver.getUrl());
         if (connectedClients.size() != 2) {
