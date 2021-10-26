@@ -1,5 +1,6 @@
 package com.github.lipinskipawel.server;
 
+import com.github.lipinskipawel.mocks.TestConnectedClient;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.assertj.core.api.WithAssertions;
 import org.junit.jupiter.api.Nested;

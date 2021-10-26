@@ -3,7 +3,7 @@ package com.github.lipinskipawel.server;
 /**
  * This interface represents a connected client to the {@link FootballServer}.
  */
-interface ConnectedClient {
+public interface ConnectedClient {
 
     /**
      * This method will send a message to the client represented by this class.

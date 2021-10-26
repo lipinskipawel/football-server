@@ -1,14 +1,16 @@
-package com.github.lipinskipawel.server;
+package com.github.lipinskipawel.mocks;
+
+import com.github.lipinskipawel.server.ConnectedClient;
 
 import java.util.ArrayList;
 import java.util.List;
 
-final class TestConnectedClient implements ConnectedClient {
+public final class TestConnectedClient implements ConnectedClient {
     private final String url;
     private boolean isClosed;
-    List<String> messages;
+    private List<String> messages;
 
-    TestConnectedClient(final String url) {
+    public TestConnectedClient(final String url) {
         this.url = url;
         this.isClosed = false;
         this.messages = new ArrayList<>();

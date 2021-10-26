@@ -1,5 +1,6 @@
 package com.github.lipinskipawel.server;
 
+import com.github.lipinskipawel.mocks.TestConnectedClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -99,7 +100,7 @@ final class DualConnectionTest {
 
             dualConnection.sendMessageTo(EXAMPLE_TEST_MESSAGE, firstClient);
 
-            assertThat(secondClient.messages.get(0)).isEqualTo(EXAMPLE_TEST_MESSAGE);
+            assertThat(secondClient.getMessages().get(0)).isEqualTo(EXAMPLE_TEST_MESSAGE);
         }
 
         @Test
@@ -111,7 +112,7 @@ final class DualConnectionTest {
 
             dualConnection.sendMessageTo(EXAMPLE_TEST_MESSAGE, firstClient);
 
-            assertThat(firstClient.messages.size()).isEqualTo(0);
+            assertThat(firstClient.getMessages().size()).isEqualTo(0);
         }
     }
 
@@ -125,6 +126,6 @@ final class DualConnectionTest {
         dualConnection.dropConnectionFor(firstClient);
         dualConnection.sendMessageTo(EXAMPLE_TEST_MESSAGE, firstClient);
 
-        assertThat(firstClient.messages.size()).isEqualTo(0);
+        assertThat(firstClient.getMessages().size()).isEqualTo(0);
     }
 }
