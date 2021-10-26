@@ -14,9 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.Optional;
 
 import static com.github.lipinskipawel.server.HandshakePolicy.webConnectionPolicy;
@@ -73,9 +70,6 @@ public final class FootballServer extends WebSocketServer {
             final var requestToPlay = this.parser.fromJson(message, RequestToPlay.class);
             final var optionalOpponentClient = findBy(requestToPlay.getOpponent());
             optionalOpponentClient.ifPresent(opponent -> {
-                // TODO: right now the dualConnection is empty, both clients connection was closed
-                // TODO: let onOpen knows that we have two redirected clients
-                // TODO: accept both clients only if they provide token. (first token, second token <- next milestone)
                 this.lobby.pair(() -> "/endpoint", client, opponent);
             });
             return;
