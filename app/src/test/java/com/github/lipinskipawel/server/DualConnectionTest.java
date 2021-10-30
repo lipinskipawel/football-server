@@ -128,4 +128,17 @@ final class DualConnectionTest {
 
         assertThat(firstClient.getMessages().size()).isEqualTo(0);
     }
+
+    @Test
+    void shouldNotLeakConnection() {
+        final var firstClient = new TestConnectedClient("/example/1");
+        final var secondClient = new TestConnectedClient("/example/1");
+        dualConnection.accept(firstClient);
+        dualConnection.accept(secondClient);
+
+        dualConnection.dropConnectionFor(firstClient);
+
+        assertThat(firstClient.isClosed()).isTrue();
+    }
+
 }

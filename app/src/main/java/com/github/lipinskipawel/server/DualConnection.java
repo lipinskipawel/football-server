@@ -76,7 +76,10 @@ public final class DualConnection {
         synchronized (lock) {
             final var connectedClients = clientsPerUrl.get(toLeave.getUrl());
             if (connectedClients != null) {
-                connectedClients.removeIf(client -> client.equals(toLeave));
+                final var removed = connectedClients.removeIf(client -> client.equals(toLeave));
+                if (removed) {
+                    toLeave.close();
+                }
             }
         }
     }
