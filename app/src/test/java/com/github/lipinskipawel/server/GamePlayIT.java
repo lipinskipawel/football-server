@@ -21,9 +21,7 @@ import java.util.concurrent.TimeUnit;
 final class GamePlayIT implements WithAssertions {
     private static final ExecutorService pool = Executors.newFixedThreadPool(1);
     private static final int PORT = 8092;
-    private static final FootballServer server = new FootballServer(
-            new InetSocketAddress("localhost", PORT), new DualConnection()
-    );
+    private static final FootballServer server = new FootballServer(new InetSocketAddress("localhost", PORT));
     private static final Gson parser = new Gson();
 
     @BeforeAll

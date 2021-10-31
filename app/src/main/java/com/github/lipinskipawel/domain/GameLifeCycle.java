@@ -1,9 +1,10 @@
-package com.github.lipinskipawel.server;
+package com.github.lipinskipawel.domain;
 
 import com.github.lipinskipawel.api.move.GameMove;
 import com.github.lipinskipawel.board.engine.Direction;
 import com.github.lipinskipawel.board.engine.Move;
-import com.github.lipinskipawel.domain.GameBoardState;
+import com.github.lipinskipawel.server.Parser;
+import com.github.lipinskipawel.user.ConnectedClient;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -14,14 +15,18 @@ import java.util.stream.Collectors;
  * This class ensures correctness of the user experience during playing game by synchronizing state between game logic
  * and sending messages to players.
  */
-final class GameLifeCycle {
+public final class GameLifeCycle {
     private final DualConnection dualConnection;
     private final Parser parser;
     private GameBoardState boardState;
 
-    public GameLifeCycle(DualConnection dualConnection, Parser parser) {
+    GameLifeCycle(DualConnection dualConnection, Parser parser) {
         this.dualConnection = dualConnection;
         this.parser = parser;
+    }
+
+    public static GameLifeCycle of(final Parser parser) {
+        return new GameLifeCycle(new DualConnection(), parser);
     }
 
     public void makeMove(final GameMove gameMove, final ConnectedClient client) {
@@ -33,11 +38,15 @@ final class GameLifeCycle {
         }
     }
 
+    public void dropConnectionFor(final ConnectedClient client) {
+        dualConnection.dropConnectionFor(client);
+    }
+
     private List<Direction> toDirectionList(List<String> listOfDirections) {
         return listOfDirections.stream().map(Direction::valueOf).collect(Collectors.toList());
     }
 
-    boolean accept(final ConnectedClient client) {
+    public boolean accept(final ConnectedClient client) {
         final var isAccepted = dualConnection.accept(client);
         final var bothClients = dualConnection.getBothClients(client.getUrl());
         if (bothClients.size() == 2) {

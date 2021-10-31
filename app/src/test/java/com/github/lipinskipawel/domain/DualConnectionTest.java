@@ -1,5 +1,6 @@
-package com.github.lipinskipawel.server;
+package com.github.lipinskipawel.domain;
 
+import com.github.lipinskipawel.domain.DualConnection;
 import com.github.lipinskipawel.mocks.TestConnectedClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

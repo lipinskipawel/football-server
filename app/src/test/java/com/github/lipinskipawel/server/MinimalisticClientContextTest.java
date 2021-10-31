@@ -1,5 +1,6 @@
 package com.github.lipinskipawel.server;
 
+import com.github.lipinskipawel.user.ConnectedClient;
 import org.assertj.core.api.WithAssertions;
 import org.java_websocket.WebSocket;
 import org.java_websocket.drafts.Draft;
@@ -20,7 +21,7 @@ final class MinimalisticClientContextTest implements WithAssertions {
     void shouldCreateConnectedClientWhenGivenWebSocket() {
         final WebSocket webSocket = new TestWebSocket("/lobby");
 
-        final var client = MinimalisticClientContext.from(webSocket);
+        final var client = ConnectedClient.from(webSocket);
 
         assertThat(client).isNotNull();
     }
@@ -29,8 +30,8 @@ final class MinimalisticClientContextTest implements WithAssertions {
     void shouldReturnCachedConnectedClientWhenGivenTheSameWebSocket() {
         final WebSocket webSocket = new TestWebSocket("/lobby");
 
-        final var firstClient = MinimalisticClientContext.from(webSocket);
-        final var secondClient = MinimalisticClientContext.from(webSocket);
+        final var firstClient = ConnectedClient.from(webSocket);
+        final var secondClient = ConnectedClient.from(webSocket);
 
         assertThat(firstClient)
                 .isNotNull()
@@ -41,9 +42,9 @@ final class MinimalisticClientContextTest implements WithAssertions {
     void shouldReturnNewConnectedClientWhenGivenWasClosed() {
         final WebSocket webSocket = new TestWebSocket("/lobby");
 
-        final var firstClient = MinimalisticClientContext.from(webSocket);
+        final var firstClient = ConnectedClient.from(webSocket);
         webSocket.close();
-        final var secondClient = MinimalisticClientContext.from(webSocket);
+        final var secondClient = ConnectedClient.from(webSocket);
 
         assertThat(firstClient)
                 .isNotNull()

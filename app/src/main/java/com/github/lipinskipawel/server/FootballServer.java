@@ -2,6 +2,7 @@ package com.github.lipinskipawel.server;
 
 import com.github.lipinskipawel.api.RequestToPlay;
 import com.github.lipinskipawel.api.move.GameMove;
+import com.github.lipinskipawel.domain.GameLifeCycle;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import org.java_websocket.WebSocket;
@@ -17,23 +18,21 @@ import java.net.InetSocketAddress;
 import java.util.Optional;
 
 import static com.github.lipinskipawel.server.HandshakePolicy.webConnectionPolicy;
-import static com.github.lipinskipawel.server.MinimalisticClientContext.findBy;
-import static com.github.lipinskipawel.server.MinimalisticClientContext.from;
+import static com.github.lipinskipawel.user.ConnectedClient.findBy;
+import static com.github.lipinskipawel.user.ConnectedClient.from;
 import static org.java_websocket.framing.CloseFrame.POLICY_VALIDATION;
 
 public final class FootballServer extends WebSocketServer {
     private static final Logger LOGGER = LoggerFactory.getLogger(FootballServer.class);
     private final Gson parser;
-    private final DualConnection dualConnection;
     private final Lobby lobby;
     private final GameLifeCycle gameHandler;
 
-    public FootballServer(final InetSocketAddress address, final DualConnection dualConnection) {
+    public FootballServer(final InetSocketAddress address) {
         super(address);
-        this.dualConnection = dualConnection;
         this.parser = new Gson();
         this.lobby = Lobby.of(parser::toJson);
-        this.gameHandler = new GameLifeCycle(this.dualConnection, parser::toJson);
+        this.gameHandler = GameLifeCycle.of(parser::toJson);
     }
 
     @Override
@@ -58,7 +57,7 @@ public final class FootballServer extends WebSocketServer {
     public void onClose(WebSocket conn, int code, String reason, boolean remote) {
         LOGGER.info("Server onClose: {}, reason: {}", code, reason);
         final var client = from(conn);
-        this.dualConnection.dropConnectionFor(client);
+        this.gameHandler.dropConnectionFor(client);
         this.lobby.dropConnectionFor(client);
     }
 

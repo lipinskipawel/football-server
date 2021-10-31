@@ -1,6 +1,6 @@
 package com.github.lipinskipawel.server;
 
-interface Parser {
+public interface Parser {
 
     String toJson(Object data);
 }

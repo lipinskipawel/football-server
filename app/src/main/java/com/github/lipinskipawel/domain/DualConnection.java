@@ -1,5 +1,6 @@
-package com.github.lipinskipawel.server;
+package com.github.lipinskipawel.domain;
 
+import com.github.lipinskipawel.user.ConnectedClient;
 import com.github.lipinskipawel.util.ThreadSafe;
 
 import java.util.ArrayList;
@@ -12,14 +13,14 @@ import java.util.stream.Collectors;
 /**
  * This class represent a DualConnection where two clients are connected to each other. Therefore, it manages number of
  * clients connected to the same endpoint.
- * This class is a helper class and used as a dependency for the {@link FootballServer} class.
+ * This class is a helper class and used as a dependency for the {@link GameLifeCycle} class.
  */
 @ThreadSafe
-public final class DualConnection {
+final class DualConnection {
     private final Map<String, List<ConnectedClient>> clientsPerUrl;
     private final Object lock;
 
-    public DualConnection() {
+    DualConnection() {
         this.clientsPerUrl = new HashMap<>();
         this.lock = new Object();
     }

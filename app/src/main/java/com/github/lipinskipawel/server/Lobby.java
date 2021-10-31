@@ -3,6 +3,7 @@ package com.github.lipinskipawel.server;
 import com.github.lipinskipawel.api.PlayPairing;
 import com.github.lipinskipawel.api.Player;
 import com.github.lipinskipawel.api.WaitingPlayers;
+import com.github.lipinskipawel.user.ConnectedClient;
 import com.github.lipinskipawel.util.ThreadSafe;
 
 import java.util.ArrayList;

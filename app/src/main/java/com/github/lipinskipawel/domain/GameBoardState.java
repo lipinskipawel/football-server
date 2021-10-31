@@ -4,13 +4,13 @@ import com.github.lipinskipawel.board.engine.Board;
 import com.github.lipinskipawel.board.engine.Boards;
 import com.github.lipinskipawel.board.engine.Move;
 import com.github.lipinskipawel.board.engine.Player;
-import com.github.lipinskipawel.server.ConnectedClient;
+import com.github.lipinskipawel.user.ConnectedClient;
 
 /**
  * This class represents a game state.
  * It is a thin wrapper around the {@link Board} interface.
  */
-public final class GameBoardState {
+final class GameBoardState {
     private final ConnectedClient first;
     private final ConnectedClient second;
     private ConnectedClient currentlyMovingPlayer;
@@ -32,7 +32,7 @@ public final class GameBoardState {
      * @param player that makes the move
      * @return true if the move was executed successfully or false otherwise
      */
-    public boolean makeMoveBy(final Move move, final ConnectedClient player) {
+    boolean makeMoveBy(final Move move, final ConnectedClient player) {
         if (!this.currentlyMovingPlayer.equals(player)) {
             return false;
         }
@@ -50,11 +50,11 @@ public final class GameBoardState {
     }
 
 
-    public static Builder aGameBoardState() {
+    static Builder aGameBoardState() {
         return new Builder();
     }
 
-    public static class Builder {
+    static class Builder {
         private ConnectedClient first, second;
 
         public Builder() {

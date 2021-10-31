@@ -1,6 +1,6 @@
 package com.github.lipinskipawel.mocks;
 
-import com.github.lipinskipawel.server.ConnectedClient;
+import com.github.lipinskipawel.user.ConnectedClient;
 
 import java.util.ArrayList;
 import java.util.List;

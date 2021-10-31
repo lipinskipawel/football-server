@@ -1,4 +1,10 @@
-package com.github.lipinskipawel.server;
+package com.github.lipinskipawel.user;
+
+import com.github.lipinskipawel.api.Player;
+import com.github.lipinskipawel.server.FootballServer;
+import org.java_websocket.WebSocket;
+
+import java.util.Optional;
 
 /**
  * This interface represents a connected client to the {@link FootballServer}.
@@ -20,4 +26,12 @@ public interface ConnectedClient {
      * thread.
      */
     void close();
+
+    static ConnectedClient from(final WebSocket connection) {
+        return MinimalisticClientContext.from(connection);
+    }
+
+    static Optional<ConnectedClient> findBy(final Player player) {
+        return MinimalisticClientContext.findBy(player);
+    }
 }

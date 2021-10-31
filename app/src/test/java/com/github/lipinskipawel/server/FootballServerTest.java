@@ -28,9 +28,7 @@ final class FootballServerTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(FootballServerTest.class);
     private static final ExecutorService pool = Executors.newFixedThreadPool(1);
     private static final int PORT = 8090;
-    private static final FootballServer server = new FootballServer(
-            new InetSocketAddress("localhost", PORT), new DualConnection()
-    );
+    private static final FootballServer server = new FootballServer(new InetSocketAddress("localhost", PORT));
     private static final Gson parser = new Gson();
 
     @BeforeAll

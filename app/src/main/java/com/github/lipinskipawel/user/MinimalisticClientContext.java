@@ -1,4 +1,4 @@
-package com.github.lipinskipawel.server;
+package com.github.lipinskipawel.user;
 
 import com.github.lipinskipawel.api.Player;
 import org.java_websocket.WebSocket;
