@@ -42,14 +42,14 @@ final class DualConnection {
         return clientsPerUrl.get(endpoint);
     }
 
-    void sendMessageTo(final String message, final ConnectedClient receiver) {
-        final var connectedClients = clientsPerUrl.get(receiver.getUrl());
+    void sendMessageFrom(final String message, final ConnectedClient sender) {
+        final var connectedClients = clientsPerUrl.get(sender.getUrl());
         if (connectedClients.size() != 2) {
             return;
         }
         connectedClients
                 .stream()
-                .filter(client -> findSender(client, receiver))
+                .filter(client -> findSender(client, sender))
                 .findFirst()
                 .ifPresent(client -> client.send(message));
     }

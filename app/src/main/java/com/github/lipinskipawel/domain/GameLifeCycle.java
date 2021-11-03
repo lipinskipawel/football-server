@@ -34,7 +34,7 @@ public final class GameLifeCycle {
         final var isMade = boardState.makeMoveBy(move, client);
         if (isMade) {
             final var jsonMove = parser.toJson(gameMove);
-            dualConnection.sendMessageTo(jsonMove, client);
+            dualConnection.sendMessageFrom(jsonMove, client);
         }
     }
 
