@@ -31,3 +31,30 @@ application {
 tasks.test {
     useJUnitPlatform()
 }
+
+sourceSets {
+    create("integrationTest") {
+        compileClasspath += sourceSets.main.get().output
+        runtimeClasspath += sourceSets.main.get().output
+    }
+}
+
+val integrationTestImplementation: Configuration by configurations.getting {
+    extendsFrom(configurations.implementation.get())
+    extendsFrom(configurations.testImplementation.get())
+    extendsFrom(configurations.testRuntimeOnly.get())
+}
+
+configurations["integrationTestRuntimeOnly"].extendsFrom(configurations.runtimeOnly.get())
+
+val integrationTest = task<Test>("integrationTest") {
+    useJUnitPlatform()
+    description = "Runs integration tests."
+    group = "verification"
+
+    testClassesDirs = sourceSets["integrationTest"].output.classesDirs
+    classpath = sourceSets["integrationTest"].runtimeClasspath
+    shouldRunAfter("test")
+}
+
+tasks.check { dependsOn(integrationTest) }
