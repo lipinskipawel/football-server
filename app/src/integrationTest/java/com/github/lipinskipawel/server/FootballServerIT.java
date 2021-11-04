@@ -24,8 +24,8 @@ import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-final class FootballServerTest {
-    private static final Logger LOGGER = LoggerFactory.getLogger(FootballServerTest.class);
+final class FootballServerIT {
+    private static final Logger LOGGER = LoggerFactory.getLogger(FootballServerIT.class);
     private static final ExecutorService pool = Executors.newFixedThreadPool(1);
     private static final int PORT = 8090;
     private static final FootballServer server = new FootballServer(new InetSocketAddress("localhost", PORT));
