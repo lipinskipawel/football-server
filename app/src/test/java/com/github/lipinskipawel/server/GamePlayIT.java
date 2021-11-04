@@ -1,6 +1,8 @@
 package com.github.lipinskipawel.server;
 
+import com.github.lipinskipawel.api.move.AcceptMove;
 import com.github.lipinskipawel.api.move.GameMove;
+import com.github.lipinskipawel.api.move.RejectMove;
 import com.google.gson.Gson;
 import org.assertj.core.api.WithAssertions;
 import org.java_websocket.client.WebSocketClient;
@@ -23,6 +25,7 @@ final class GamePlayIT implements WithAssertions {
     private static final int PORT = 8092;
     private static final FootballServer server = new FootballServer(new InetSocketAddress("localhost", PORT));
     private static final Gson parser = new Gson();
+    private static final String ACCEPT_RESPONSE = parser.toJson(new AcceptMove());
 
     @BeforeAll
     static void setUp() {
@@ -37,8 +40,9 @@ final class GamePlayIT implements WithAssertions {
 
     @Test
     void shouldAllowToSendMoveToAnotherPlayerWhenPlayingTogether() throws InterruptedException {
+        final var onAcceptMessage = new CountDownLatch(1);
         final var onMessage = new CountDownLatch(1);
-        final var firstClient = createClient("/game/one");
+        final var firstClient = createClient("/game/one", onAcceptMessage);
         final var secondClient = createClient("/game/one", onMessage);
         firstClient.connectBlocking();
         secondClient.connectBlocking();
@@ -48,6 +52,7 @@ final class GamePlayIT implements WithAssertions {
         firstClient.send(message);
 
         final var gotMessage = onMessage.await(1, TimeUnit.SECONDS);
+        final var gotAccept = onAcceptMessage.await(1, TimeUnit.SECONDS);
         firstClient.closeBlocking();
         secondClient.closeBlocking();
         assertThat(gotMessage).isTrue();
@@ -56,6 +61,12 @@ final class GamePlayIT implements WithAssertions {
                 .asList()
                 .hasSize(1)
                 .containsExactly(message);
+        assertThat(gotAccept).isTrue();
+        assertThat(firstClient)
+                .extracting(it -> it.messages)
+                .asList()
+                .hasSize(1)
+                .containsExactly(ACCEPT_RESPONSE);
     }
 
     @Test
@@ -85,13 +96,13 @@ final class GamePlayIT implements WithAssertions {
         assertThat(secondClient)
                 .extracting(it -> it.messages)
                 .asList()
-                .hasSize(1)
-                .containsExactly(messageForSecond);
+                .hasSize(2)
+                .containsExactly(messageForSecond, ACCEPT_RESPONSE);
         assertThat(firstClient)
                 .extracting(it -> it.messages)
                 .asList()
-                .hasSize(1)
-                .containsExactly(messageForFirst);
+                .hasSize(2)
+                .containsExactly(ACCEPT_RESPONSE, messageForFirst);
     }
 
     @Test
@@ -125,7 +136,8 @@ final class GamePlayIT implements WithAssertions {
         assertThat(firstClient)
                 .extracting(it -> it.messages)
                 .asList()
-                .hasSize(0);
+                .hasSize(2)
+                .containsExactly(ACCEPT_RESPONSE, parser.toJson(new RejectMove(moveToSecondAgain)));
     }
 
     private TestWebSocketClient createClient(final String endpoint) {

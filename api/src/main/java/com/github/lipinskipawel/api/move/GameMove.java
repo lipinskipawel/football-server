@@ -20,6 +20,11 @@ import java.util.Optional;
  * representing cardinal direction. Meaning of those values stays the same for the entire game. The current position of
  * the ball in the game is the reference point for appointing the correct direction. The North Pole is always at the
  * first player goal area. The South Pole is always at the second player goal area.
+ *
+ * <p>Server is responsible for sending a response after receiving {@link GameMove} object from clients. Response is
+ * defined as a {@link AcceptMove} or {@link RejectMove} object. Server sends the {@link AcceptMove} object only after
+ * checking whether the given {@link GameMove} is possible to make and after applying it. The {@link RejectMove} is sent
+ * only when the server can not apply given {@link GameMove} because it violates game rules.
  */
 public final class GameMove {
     private final List<String> move;

@@ -54,8 +54,16 @@ final class DualConnection {
                 .ifPresent(client -> client.send(message));
     }
 
-    private boolean findSender(ConnectedClient client, ConnectedClient receiver) {
-        return !client.equals(receiver);
+    private boolean findSender(ConnectedClient client, ConnectedClient sender) {
+        return !client.equals(sender);
+    }
+
+    void sendMessageTo(final String message, final ConnectedClient receiver) {
+        final var connectedClients = clientsPerUrl.get(receiver.getUrl());
+        if (connectedClients.size() != 2) {
+            return;
+        }
+        receiver.send(message);
     }
 
     List<ConnectedClient> nonePairClients() {
