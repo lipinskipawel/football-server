@@ -1,10 +1,7 @@
 package com.github.lipinskipawel.server;
 
-import com.github.lipinskipawel.api.WaitingPlayers;
 import com.github.lipinskipawel.api.move.GameMove;
 import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
-import com.google.gson.reflect.TypeToken;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 import org.junit.jupiter.api.AfterAll;
@@ -16,7 +13,6 @@ import org.slf4j.LoggerFactory;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -44,7 +40,7 @@ final class FootballServerIT {
 
     @Test
     void shouldRejectClientWhenURIDoNotMeetPolicy() throws InterruptedException {
-        final var client = createClient("/example", null);
+        final var client = createClient("/example");
 
         client.connectBlocking();
 
@@ -57,7 +53,7 @@ final class FootballServerIT {
     void shouldClientNotReceivedMessageWhenNotAGameMove() throws InterruptedException {
         final var onMessage = new CountDownLatch(1);
         final var endpoint = "/game/123";
-        final var firstClient = createClient(endpoint, null);
+        final var firstClient = createClient(endpoint);
         final var secondClient = createClient(endpoint, onMessage);
         firstClient.connectBlocking();
         secondClient.connectBlocking();
@@ -73,7 +69,7 @@ final class FootballServerIT {
     @Test
     void shouldNotReceivedMsgWhenConnectedToDifferentUri() throws InterruptedException {
         final var onMessage = new CountDownLatch(1);
-        final var firstClient = createClient("/game/123", null);
+        final var firstClient = createClient("/game/123");
         final var secondClient = createClient("/game/other", onMessage);
         firstClient.connectBlocking();
         secondClient.connectBlocking();
@@ -92,12 +88,12 @@ final class FootballServerIT {
     void shouldAllowOnlyTwoClientsConnectToTheSameEndpoint() throws InterruptedException {
         final var onClose = new CountDownLatch(1);
         final var endpoint = "/game/one";
-        final var firstClient = createClient(endpoint, null);
-        final var secondClient = createClient(endpoint, null);
+        final var firstClient = createClient(endpoint);
+        final var secondClient = createClient(endpoint);
         firstClient.connectBlocking();
         secondClient.connectBlocking();
 
-        final var thirdClient = createClient(endpoint, null, onClose, null);
+        final var thirdClient = createClient(endpoint, null, onClose);
         thirdClient.connectBlocking();
 
         final var notConnected = onClose.await(1, TimeUnit.SECONDS);
@@ -107,34 +103,30 @@ final class FootballServerIT {
         assertThat(thirdClient.isClosed()).isTrue();
     }
 
+    private WebSocketClientWrapper createClient(final String endpoint) {
+        return createClient(endpoint, new CountDownLatch(0), new CountDownLatch(0));
+    }
+
     private WebSocketClientWrapper createClient(final String endpoint, final CountDownLatch onMessage) {
-        return createClient(endpoint, onMessage, null, null);
+        return createClient(endpoint, onMessage, new CountDownLatch(0));
     }
 
-    private WebSocketClientWrapper createClient(final String endpoint, final CountDownLatch onMessage, final CountDownLatch onClose,
-                                                final CountDownLatch onPlayerList) {
+    private WebSocketClientWrapper createClient(final String endpoint, final CountDownLatch onMessage, final CountDownLatch onClose) {
         final var uri = URI.create(WebSocketClientWrapper.SERVER_URI.concat(endpoint));
-        return new WebSocketClientWrapper(uri, onMessage, onClose, onPlayerList);
+        return new WebSocketClientWrapper(uri, onMessage, onClose);
     }
 
-    static class WebSocketClientWrapper extends WebSocketClient {
-        private final Optional<CountDownLatch> onMessage;
-        private final Optional<CountDownLatch> onClose;
-        private final Optional<CountDownLatch> onPlayerList;
-        private final Gson parser;
+    private static class WebSocketClientWrapper extends WebSocketClient {
+        private final CountDownLatch onMessage;
+        private final CountDownLatch onClose;
         static final String SERVER_URI = "ws://localhost:%d".formatted(PORT);
-        WaitingPlayers playersList;
 
         WebSocketClientWrapper(final URI uri,
                                final CountDownLatch onMessage,
-                               final CountDownLatch onClose,
-                               final CountDownLatch onPlayerList) {
+                               final CountDownLatch onClose) {
             super(uri);
-            this.onMessage = Optional.ofNullable(onMessage);
-            this.onClose = Optional.ofNullable(onClose);
-            this.onPlayerList = Optional.ofNullable(onPlayerList);
-            this.parser = new Gson();
-            this.playersList = null;
+            this.onMessage = onMessage;
+            this.onClose = onClose;
         }
 
         @Override
@@ -145,21 +137,13 @@ final class FootballServerIT {
         @Override
         public void onMessage(String message) {
             LOGGER.info("Client onMessage: " + message);
-            var type = new TypeToken<WaitingPlayers>() {
-            }.getType();
-            try {
-                this.playersList = this.parser.fromJson(message, type);
-                onPlayerList.ifPresent(CountDownLatch::countDown);
-                return;
-            } catch (JsonSyntaxException ignore) {
-            }
-            onMessage.ifPresent(CountDownLatch::countDown);
+            onMessage.countDown();
         }
 
         @Override
         public void onClose(int code, String reason, boolean remote) {
             LOGGER.info("Client onClose");
-            onClose.ifPresent(CountDownLatch::countDown);
+            onClose.countDown();
         }
 
         @Override
