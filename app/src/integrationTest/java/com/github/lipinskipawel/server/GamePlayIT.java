@@ -3,26 +3,26 @@ package com.github.lipinskipawel.server;
 import com.github.lipinskipawel.api.move.AcceptMove;
 import com.github.lipinskipawel.api.move.GameMove;
 import com.github.lipinskipawel.api.move.RejectMove;
+import com.github.lipinskipawel.client.SimpleWebSocketClient;
 import com.google.gson.Gson;
 import org.assertj.core.api.WithAssertions;
-import org.java_websocket.client.WebSocketClient;
-import org.java_websocket.handshake.ServerHandshake;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.net.InetSocketAddress;
-import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import static com.github.lipinskipawel.client.SimpleWebSocketClient.createClient;
+
 final class GamePlayIT implements WithAssertions {
     private static final ExecutorService pool = Executors.newFixedThreadPool(1);
     private static final int PORT = 8092;
+    private static final String SERVER_URI = "ws://localhost:%d".formatted(PORT);
     private static final FootballServer server = new FootballServer(new InetSocketAddress("localhost", PORT));
     private static final Gson parser = new Gson();
     private static final String ACCEPT_RESPONSE = parser.toJson(new AcceptMove());
@@ -42,8 +42,8 @@ final class GamePlayIT implements WithAssertions {
     void shouldAllowToSendMoveToAnotherPlayerWhenPlayingTogether() throws InterruptedException {
         final var onAcceptMessage = new CountDownLatch(1);
         final var onMessage = new CountDownLatch(1);
-        final var firstClient = createClient("/game/one", onAcceptMessage);
-        final var secondClient = createClient("/game/one", onMessage);
+        final var firstClient = createClient(SERVER_URI.concat("/game/one"), onAcceptMessage);
+        final var secondClient = createClient(SERVER_URI.concat("/game/one"), onMessage);
         firstClient.connectBlocking();
         secondClient.connectBlocking();
 
@@ -57,13 +57,13 @@ final class GamePlayIT implements WithAssertions {
         secondClient.closeBlocking();
         assertThat(gotMessage).isTrue();
         assertThat(secondClient)
-                .extracting(it -> it.messages)
+                .extracting(SimpleWebSocketClient::getMessages)
                 .asList()
                 .hasSize(1)
                 .containsExactly(message);
         assertThat(gotAccept).isTrue();
         assertThat(firstClient)
-                .extracting(it -> it.messages)
+                .extracting(SimpleWebSocketClient::getMessages)
                 .asList()
                 .hasSize(1)
                 .containsExactly(ACCEPT_RESPONSE);
@@ -72,8 +72,8 @@ final class GamePlayIT implements WithAssertions {
     @Test
     void shouldAllowToExchangeMovesBetweenPlayersWhenPlayingTogether() throws InterruptedException {
         var onMessage = new CountDownLatch(1);
-        final var firstClient = createClient("/game/two");
-        final var secondClient = createClient("/game/two", onMessage);
+        final var firstClient = createClient(SERVER_URI.concat("/game/two"));
+        final var secondClient = createClient(SERVER_URI.concat("/game/two"), onMessage);
         firstClient.connectBlocking();
         secondClient.connectBlocking();
 
@@ -94,12 +94,12 @@ final class GamePlayIT implements WithAssertions {
         firstClient.closeBlocking();
         secondClient.closeBlocking();
         assertThat(secondClient)
-                .extracting(it -> it.messages)
+                .extracting(SimpleWebSocketClient::getMessages)
                 .asList()
                 .hasSize(2)
                 .containsExactly(messageForSecond, ACCEPT_RESPONSE);
         assertThat(firstClient)
-                .extracting(it -> it.messages)
+                .extracting(SimpleWebSocketClient::getMessages)
                 .asList()
                 .hasSize(2)
                 .containsExactly(ACCEPT_RESPONSE, messageForFirst);
@@ -108,8 +108,8 @@ final class GamePlayIT implements WithAssertions {
     @Test
     void shouldNotAllowToMoveTwiceByTheSamePlayer() throws InterruptedException {
         var onMessage = new CountDownLatch(1);
-        final var firstClient = createClient("/game/two");
-        final var secondClient = createClient("/game/two", onMessage);
+        final var firstClient = createClient(SERVER_URI.concat("/game/two"));
+        final var secondClient = createClient(SERVER_URI.concat("/game/two"), onMessage);
         firstClient.connectBlocking();
         secondClient.connectBlocking();
 
@@ -129,61 +129,14 @@ final class GamePlayIT implements WithAssertions {
         firstClient.closeBlocking();
         secondClient.closeBlocking();
         assertThat(secondClient)
-                .extracting(it -> it.messages)
+                .extracting(SimpleWebSocketClient::getMessages)
                 .asList()
                 .hasSize(1)
                 .containsExactly(messageForSecond);
         assertThat(firstClient)
-                .extracting(it -> it.messages)
+                .extracting(SimpleWebSocketClient::getMessages)
                 .asList()
                 .hasSize(2)
                 .containsExactly(ACCEPT_RESPONSE, parser.toJson(new RejectMove(moveToSecondAgain)));
-    }
-
-    private TestWebSocketClient createClient(final String endpoint) {
-        return createClient(endpoint, new CountDownLatch(0));
-    }
-
-    private TestWebSocketClient createClient(final String endpoint, final CountDownLatch onMessage) {
-        final var uri = URI.create(TestWebSocketClient.SERVER_URI.concat(endpoint));
-        return new TestWebSocketClient(uri, onMessage);
-    }
-
-    private static class TestWebSocketClient extends WebSocketClient {
-        private static final String SERVER_URI = "ws://localhost:%d".formatted(PORT);
-        private final List<String> messages;
-        private CountDownLatch onMessage;
-
-        public TestWebSocketClient(final URI uri, final CountDownLatch onMessage) {
-            super(uri);
-            this.onMessage = onMessage;
-            this.messages = new ArrayList<>();
-        }
-
-        @Override
-        public void onOpen(ServerHandshake handshakedata) {
-
-        }
-
-        @Override
-        public void onMessage(String message) {
-            this.messages.add(message);
-            this.onMessage.countDown();
-        }
-
-        public void latchOnMessage(final CountDownLatch onMessage) {
-            this.onMessage = onMessage;
-        }
-
-
-        @Override
-        public void onClose(int code, String reason, boolean remote) {
-
-        }
-
-        @Override
-        public void onError(Exception ex) {
-
-        }
     }
 }

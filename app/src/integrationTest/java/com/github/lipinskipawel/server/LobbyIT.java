@@ -3,26 +3,26 @@ package com.github.lipinskipawel.server;
 import com.github.lipinskipawel.api.Player;
 import com.github.lipinskipawel.api.RequestToPlay;
 import com.github.lipinskipawel.api.WaitingPlayers;
+import com.github.lipinskipawel.client.SimpleWebSocketClient;
 import com.google.gson.Gson;
 import org.assertj.core.api.WithAssertions;
-import org.java_websocket.client.WebSocketClient;
-import org.java_websocket.handshake.ServerHandshake;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.net.InetSocketAddress;
-import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import static com.github.lipinskipawel.client.SimpleWebSocketClient.createClient;
+
 final class LobbyIT implements WithAssertions {
     private static final ExecutorService pool = Executors.newFixedThreadPool(1);
     private static final int PORT = 8091;
+    private static final String SERVER_URI = "ws://localhost:%d/lobby".formatted(PORT);
     private static final FootballServer server = new FootballServer(new InetSocketAddress("localhost", PORT));
     private static final Gson parser = new Gson();
 
@@ -40,7 +40,7 @@ final class LobbyIT implements WithAssertions {
     @Test
     void shouldAllowToConnectToLobby() throws InterruptedException {
         final var onMessage = new CountDownLatch(1);
-        final var client = createClient(onMessage);
+        final var client = createClient(SERVER_URI, onMessage);
         client.connectBlocking();
 
         final var isOpen = client.isOpen();
@@ -53,15 +53,15 @@ final class LobbyIT implements WithAssertions {
     void shouldReceiveWaitingPlayersMessageWhenOnlyOnePlayerIsInTheLobby() throws InterruptedException {
         final var expectedWaitingPlayers = WaitingPlayers.fromPlayers(List.of(Player.fromUrl("/lobby")));
         final var onMessage = new CountDownLatch(1);
-        final var client = createClient(onMessage);
+        final var client = createClient(SERVER_URI, onMessage);
         client.connectBlocking();
 
         final var messageReceived = onMessage.await(1, TimeUnit.SECONDS);
 
         client.closeBlocking();
         assertThat(messageReceived).isTrue();
-        assertThat(client.messages).hasSize(1);
-        final var waitingPlayers = parser.fromJson(client.messages.get(0), WaitingPlayers.class);
+        assertThat(client.getMessages()).hasSize(1);
+        final var waitingPlayers = parser.fromJson(client.getMessages().get(0), WaitingPlayers.class);
         assertThat(waitingPlayers).isEqualTo(expectedWaitingPlayers);
     }
 
@@ -69,8 +69,8 @@ final class LobbyIT implements WithAssertions {
     void shouldReceivedWaitingPlayersMessageWithTwoEntriesWhenTwoClientAreInLobby() throws InterruptedException {
         final var expected = Player.fromUrl("/lobby");
         final var onMessage = new CountDownLatch(1);
-        final var client = createClient();
-        final var secondClient = createClient(onMessage);
+        final var client = createClient(SERVER_URI);
+        final var secondClient = createClient(SERVER_URI, onMessage);
         client.connectBlocking();
         secondClient.connectBlocking();
 
@@ -79,8 +79,8 @@ final class LobbyIT implements WithAssertions {
         client.closeBlocking();
         secondClient.closeBlocking();
         assertThat(gotMessage).isTrue();
-        assertThat(secondClient.messages).hasSize(1);
-        final var waitingPlayers = parser.fromJson(secondClient.messages.get(0), WaitingPlayers.class);
+        assertThat(secondClient.getMessages()).hasSize(1);
+        final var waitingPlayers = parser.fromJson(secondClient.getMessages().get(0), WaitingPlayers.class);
         assertThat(waitingPlayers)
                 .extracting(WaitingPlayers::players)
                 .asList()
@@ -92,8 +92,8 @@ final class LobbyIT implements WithAssertions {
     void shouldPairBothClientsWhenRequested() throws InterruptedException {
         var firstLatch = new CountDownLatch(1);
         var secondLatch = new CountDownLatch(1);
-        final var firstClient = createClient(firstLatch);
-        final var secondClient = createClient(secondLatch);
+        final var firstClient = createClient(SERVER_URI, firstLatch);
+        final var secondClient = createClient(SERVER_URI, secondLatch);
         firstClient.connectBlocking();
         final var firstEntry = firstLatch.await(1, TimeUnit.SECONDS);
         assertThat(firstEntry).isTrue();
@@ -104,7 +104,7 @@ final class LobbyIT implements WithAssertions {
                 firstClient, secondClient
         );
 
-        final var message = firstClient.messages.get(1);
+        final var message = firstClient.getMessages().get(1);
         final var opponent = parser.fromJson(message, WaitingPlayers.class)
                 .players()
                 .get(1);
@@ -122,8 +122,8 @@ final class LobbyIT implements WithAssertions {
     private void waitForBothClientsForWaitingPlayersAPI(
             CountDownLatch firstLatch,
             CountDownLatch secondLatch,
-            TestWebSocketClient firstClient,
-            TestWebSocketClient secondClient
+            SimpleWebSocketClient firstClient,
+            SimpleWebSocketClient secondClient
     ) throws InterruptedException {
         final var gotTwoMessages = firstLatch.await(1, TimeUnit.SECONDS);
         assertThat(gotTwoMessages).isTrue();
@@ -133,50 +133,5 @@ final class LobbyIT implements WithAssertions {
         assertThat(gotWaitingList).isTrue();
         secondLatch = new CountDownLatch(1);
         secondClient.latchOnMessage(secondLatch);
-    }
-
-    private static TestWebSocketClient createClient() {
-        return new TestWebSocketClient(new CountDownLatch(0));
-    }
-
-    private static TestWebSocketClient createClient(final CountDownLatch onMessage) {
-        return new TestWebSocketClient(onMessage == null ? new CountDownLatch(0) : onMessage);
-    }
-
-    private static class TestWebSocketClient extends WebSocketClient {
-        private static final URI SERVER_URI = URI.create("ws://localhost:%d/lobby".formatted(PORT));
-        private CountDownLatch onMessage;
-        List<String> messages;
-
-        public TestWebSocketClient(final CountDownLatch onMessage) {
-            super(SERVER_URI);
-            this.onMessage = onMessage;
-            this.messages = new ArrayList<>();
-        }
-
-        @Override
-        public void onOpen(ServerHandshake handshakedata) {
-
-        }
-
-        @Override
-        public void onMessage(String message) {
-            this.messages.add(message);
-            this.onMessage.countDown();
-        }
-
-        public void latchOnMessage(final CountDownLatch onMessage) {
-            this.onMessage = onMessage;
-        }
-
-        @Override
-        public void onClose(int code, String reason, boolean remote) {
-
-        }
-
-        @Override
-        public void onError(Exception ex) {
-
-        }
     }
 }
