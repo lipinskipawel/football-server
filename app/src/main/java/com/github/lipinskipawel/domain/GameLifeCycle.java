@@ -56,11 +56,11 @@ public final class GameLifeCycle {
 
     public boolean accept(final ConnectedClient client) {
         final var isAccepted = dualConnection.accept(client);
-        final var bothClients = dualConnection.getBothClients(client.getUrl());
-        if (bothClients.size() == 2) {
+        final var bothClients = dualConnection.areBothClientsConnected();
+        if (bothClients) {
             boardState = GameBoardState.aGameBoardState()
-                    .withFirstPlayer(bothClients.get(0))
-                    .withSecondPlayer(bothClients.get(1))
+                    .withFirstPlayer(dualConnection.first())
+                    .withSecondPlayer(dualConnection.second())
                     .build();
         }
         return isAccepted;

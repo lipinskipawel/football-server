@@ -52,40 +52,6 @@ final class DualConnectionTest {
 
             assertThat(notAccepted).isFalse();
         }
-
-        @Test
-        void shouldListOneClientConnectedToUrl() {
-            var firstClient = new TestConnectedClient("/example/1");
-            dualConnection.accept(firstClient);
-
-            final var nonePairClients = dualConnection.nonePairClients();
-
-            assertThat(nonePairClients.size()).isEqualTo(1);
-        }
-
-        @Test
-        void shouldListZeroClientsWhenTwoClientsConnectedToTheSameUrl() {
-            var firstClient = new TestConnectedClient("/example/1");
-            var secondClient = new TestConnectedClient("/example/1");
-            dualConnection.accept(firstClient);
-            dualConnection.accept(secondClient);
-
-            final var nonePairClients = dualConnection.nonePairClients();
-
-            assertThat(nonePairClients.size()).isEqualTo(0);
-        }
-
-        @Test
-        void shouldListTwoClientsWhenConnectedToDifferentUrl() {
-            var firstClient = new TestConnectedClient("/example/1");
-            var secondClient = new TestConnectedClient("/example/2");
-            dualConnection.accept(firstClient);
-            dualConnection.accept(secondClient);
-
-            final var nonePairClients = dualConnection.nonePairClients();
-
-            assertThat(nonePairClients.size()).isEqualTo(2);
-        }
     }
 
     @Nested

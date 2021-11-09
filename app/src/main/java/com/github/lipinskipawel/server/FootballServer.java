@@ -15,6 +15,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import static com.github.lipinskipawel.server.HandshakePolicy.webConnectionPolicy;
@@ -26,13 +28,13 @@ public final class FootballServer extends WebSocketServer {
     private static final Logger LOGGER = LoggerFactory.getLogger(FootballServer.class);
     private final Gson parser;
     private final Lobby lobby;
-    private final GameLifeCycle gameHandler;
+    private final Map<String, GameLifeCycle> gamesPerUrl;
 
     public FootballServer(final InetSocketAddress address) {
         super(address);
         this.parser = new Gson();
         this.lobby = Lobby.of(parser::toJson);
-        this.gameHandler = GameLifeCycle.of(parser::toJson);
+        this.gamesPerUrl = new HashMap<>();
     }
 
     @Override
@@ -44,7 +46,12 @@ public final class FootballServer extends WebSocketServer {
             this.lobby.accept(client);
             return;
         }
-        final var isAdded = this.gameHandler.accept(client);
+        var gameLifeCycle = this.gamesPerUrl.get(url);
+        if (gameLifeCycle == null) {
+            gameLifeCycle = GameLifeCycle.of(parser::toJson);
+            this.gamesPerUrl.put(url, gameLifeCycle);
+        }
+        final var isAdded = gameLifeCycle.accept(client);
         if (!isAdded) {
             final var message = "Server does not allow more than 2 clients to connect to the same endpoint";
             conn.closeConnection(POLICY_VALIDATION, message);
@@ -57,7 +64,10 @@ public final class FootballServer extends WebSocketServer {
     public void onClose(WebSocket conn, int code, String reason, boolean remote) {
         LOGGER.info("Server onClose: {}, reason: {}", code, reason);
         final var client = from(conn);
-        this.gameHandler.dropConnectionFor(client);
+        final var gameLifeCycle = this.gamesPerUrl.get(conn.getResourceDescriptor());
+        if (gameLifeCycle != null) {
+            gameLifeCycle.dropConnectionFor(client);
+        }
         this.lobby.dropConnectionFor(client);
     }
 
@@ -75,7 +85,7 @@ public final class FootballServer extends WebSocketServer {
         }
         parseToGameMove(message)
                 .ifPresentOrElse(
-                        move -> this.gameHandler.makeMove(move, client),
+                        move -> this.gamesPerUrl.get(conn.getResourceDescriptor()).makeMove(move, client),
                         () -> LOGGER.error("Can not parse given message to GameMove object. {}", message)
                 );
     }
