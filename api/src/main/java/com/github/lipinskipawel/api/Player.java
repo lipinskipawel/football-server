@@ -7,21 +7,21 @@ import java.util.Objects;
  * This class is a representation of connected player to the server.
  */
 public final class Player {
-    private final String url;
+    private final String username;
 
-    Player(String url) {
-        this.url = url;
+    Player(String username) {
+        this.username = username;
     }
 
-    public static Player fromUrl(final String url) {
-        if (url != null && !url.isBlank()) {
-            return new Player(url);
+    public static Player fromUsername(final String username) {
+        if (username != null && !username.isBlank()) {
+            return new Player(username);
         }
-        throw new RuntimeException("url must not be null or blank");
+        throw new RuntimeException("username must not be null or blank");
     }
 
-    public String getUrl() {
-        return url;
+    public String getUsername() {
+        return username;
     }
 
     @Override
@@ -29,18 +29,18 @@ public final class Player {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Player player = (Player) o;
-        return Objects.equals(url, player.url);
+        return Objects.equals(username, player.username);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(url);
+        return Objects.hash(username);
     }
 
     @Override
     public String toString() {
         return "Player{" +
-                "url='" + url + '\'' +
+                "username='" + username + '\'' +
                 '}';
     }
 }

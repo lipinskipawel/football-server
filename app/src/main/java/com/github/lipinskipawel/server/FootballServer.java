@@ -21,6 +21,7 @@ import java.util.Optional;
 
 import static com.github.lipinskipawel.server.HandshakePolicy.webConnectionPolicy;
 import static com.github.lipinskipawel.user.ConnectedClient.findBy;
+import static com.github.lipinskipawel.user.ConnectedClient.findByUsername;
 import static com.github.lipinskipawel.user.ConnectedClient.from;
 import static org.java_websocket.framing.CloseFrame.POLICY_VALIDATION;
 
@@ -41,53 +42,78 @@ public final class FootballServer extends WebSocketServer {
     public void onOpen(WebSocket conn, ClientHandshake handshake) {
         final var url = conn.getResourceDescriptor();
         LOGGER.info("Server onOpen: {}", url);
-        final var client = from(conn);
-        if (url.equals("/lobby")) {
-            this.lobby.accept(client);
-            return;
+        final var username = usernameFromCookie(handshake);
+        final var optionalClient = from(conn, username);
+        if (optionalClient.isPresent()) {
+            final var client = optionalClient.get();
+            if (url.equals("/lobby")) {
+                this.lobby.accept(client);
+                return;
+            }
+            var gameLifeCycle = this.gamesPerUrl.get(url);
+            if (gameLifeCycle == null) {
+                gameLifeCycle = GameLifeCycle.of(parser::toJson);
+                this.gamesPerUrl.put(url, gameLifeCycle);
+            }
+            final var isAdded = gameLifeCycle.accept(client);
+            if (!isAdded) {
+                final var message = "Server does not allow more than 2 clients to connect to the same endpoint";
+                conn.closeConnection(POLICY_VALIDATION, message);
+                LOGGER.info(message);
+                LOGGER.info("Connection has been closed");
+            }
         }
-        var gameLifeCycle = this.gamesPerUrl.get(url);
-        if (gameLifeCycle == null) {
-            gameLifeCycle = GameLifeCycle.of(parser::toJson);
-            this.gamesPerUrl.put(url, gameLifeCycle);
-        }
-        final var isAdded = gameLifeCycle.accept(client);
-        if (!isAdded) {
-            final var message = "Server does not allow more than 2 clients to connect to the same endpoint";
+        if (optionalClient.isEmpty()) {
+            final var message = "Server does not allow two different clients authenticate using the same connection";
+            LOGGER.error(message);
             conn.closeConnection(POLICY_VALIDATION, message);
-            LOGGER.info(message);
-            LOGGER.info("Connection has been closed");
         }
+    }
+
+    /**
+     * This method performs username retrieval of the {@link WebSocket} connection.
+     *
+     * @param handshake that is used to retrieve username
+     * @return unique identifier
+     */
+    private String usernameFromCookie(final ClientHandshake handshake) {
+        final var cookie = handshake.getFieldValue("cookie");
+        return cookie.equals("") ? "anonymous" : cookie;
     }
 
     @Override
     public void onClose(WebSocket conn, int code, String reason, boolean remote) {
         LOGGER.info("Server onClose: {}, reason: {}", code, reason);
-        final var client = from(conn);
-        final var gameLifeCycle = this.gamesPerUrl.get(conn.getResourceDescriptor());
-        if (gameLifeCycle != null) {
-            gameLifeCycle.dropConnectionFor(client);
-        }
-        this.lobby.dropConnectionFor(client);
+        findBy(conn)
+                .ifPresent(client -> {
+                    final var gameLifeCycle = this.gamesPerUrl.get(conn.getResourceDescriptor());
+                    if (gameLifeCycle != null) {
+                        gameLifeCycle.dropConnectionFor(client);
+                    }
+                    this.lobby.dropConnectionFor(client);
+                });
     }
 
     @Override
     public void onMessage(WebSocket conn, String message) {
         LOGGER.info("Server onMessage: {}", message);
-        final var client = from(conn);
-        if (conn.getResourceDescriptor().equals("/lobby")) {
-            final var requestToPlay = this.parser.fromJson(message, RequestToPlay.class);
-            final var optionalOpponentClient = findBy(requestToPlay.getOpponent());
-            optionalOpponentClient.ifPresent(opponent -> {
-                this.lobby.pair(() -> "/endpoint", client, opponent);
-            });
-            return;
+        final var optionalClient = findBy(conn);
+        if (optionalClient.isPresent()) {
+            final var client = optionalClient.get();
+            if (conn.getResourceDescriptor().equals("/lobby")) {
+                final var requestToPlay = this.parser.fromJson(message, RequestToPlay.class);
+                final var optionalOpponentClient = findByUsername(requestToPlay.getOpponent().getUsername());
+                optionalOpponentClient.ifPresent(opponent -> {
+                    this.lobby.pair(() -> "/endpoint", client, opponent);
+                });
+                return;
+            }
+            parseToGameMove(message)
+                    .ifPresentOrElse(
+                            move -> this.gamesPerUrl.get(conn.getResourceDescriptor()).makeMove(move, client),
+                            () -> LOGGER.error("Can not parse given message to GameMove object. {}", message)
+                    );
         }
-        parseToGameMove(message)
-                .ifPresentOrElse(
-                        move -> this.gamesPerUrl.get(conn.getResourceDescriptor()).makeMove(move, client),
-                        () -> LOGGER.error("Can not parse given message to GameMove object. {}", message)
-                );
     }
 
     private Optional<GameMove> parseToGameMove(final String json) {

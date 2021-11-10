@@ -51,7 +51,9 @@ final class LobbyIT implements WithAssertions {
 
     @Test
     void shouldReceiveWaitingPlayersMessageWhenOnlyOnePlayerIsInTheLobby() throws InterruptedException {
-        final var expectedWaitingPlayers = WaitingPlayers.fromPlayers(List.of(Player.fromUrl("/lobby")));
+        final var expectedWaitingPlayers = WaitingPlayers.fromPlayers(
+                List.of(Player.fromUsername("anonymous"))
+        );
         final var onMessage = new CountDownLatch(1);
         final var client = createClient(SERVER_URI, onMessage);
         client.connectBlocking();
@@ -67,7 +69,7 @@ final class LobbyIT implements WithAssertions {
 
     @Test
     void shouldReceivedWaitingPlayersMessageWithTwoEntriesWhenTwoClientAreInLobby() throws InterruptedException {
-        final var expected = Player.fromUrl("/lobby");
+        final var expected = Player.fromUsername("anonymous");
         final var onMessage = new CountDownLatch(1);
         final var client = createClient(SERVER_URI);
         final var secondClient = createClient(SERVER_URI, onMessage);
@@ -94,6 +96,8 @@ final class LobbyIT implements WithAssertions {
         var secondLatch = new CountDownLatch(1);
         final var firstClient = createClient(SERVER_URI, firstLatch);
         final var secondClient = createClient(SERVER_URI, secondLatch);
+        firstClient.addHeader("cookie", "firstClient");
+        secondClient.addHeader("cookie", "secondClient");
         firstClient.connectBlocking();
         final var firstEntry = firstLatch.await(1, TimeUnit.SECONDS);
         assertThat(firstEntry).isTrue();
@@ -109,6 +113,10 @@ final class LobbyIT implements WithAssertions {
                 .players()
                 .get(1);
         final var requestToPlay = RequestToPlay.with(opponent);
+        firstLatch = new CountDownLatch(1);
+        firstClient.latchOnMessage(firstLatch);
+        secondLatch = new CountDownLatch(1);
+        secondClient.latchOnMessage(secondLatch);
         firstClient.send(parser.toJson(requestToPlay));
 
         final var forFirstClient = firstLatch.await(1, TimeUnit.SECONDS);
@@ -117,6 +125,14 @@ final class LobbyIT implements WithAssertions {
         secondClient.closeBlocking();
         assertThat(forFirstClient).isTrue();
         assertThat(forSecondClient).isTrue();
+        assertThat(firstClient)
+                .extracting(SimpleWebSocketClient::getMessages)
+                .asList()
+                .hasSize(3);
+        assertThat(secondClient)
+                .extracting(SimpleWebSocketClient::getMessages)
+                .asList()
+                .hasSize(2);
     }
 
     private void waitForBothClientsForWaitingPlayersAPI(

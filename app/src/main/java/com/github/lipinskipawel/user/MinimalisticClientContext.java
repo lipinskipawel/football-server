@@ -1,6 +1,5 @@
 package com.github.lipinskipawel.user;
 
-import com.github.lipinskipawel.api.Player;
 import org.java_websocket.WebSocket;
 
 import java.util.HashSet;
@@ -11,29 +10,44 @@ import java.util.Set;
 final class MinimalisticClientContext implements ConnectedClient {
     private static final Set<MinimalisticClientContext> existingConnectedClients = new HashSet<>();
     private final WebSocket connection;
-    private final Player player;
+    private final String username;
 
-    private MinimalisticClientContext(WebSocket connection) {
+    private MinimalisticClientContext(WebSocket connection, String username) {
         this.connection = connection;
-        this.player = Player.fromUrl(connection.getResourceDescriptor());
+        this.username = username;
     }
 
-    static ConnectedClient from(final WebSocket connection) {
+    static Optional<ConnectedClient> from(final WebSocket connection, final String username) {
         existingConnectedClients.removeIf(it -> it.connection.isClosed());
-        final var clientContext = existingConnectedClients
-                .stream()
-                .filter(it -> it.connection.equals(connection))
-                .findFirst()
-                .orElse(new MinimalisticClientContext(connection));
-        existingConnectedClients.add(clientContext);
-        return clientContext;
+        final var optionalClient = findBy(connection);
+        if (optionalClient.isPresent()) {
+            final var connectedClient = optionalClient.get();
+            if (!connectedClient.getUsername().equals(username)) {
+                return Optional.empty();
+            }
+        }
+        if (optionalClient.isEmpty()) {
+            final var newConnectedClient = new MinimalisticClientContext(connection, username);
+            existingConnectedClients.add(newConnectedClient);
+            return Optional.of(newConnectedClient);
+        }
+        return optionalClient;
     }
 
-    static Optional<ConnectedClient> findBy(final Player player) {
+    static Optional<ConnectedClient> findBy(final WebSocket connection) {
         existingConnectedClients.removeIf(it -> it.connection.isClosed());
         return existingConnectedClients
                 .stream()
-                .filter(it -> it.player.equals(player))
+                .filter(it -> it.connection.equals(connection))
+                .map(it -> (ConnectedClient) it)
+                .findFirst();
+    }
+
+    static Optional<ConnectedClient> findByUsername(final String username) {
+        existingConnectedClients.removeIf(it -> it.connection.isClosed());
+        return existingConnectedClients
+                .stream()
+                .filter(it -> it.username.equals(username))
                 .map(it -> (ConnectedClient) it)
                 .findFirst();
     }
@@ -49,6 +63,11 @@ final class MinimalisticClientContext implements ConnectedClient {
     }
 
     @Override
+    public String getUsername() {
+        return username;
+    }
+
+    @Override
     public void close() {
         connection.close();
         existingConnectedClients.removeIf(it -> it.equals(this));
@@ -59,11 +78,11 @@ final class MinimalisticClientContext implements ConnectedClient {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         MinimalisticClientContext that = (MinimalisticClientContext) o;
-        return Objects.equals(connection, that.connection) && Objects.equals(player, that.player);
+        return Objects.equals(connection, that.connection) && Objects.equals(username, that.username);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(connection, player);
+        return Objects.hash(connection, username);
     }
 }

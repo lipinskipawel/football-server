@@ -46,7 +46,7 @@ final class Lobby {
             this.connectedClients.add(client);
             final var players = this.connectedClients
                     .stream()
-                    .map(it -> Player.fromUrl(it.getUrl()))
+                    .map(it -> Player.fromUsername(it.getUsername()))
                     .collect(Collectors.toList());
             final var dataToSend = this.parser.toJson(WaitingPlayers.fromPlayers(players));
             this.connectedClients.forEach(it -> it.send(dataToSend));
@@ -95,8 +95,8 @@ final class Lobby {
             final var reply = PlayPairing
                     .aPlayPairing()
                     .withRedirectEndpoint(endpoint.get())
-                    .withFirst(Player.fromUrl(first.getUrl()))
-                    .withSecond(Player.fromUrl(second.getUrl()))
+                    .withFirst(Player.fromUsername(first.getUsername()))
+                    .withSecond(Player.fromUsername(second.getUsername()))
                     .build();
             first.send(this.parser.toJson(reply));
             second.send(this.parser.toJson(reply));

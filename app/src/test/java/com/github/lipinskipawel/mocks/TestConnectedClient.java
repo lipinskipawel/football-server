@@ -7,11 +7,17 @@ import java.util.List;
 
 public final class TestConnectedClient implements ConnectedClient {
     private final String url;
+    private final String username;
     private boolean isClosed;
     private List<String> messages;
 
     public TestConnectedClient(final String url) {
+        this(url, "");
+    }
+
+    public TestConnectedClient(final String url, final String username) {
         this.url = url;
+        this.username = username;
         this.isClosed = false;
         this.messages = new ArrayList<>();
     }
@@ -24,6 +30,11 @@ public final class TestConnectedClient implements ConnectedClient {
     @Override
     public String getUrl() {
         return this.url;
+    }
+
+    @Override
+    public String getUsername() {
+        return this.username;
     }
 
     @Override

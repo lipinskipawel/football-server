@@ -8,6 +8,7 @@ import org.java_websocket.enums.Opcode;
 import org.java_websocket.enums.ReadyState;
 import org.java_websocket.framing.Framedata;
 import org.java_websocket.protocols.IProtocol;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import javax.net.ssl.SSLSession;
@@ -17,38 +18,122 @@ import java.util.Collection;
 
 final class MinimalisticClientContextTest implements WithAssertions {
 
-    @Test
-    void shouldCreateConnectedClientWhenGivenWebSocket() {
-        final WebSocket webSocket = new TestWebSocket("/lobby");
+    @Nested
+    class FromStaticFactoryMethod {
+        @Test
+        void shouldCreateConnectedClientWhenGivenWebSocket() {
+            final WebSocket webSocket = new TestWebSocket("/lobby");
 
-        final var client = ConnectedClient.from(webSocket);
+            final var client = ConnectedClient.from(webSocket, "a");
 
-        assertThat(client).isNotNull();
+            assertThat(client)
+                    .get()
+                    .isNotNull();
+        }
+
+        @Test
+        void shouldReturnNewConnectedClientWhenGivenWasClosed() {
+            final WebSocket webSocket = new TestWebSocket("/lobby");
+
+            final var firstClient = ConnectedClient.from(webSocket, "a");
+            webSocket.close();
+            final var secondClient = ConnectedClient.from(webSocket, "a");
+
+            assertThat(secondClient).get().isNotNull();
+            assertThat(firstClient)
+                    .get()
+                    .isNotNull()
+                    .isNotSameAs(secondClient);
+        }
+
+        @Test
+        void shouldReturnDifferentConnectedClientsWhenTheSameUsernameButDifferentWebSocket() {
+            final WebSocket firstWebSocket = new TestWebSocket("/lobby");
+            final WebSocket secondWebSocket = new TestWebSocket("/lobby");
+
+            final var firstClient = ConnectedClient.from(firstWebSocket, "a");
+            final var secondClient = ConnectedClient.from(secondWebSocket, "a");
+
+            assertThat(secondClient).isNotNull();
+            assertThat(firstClient)
+                    .get()
+                    .isNotNull()
+                    .isNotSameAs(secondClient);
+        }
+
+        @Test
+        void shouldReturnEmptyOptionalOfConnectedClientWhenTheSameWebSocketTriesToRegisteredWithDifferentUsername() {
+            final WebSocket webSocket = new TestWebSocket("/lobby");
+
+            final var firstClient = ConnectedClient.from(webSocket, "a");
+            final var secondClient = ConnectedClient.from(webSocket, "b");
+
+            assertThat(secondClient).isEmpty();
+            assertThat(firstClient)
+                    .get()
+                    .isNotNull()
+                    .isNotSameAs(secondClient);
+        }
     }
 
-    @Test
-    void shouldReturnCachedConnectedClientWhenGivenTheSameWebSocket() {
-        final WebSocket webSocket = new TestWebSocket("/lobby");
+    @Nested
+    class FindByStaticMethod {
+        @Test
+        void shouldFindByWebSocket() {
+            final WebSocket webSocket = new TestWebSocket("/lobby");
+            ConnectedClient.from(webSocket, "a");
 
-        final var firstClient = ConnectedClient.from(webSocket);
-        final var secondClient = ConnectedClient.from(webSocket);
+            final var client = ConnectedClient.findBy(webSocket);
 
-        assertThat(firstClient)
-                .isNotNull()
-                .isSameAs(secondClient);
+            assertThat(client)
+                    .get()
+                    .isNotNull();
+        }
+
+        @Test
+        void shouldReturnCachedConnectedClientWhenGivenTheSameWebSocket() {
+            final WebSocket webSocket = new TestWebSocket("/lobby");
+            ConnectedClient.from(webSocket, "a");
+
+            final var firstClient = ConnectedClient.findBy(webSocket);
+            final var secondClient = ConnectedClient.findBy(webSocket);
+
+            assertThat(secondClient).get().isNotNull();
+            assertThat(firstClient)
+                    .get()
+                    .isNotNull()
+                    .isSameAs(secondClient.get());
+        }
     }
 
-    @Test
-    void shouldReturnNewConnectedClientWhenGivenWasClosed() {
-        final WebSocket webSocket = new TestWebSocket("/lobby");
+    @Nested
+    class FindByUsernameStaticMethod {
+        @Test
+        void shouldFindByUsername() {
+            final WebSocket webSocket = new TestWebSocket("/lobby");
+            ConnectedClient.from(webSocket, "a");
 
-        final var firstClient = ConnectedClient.from(webSocket);
-        webSocket.close();
-        final var secondClient = ConnectedClient.from(webSocket);
+            final var client = ConnectedClient.findByUsername("a");
 
-        assertThat(firstClient)
-                .isNotNull()
-                .isNotSameAs(secondClient);
+            assertThat(client)
+                    .get()
+                    .isNotNull();
+        }
+
+        @Test
+        void shouldReturnCachedConnectedClientWhenAskedForTheSameUsername() {
+            final WebSocket webSocket = new TestWebSocket("/lobby");
+            ConnectedClient.from(webSocket, "a");
+
+            final var firstClient = ConnectedClient.findByUsername("a");
+            final var secondClient = ConnectedClient.findByUsername("a");
+
+            assertThat(secondClient).get().isNotNull();
+            assertThat(firstClient)
+                    .get()
+                    .isNotNull()
+                    .isSameAs(secondClient.get());
+        }
     }
 
     private static class TestWebSocket implements WebSocket {
