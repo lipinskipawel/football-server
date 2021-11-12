@@ -45,6 +45,10 @@ val integrationTestImplementation: Configuration by configurations.getting {
     extendsFrom(configurations.testRuntimeOnly.get())
 }
 
+dependencies {
+    integrationTestImplementation("org.awaitility:awaitility:4.1.1")
+}
+
 configurations["integrationTestRuntimeOnly"].extendsFrom(configurations.runtimeOnly.get())
 
 val integrationTest = task<Test>("integrationTest") {
