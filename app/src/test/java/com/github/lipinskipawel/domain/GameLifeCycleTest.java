@@ -1,9 +1,8 @@
-package com.github.lipinskipawel.server;
+package com.github.lipinskipawel.domain;
 
 import com.github.lipinskipawel.api.move.AcceptMove;
 import com.github.lipinskipawel.api.move.GameMove;
 import com.github.lipinskipawel.api.move.RejectMove;
-import com.github.lipinskipawel.domain.GameLifeCycle;
 import com.github.lipinskipawel.mocks.TestConnectedClient;
 import org.assertj.core.api.WithAssertions;
 import org.junit.jupiter.api.BeforeEach;

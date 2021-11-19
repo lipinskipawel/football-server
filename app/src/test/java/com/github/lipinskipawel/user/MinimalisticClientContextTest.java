@@ -1,6 +1,5 @@
-package com.github.lipinskipawel.server;
+package com.github.lipinskipawel.user;
 
-import com.github.lipinskipawel.user.ConnectedClient;
 import org.assertj.core.api.WithAssertions;
 import org.java_websocket.WebSocket;
 import org.java_websocket.drafts.Draft;
