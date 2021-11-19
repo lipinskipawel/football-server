@@ -43,6 +43,10 @@ public final class FootballClientCreator {
 
         result[0] = createNewClient(firstClient, serverUri);
         result[1] = createNewClient(secondClient, serverUri);
+        result[0].addHeader("cookie", "firstClient");
+        result[1].addHeader("cookie", "secondClient");
+        result[0].connectBlocking();
+        result[1].connectBlocking();
         return result;
     }
 
@@ -59,14 +63,11 @@ public final class FootballClientCreator {
         firstClient.send(parser.toJson(requestToPlay));
     }
 
-    private static SimpleWebSocketClient createNewClient(SimpleWebSocketClient client, String serverUri)
-            throws InterruptedException {
+    private static SimpleWebSocketClient createNewClient(SimpleWebSocketClient client, String serverUri) {
         final var redirectedServerUri = serverUri.replace("/lobby", "");
 
         final var size = client.getMessages().size();
-        final var playPairingFirst = parser.fromJson(client.getMessages().get(size - 1), PlayPairing.class);
-        final var newClient = createClient(redirectedServerUri.concat(playPairingFirst.getRedirectEndpoint()));
-        newClient.connectBlocking();
-        return newClient;
+        final var playPairing = parser.fromJson(client.getMessages().get(size - 1), PlayPairing.class);
+        return createClient(redirectedServerUri.concat(playPairing.getRedirectEndpoint()));
     }
 }

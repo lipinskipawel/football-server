@@ -3,6 +3,7 @@ package com.github.lipinskipawel.server;
 import com.github.lipinskipawel.api.RequestToPlay;
 import com.github.lipinskipawel.api.move.GameMove;
 import com.github.lipinskipawel.domain.GameLifeCycle;
+import com.github.lipinskipawel.user.ConnectedClient;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import org.java_websocket.WebSocket;
@@ -30,12 +31,14 @@ public final class FootballServer extends WebSocketServer {
     private final Gson parser;
     private final Lobby lobby;
     private final Map<String, GameLifeCycle> gamesPerUrl;
+    private final RedirectEndpoint redirect;
 
     public FootballServer(final InetSocketAddress address) {
         super(address);
         this.parser = new Gson();
         this.lobby = Lobby.of(parser::toJson);
         this.gamesPerUrl = new HashMap<>();
+        this.redirect = new RedirectEndpoint();
     }
 
     @Override
@@ -50,18 +53,7 @@ public final class FootballServer extends WebSocketServer {
                 this.lobby.accept(client);
                 return;
             }
-            var gameLifeCycle = this.gamesPerUrl.get(url);
-            if (gameLifeCycle == null) {
-                gameLifeCycle = GameLifeCycle.of(parser::toJson);
-                this.gamesPerUrl.put(url, gameLifeCycle);
-            }
-            final var isAdded = gameLifeCycle.accept(client);
-            if (!isAdded) {
-                final var message = "Server does not allow more than 2 clients to connect to the same endpoint";
-                conn.closeConnection(POLICY_VALIDATION, message);
-                LOGGER.info(message);
-                LOGGER.info("Connection has been closed");
-            }
+            processGameConnection(conn, username, client);
         }
         if (optionalClient.isEmpty()) {
             final var message = "Server does not allow two different clients authenticate using the same connection";
@@ -79,6 +71,32 @@ public final class FootballServer extends WebSocketServer {
     private String usernameFromCookie(final ClientHandshake handshake) {
         final var cookie = handshake.getFieldValue("cookie");
         return cookie.equals("") ? "anonymous" : cookie;
+    }
+
+    private void processGameConnection(
+            final WebSocket conn,
+            final String username,
+            final ConnectedClient client) {
+        final var url = conn.getResourceDescriptor();
+        final var canPlay = redirect.canJoin(client.getUsername(), url);
+        if (!canPlay) {
+            final var message = "Server does not allow connecting to the game without going through /lobby first";
+            LOGGER.info(message);
+            conn.closeConnection(POLICY_VALIDATION, message);
+            return;
+        }
+        var gameLifeCycle = this.gamesPerUrl.get(url);
+        if (gameLifeCycle == null) {
+            gameLifeCycle = GameLifeCycle.of(parser::toJson);
+            this.gamesPerUrl.put(url, gameLifeCycle);
+        }
+        final var isAdded = gameLifeCycle.accept(client);
+        if (!isAdded) {
+            final var message = "Server does not allow more than 2 clients to connect to the same endpoint";
+            conn.closeConnection(POLICY_VALIDATION, message);
+            LOGGER.info(message);
+            LOGGER.info("Connection has been closed");
+        }
     }
 
     @Override
@@ -104,7 +122,7 @@ public final class FootballServer extends WebSocketServer {
                 final var requestToPlay = this.parser.fromJson(message, RequestToPlay.class);
                 final var optionalOpponentClient = findByUsername(requestToPlay.getOpponent().getUsername());
                 optionalOpponentClient.ifPresent(opponent -> {
-                    this.lobby.pair(() -> "/game/endpoint", client, opponent);
+                    this.lobby.pair(() -> redirect.createNewRedirectEndpoint(client.getUsername(), opponent.getUsername()), client, opponent);
                 });
                 return;
             }

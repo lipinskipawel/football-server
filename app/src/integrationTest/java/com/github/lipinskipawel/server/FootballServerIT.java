@@ -1,13 +1,11 @@
 package com.github.lipinskipawel.server;
 
-import com.github.lipinskipawel.api.move.GameMove;
-import com.google.gson.Gson;
+import com.github.lipinskipawel.client.FootballClientCreator;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.net.InetSocketAddress;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -21,7 +19,6 @@ final class FootballServerIT {
     private static final int PORT = 8090;
     private static final String SERVER_URI = "ws://localhost:%d".formatted(PORT);
     private static final FootballServer server = new FootballServer(new InetSocketAddress("localhost", PORT));
-    private static final Gson parser = new Gson();
 
     @BeforeAll
     static void setUp() {
@@ -47,55 +44,37 @@ final class FootballServerIT {
 
     @Test
     void shouldClientNotReceivedMessageWhenNotAGameMove() throws InterruptedException {
+        final var serverUri = "ws://localhost:%d/lobby".formatted(PORT);
+        final var pairedClients = FootballClientCreator.getPairedClients(serverUri);
         final var onMessage = new CountDownLatch(1);
-        final var endpoint = "/game/123";
-        final var firstClient = createClient(SERVER_URI.concat(endpoint));
-        final var secondClient = createClient(SERVER_URI.concat(endpoint), onMessage);
-        firstClient.connectBlocking();
-        secondClient.connectBlocking();
+        pairedClients[1].latchOnMessage(onMessage);
 
-        firstClient.send("msg");
+        pairedClients[0].send("msg");
 
         final var notReceived = onMessage.await(1, TimeUnit.SECONDS);
-        firstClient.closeBlocking();
-        secondClient.closeBlocking();
-        assertThat(notReceived).isFalse();
-    }
-
-    @Test
-    void shouldNotReceivedMsgWhenConnectedToDifferentUri() throws InterruptedException {
-        final var onMessage = new CountDownLatch(1);
-        final var firstClient = createClient(SERVER_URI.concat("/game/123"));
-        final var secondClient = createClient(SERVER_URI.concat("/game/other"), onMessage);
-        firstClient.connectBlocking();
-        secondClient.connectBlocking();
-
-        final var move = GameMove.from(List.of("N")).get();
-        final var message = parser.toJson(move);
-        firstClient.send(message);
-
-        final var notReceived = onMessage.await(1, TimeUnit.SECONDS);
-        firstClient.closeBlocking();
-        secondClient.closeBlocking();
+        pairedClients[0].closeBlocking();
+        pairedClients[1].closeBlocking();
         assertThat(notReceived).isFalse();
     }
 
     @Test
     void shouldAllowOnlyTwoClientsConnectToTheSameEndpoint() throws InterruptedException {
+        final var serverUri = "ws://localhost:%d/lobby".formatted(PORT);
         final var onClose = new CountDownLatch(1);
-        final var endpoint = "/game/one";
-        final var firstClient = createClient(SERVER_URI.concat(endpoint));
-        final var secondClient = createClient(SERVER_URI.concat(endpoint));
-        firstClient.connectBlocking();
-        secondClient.connectBlocking();
+        final var pairedClients = FootballClientCreator.getPairedClients(serverUri);
+        final var endpoint = pairedClients[0].getConnection().getResourceDescriptor();
 
-        final var thirdClient = createClient(SERVER_URI.concat(endpoint), null, onClose);
+        final var thirdClient = createClient("ws://localhost:%d".formatted(PORT).concat(endpoint), null, onClose);
         thirdClient.connectBlocking();
 
         final var notConnected = onClose.await(1, TimeUnit.SECONDS);
-        firstClient.closeBlocking();
-        secondClient.closeBlocking();
+        final var isOpenFirst = pairedClients[0].isOpen();
+        final var isOpenSecond = pairedClients[1].isOpen();
+        pairedClients[0].closeBlocking();
+        pairedClients[1].closeBlocking();
         assertThat(notConnected).isTrue();
         assertThat(thirdClient.isClosed()).isTrue();
+        assertThat(isOpenFirst).isTrue();
+        assertThat(isOpenSecond).isTrue();
     }
 }
