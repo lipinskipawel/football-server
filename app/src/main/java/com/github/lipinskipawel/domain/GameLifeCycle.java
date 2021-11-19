@@ -34,7 +34,10 @@ public final class GameLifeCycle {
 
     public void makeMove(final GameMove gameMove, final ConnectedClient client) {
         final var move = new Move(toDirectionList(gameMove.getMove()));
-        final var isMade = boardState.makeMoveBy(move, client);
+        var isMade = false;
+        synchronized (this) {
+            isMade = boardState.makeMoveBy(move, client);
+        }
         if (isMade) {
             final var jsonMove = parser.toJson(gameMove);
             dualConnection.sendMessageFrom(jsonMove, client);
@@ -58,10 +61,12 @@ public final class GameLifeCycle {
         final var isAccepted = dualConnection.accept(client);
         final var bothClients = dualConnection.areBothClientsConnected();
         if (bothClients) {
-            boardState = GameBoardState.aGameBoardState()
-                    .withFirstPlayer(dualConnection.first())
-                    .withSecondPlayer(dualConnection.second())
-                    .build();
+            synchronized (this) {
+                boardState = GameBoardState.aGameBoardState()
+                        .withFirstPlayer(dualConnection.first())
+                        .withSecondPlayer(dualConnection.second())
+                        .build();
+            }
         }
         return isAccepted;
     }
