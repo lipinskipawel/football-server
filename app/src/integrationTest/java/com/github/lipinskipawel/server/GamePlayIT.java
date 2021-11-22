@@ -13,10 +13,10 @@ import org.junit.jupiter.api.Test;
 
 import java.net.InetSocketAddress;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+
+import static com.github.lipinskipawel.client.FootballClientCreator.waitFor;
 
 final class GamePlayIT implements WithAssertions {
     private static final ExecutorService pool = Executors.newFixedThreadPool(1);
@@ -39,27 +39,21 @@ final class GamePlayIT implements WithAssertions {
 
     @Test
     void shouldAllowToSendMoveToAnotherPlayerWhenPlayingTogether() throws InterruptedException {
-        final var onAcceptMessage = new CountDownLatch(1);
-        final var onMessage = new CountDownLatch(1);
         final var pairedClients = FootballClientCreator.getPairedClients(SERVER_LOBBY);
-        pairedClients[0].latchOnMessage(onAcceptMessage);
-        pairedClients[1].latchOnMessage(onMessage);
 
         final var move = GameMove.from(List.of("N")).get();
         final var message = parser.toJson(move);
         pairedClients[0].send(message);
-
-        final var gotMessage = onMessage.await(1, TimeUnit.SECONDS);
-        final var gotAccept = onAcceptMessage.await(1, TimeUnit.SECONDS);
+        waitFor(() -> pairedClients[1].getMessages().size() == 1);
+        waitFor(() -> pairedClients[0].getMessages().size() == 1);
         pairedClients[0].closeBlocking();
         pairedClients[1].closeBlocking();
-        assertThat(gotMessage).isTrue();
+
         assertThat(pairedClients[1])
                 .extracting(SimpleWebSocketClient::getMessages)
                 .asList()
                 .hasSize(1)
                 .containsExactly(message);
-        assertThat(gotAccept).isTrue();
         assertThat(pairedClients[0])
                 .extracting(SimpleWebSocketClient::getMessages)
                 .asList()
@@ -69,23 +63,17 @@ final class GamePlayIT implements WithAssertions {
 
     @Test
     void shouldAllowToExchangeMovesBetweenPlayersWhenPlayingTogether() throws InterruptedException {
-        var onMessage = new CountDownLatch(1);
         final var pairedClients = FootballClientCreator.getPairedClients(SERVER_LOBBY);
-        pairedClients[1].latchOnMessage(onMessage);
 
         final var moveToSecond = GameMove.from(List.of("N")).get();
         final var messageForSecond = parser.toJson(moveToSecond);
         pairedClients[0].send(messageForSecond);
-        var gotMessage = onMessage.await(1, TimeUnit.SECONDS);
-        assertThat(gotMessage).isTrue();
+        waitFor(() -> pairedClients[1].getMessages().size() == 1);
         final var moveToFirst = GameMove.from(List.of("E")).get();
         final var messageForFirst = parser.toJson(moveToFirst);
 
-        onMessage = new CountDownLatch(1);
-        pairedClients[0].latchOnMessage(onMessage);
         pairedClients[1].send(messageForFirst);
-        gotMessage = onMessage.await(1, TimeUnit.SECONDS);
-        assertThat(gotMessage).isTrue();
+        waitFor(() -> pairedClients[0].getMessages().size() == 2);
 
         pairedClients[0].closeBlocking();
         pairedClients[1].closeBlocking();
@@ -103,22 +91,17 @@ final class GamePlayIT implements WithAssertions {
 
     @Test
     void shouldNotAllowToMoveTwiceByTheSamePlayer() throws InterruptedException {
-        var onMessage = new CountDownLatch(1);
         final var pairedClients = FootballClientCreator.getPairedClients(SERVER_LOBBY);
-        pairedClients[1].latchOnMessage(onMessage);
 
         final var moveToSecond = GameMove.from(List.of("N")).get();
         final var messageForSecond = parser.toJson(moveToSecond);
         pairedClients[0].send(messageForSecond);
-        var gotMessage = onMessage.await(1, TimeUnit.SECONDS);
-        assertThat(gotMessage).isTrue();
+        waitFor(() -> pairedClients[0].getMessages().size() == 1);
 
-        onMessage = new CountDownLatch(1);
         final var moveToSecondAgain = GameMove.from(List.of("N")).get();
         final var messageForSecondAgain = parser.toJson(moveToSecondAgain);
         pairedClients[0].send(messageForSecondAgain);
-        gotMessage = onMessage.await(1, TimeUnit.SECONDS);
-        assertThat(gotMessage).isFalse();
+        waitFor(() -> pairedClients[0].getMessages().size() == 2);
 
         pairedClients[0].closeBlocking();
         pairedClients[1].closeBlocking();

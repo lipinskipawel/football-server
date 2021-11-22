@@ -1,15 +1,14 @@
 package com.github.lipinskipawel.server;
 
 import com.github.lipinskipawel.client.FootballClientCreator;
+import com.github.lipinskipawel.client.SimpleWebSocketClient;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.net.InetSocketAddress;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import static com.github.lipinskipawel.client.SimpleWebSocketClient.createClient;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -46,33 +45,31 @@ final class FootballServerIT {
     void shouldClientNotReceivedMessageWhenNotAGameMove() throws InterruptedException {
         final var serverUri = "ws://localhost:%d/lobby".formatted(PORT);
         final var pairedClients = FootballClientCreator.getPairedClients(serverUri);
-        final var onMessage = new CountDownLatch(1);
-        pairedClients[1].latchOnMessage(onMessage);
 
         pairedClients[0].send("msg");
 
-        final var notReceived = onMessage.await(1, TimeUnit.SECONDS);
         pairedClients[0].closeBlocking();
         pairedClients[1].closeBlocking();
-        assertThat(notReceived).isFalse();
+        assertThat(pairedClients[1])
+                .extracting(SimpleWebSocketClient::getMessages)
+                .asList()
+                .hasSize(0);
     }
 
     @Test
     void shouldAllowOnlyTwoClientsConnectToTheSameEndpoint() throws InterruptedException {
         final var serverUri = "ws://localhost:%d/lobby".formatted(PORT);
-        final var onClose = new CountDownLatch(1);
         final var pairedClients = FootballClientCreator.getPairedClients(serverUri);
         final var endpoint = pairedClients[0].getConnection().getResourceDescriptor();
 
-        final var thirdClient = createClient("ws://localhost:%d".formatted(PORT).concat(endpoint), null, onClose);
+        final var thirdClient = createClient("ws://localhost:%d".formatted(PORT).concat(endpoint));
         thirdClient.connectBlocking();
 
-        final var notConnected = onClose.await(1, TimeUnit.SECONDS);
         final var isOpenFirst = pairedClients[0].isOpen();
         final var isOpenSecond = pairedClients[1].isOpen();
         pairedClients[0].closeBlocking();
         pairedClients[1].closeBlocking();
-        assertThat(notConnected).isTrue();
+        assertThat(thirdClient.isClosed()).isTrue();
         assertThat(thirdClient.isClosed()).isTrue();
         assertThat(isOpenFirst).isTrue();
         assertThat(isOpenSecond).isTrue();

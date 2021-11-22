@@ -11,6 +11,9 @@ import java.util.concurrent.Callable;
 import static com.github.lipinskipawel.client.SimpleWebSocketClient.createClient;
 import static org.awaitility.Awaitility.await;
 
+/**
+ * This is a helper class for all the integration tests.
+ */
 public final class FootballClientCreator {
     private static final Gson parser = new Gson();
 
@@ -21,12 +24,13 @@ public final class FootballClientCreator {
      * This method returns array of two connected clients to the game endpoint. Those clients went through the process
      * of pairing using lobby endpoint.
      *
+     * @param serverEndpoint must be ws://localhost:{PORT}/lobby
      * @return two connected clients
      */
-    public static SimpleWebSocketClient[] getPairedClients(final String serverUri) throws InterruptedException {
+    public static SimpleWebSocketClient[] getPairedClients(final String serverEndpoint) throws InterruptedException {
         final var result = new SimpleWebSocketClient[2];
-        final var firstClient = createClient(serverUri);
-        final var secondClient = createClient(serverUri);
+        final var firstClient = createClient(serverEndpoint);
+        final var secondClient = createClient(serverEndpoint);
         firstClient.addHeader("cookie", "firstClient");
         secondClient.addHeader("cookie", "secondClient");
 
@@ -41,8 +45,8 @@ public final class FootballClientCreator {
         firstClient.closeBlocking();
         secondClient.closeBlocking();
 
-        result[0] = createNewClient(firstClient, serverUri);
-        result[1] = createNewClient(secondClient, serverUri);
+        result[0] = createNewClient(firstClient, serverEndpoint);
+        result[1] = createNewClient(secondClient, serverEndpoint);
         result[0].addHeader("cookie", "firstClient");
         result[1].addHeader("cookie", "secondClient");
         result[0].connectBlocking();
@@ -50,7 +54,12 @@ public final class FootballClientCreator {
         return result;
     }
 
-    private static void waitFor(final Callable<Boolean> condition) {
+    /**
+     * Util method for awaiting for {@code condition}
+     *
+     * @param condition to await on
+     */
+    public static void waitFor(final Callable<Boolean> condition) {
         await().atMost(Duration.ofSeconds(1)).until(condition);
     }
 
