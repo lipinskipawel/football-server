@@ -63,4 +63,28 @@ class GameLifeCycleTest implements WithAssertions {
                 .hasSize(2)
                 .containsExactly(new AcceptMove().toString(), new RejectMove(gameMove).toString());
     }
+
+    @Test
+    void shouldNotAllowToMakeIllegalMove() {
+        final var firstClient = new TestConnectedClient("/one");
+        final var secondClient = new TestConnectedClient("/one");
+        game.accept(firstClient);
+        game.accept(secondClient);
+        final var gameMove = GameMove.from(List.of("N")).get();
+        game.makeMove(gameMove, firstClient);
+
+        final var illegalMove = GameMove.from(List.of("S")).get();
+        game.makeMove(illegalMove, secondClient);
+
+        assertThat(secondClient)
+                .extracting(TestConnectedClient::getMessages)
+                .asList()
+                .hasSize(2)
+                .containsExactly(gameMove.toString(), new RejectMove(illegalMove).toString());
+        assertThat(firstClient)
+                .extracting(TestConnectedClient::getMessages)
+                .asList()
+                .hasSize(1)
+                .containsExactly(new AcceptMove().toString());
+    }
 }

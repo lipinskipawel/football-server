@@ -36,13 +36,21 @@ final class GameBoardState {
         if (!this.currentlyMovingPlayer.equals(player)) {
             return false;
         }
-        final var afterMove = this.boardState.executeMove(move);
+        final var afterMove = makeMove(move);
         if (this.boardState.moveHistory().equals(afterMove.moveHistory())) {
             return false;
         }
         this.boardState = afterMove;
         this.currentlyMovingPlayer = this.currentlyMovingPlayer == first ? second : first;
         return true;
+    }
+
+    private Board makeMove(final Move move) {
+        try {
+            return this.boardState.executeMove(move);
+        } catch (RuntimeException ex) {
+            return this.boardState;
+        }
     }
 
     Player currentPlayerToMove() {
