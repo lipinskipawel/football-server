@@ -2,33 +2,16 @@ package com.github.lipinskipawel.server;
 
 import com.github.lipinskipawel.client.FootballClientCreator;
 import com.github.lipinskipawel.client.SimpleWebSocketClient;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import com.github.lipinskipawel.extension.Application;
 import org.junit.jupiter.api.Test;
-
-import java.net.InetSocketAddress;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import static com.github.lipinskipawel.client.SimpleWebSocketClient.createClient;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
+@Application(port = FootballServerIT.PORT)
 final class FootballServerIT {
-    private static final ExecutorService pool = Executors.newFixedThreadPool(1);
-    private static final int PORT = 8090;
-    private static final String SERVER_URI = "ws://localhost:%d".formatted(PORT);
-    private static final FootballServer server = new FootballServer(new InetSocketAddress("localhost", PORT));
-
-    @BeforeAll
-    static void setUp() {
-        pool.submit(server);
-    }
-
-    @AfterAll
-    static void cleanUp() throws InterruptedException {
-        server.stop(1000);
-        pool.shutdown();
-    }
+    static final int PORT = 8090;
+    static final String SERVER_URI = "ws://localhost:%d".formatted(PORT);
 
     @Test
     void shouldRejectClientWhenURIDoNotMeetPolicy() throws InterruptedException {
@@ -43,8 +26,7 @@ final class FootballServerIT {
 
     @Test
     void shouldClientNotReceivedMessageWhenNotAGameMove() throws InterruptedException {
-        final var serverUri = "ws://localhost:%d/lobby".formatted(PORT);
-        final var pairedClients = FootballClientCreator.getPairedClients(serverUri);
+        final var pairedClients = FootballClientCreator.getPairedClients(SERVER_URI.concat("/lobby"));
 
         pairedClients[0].send("msg");
 
@@ -58,11 +40,10 @@ final class FootballServerIT {
 
     @Test
     void shouldAllowOnlyTwoClientsConnectToTheSameEndpoint() throws InterruptedException {
-        final var serverUri = "ws://localhost:%d/lobby".formatted(PORT);
-        final var pairedClients = FootballClientCreator.getPairedClients(serverUri);
+        final var pairedClients = FootballClientCreator.getPairedClients(SERVER_URI.concat("/lobby"));
         final var endpoint = pairedClients[0].getConnection().getResourceDescriptor();
 
-        final var thirdClient = createClient("ws://localhost:%d".formatted(PORT).concat(endpoint));
+        final var thirdClient = createClient(SERVER_URI.concat(endpoint));
         thirdClient.connectBlocking();
 
         final var isOpenFirst = pairedClients[0].isOpen();
