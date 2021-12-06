@@ -1,5 +1,7 @@
 package com.github.lipinskipawel.domain;
 
+import com.github.lipinskipawel.api.Player;
+import com.github.lipinskipawel.api.game.GameEnd;
 import com.github.lipinskipawel.api.move.AcceptMove;
 import com.github.lipinskipawel.api.move.GameMove;
 import com.github.lipinskipawel.api.move.RejectMove;
@@ -46,6 +48,11 @@ public final class GameLifeCycle {
         } else {
             final var jsonReject = parser.toJson(new RejectMove(gameMove));
             dualConnection.sendMessageTo(jsonReject, client);
+        }
+        if (boardState.isGameOver()) {
+            final var jsonWinner = parser.toJson(new GameEnd(Player.fromUsername(boardState.getWinner())));
+            dualConnection.sendMessageTo(jsonWinner, client);
+            dualConnection.sendMessageFrom(jsonWinner, client);
         }
     }
 

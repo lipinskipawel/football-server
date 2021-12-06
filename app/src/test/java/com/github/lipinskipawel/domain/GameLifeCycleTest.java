@@ -1,5 +1,7 @@
 package com.github.lipinskipawel.domain;
 
+import com.github.lipinskipawel.api.Player;
+import com.github.lipinskipawel.api.game.GameEnd;
 import com.github.lipinskipawel.api.move.AcceptMove;
 import com.github.lipinskipawel.api.move.GameMove;
 import com.github.lipinskipawel.api.move.RejectMove;
@@ -86,5 +88,40 @@ class GameLifeCycleTest implements WithAssertions {
                 .asList()
                 .hasSize(1)
                 .containsExactly(new AcceptMove().toString());
+    }
+
+    @Test
+    void shouldDetectWhenGameIsEnded() {
+        final var firstClient = new TestConnectedClient("/one", "firstClient");
+        final var secondClient = new TestConnectedClient("/one", "secondClient");
+        final var expectedWinner = new GameEnd(Player.fromUsername(firstClient.getUsername()));
+        game.accept(firstClient);
+        game.accept(secondClient);
+
+        final var northMove = GameMove.from(List.of("N")).get();
+        game.makeMove(northMove, firstClient);
+        game.makeMove(northMove, secondClient);
+        game.makeMove(northMove, firstClient);
+        game.makeMove(northMove, secondClient);
+        game.makeMove(northMove, firstClient);
+        game.makeMove(northMove, secondClient);
+
+        final var msgWithoutAccept = List.of(
+                northMove.toString(), northMove.toString(), northMove.toString(), expectedWinner.toString()
+        );
+        assertThat(secondClient)
+                .extracting(TestConnectedClient::getMessages)
+                .asList()
+                .map(it -> (String) it)
+                .filteredOn(it -> !it.contains("AcceptMove"))
+                .hasSize(4)
+                .containsExactlyElementsOf(msgWithoutAccept);
+        assertThat(firstClient)
+                .extracting(TestConnectedClient::getMessages)
+                .asList()
+                .map(it -> (String) it)
+                .filteredOn(it -> !it.contains("AcceptMove"))
+                .hasSize(4)
+                .containsExactlyElementsOf(msgWithoutAccept);
     }
 }

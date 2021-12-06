@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
+- Add GameEnd API to indicate end of the game
 - Allow to play a game only after pairing through /lobby endpoint
 - Server will treat header cookie value as username
 - Add GameMove API which is used to make a move

@@ -57,6 +57,23 @@ final class GameBoardState {
         return this.boardState.getPlayer();
     }
 
+    boolean isGameOver() {
+        return this.boardState.isGameOver();
+    }
+
+    /**
+     * This method return the username of the winner.
+     * This method will {@link java.util.NoSuchElementException} if the game doesn't have the winner yet. Hence, calling
+     * {@link GameBoardState#isGameOver()} method is advised.
+     *
+     * @return username of the winner
+     */
+    String getWinner() {
+        return this.boardState.takeTheWinner().get().name().equals("FIRST") ?
+                first.getUsername() :
+                second.getUsername();
+    }
+
 
     static Builder aGameBoardState() {
         return new Builder();
