@@ -22,16 +22,14 @@ import java.util.stream.Collectors;
 public final class GameLifeCycle {
     private static final AcceptMove ACCEPT_MOVE = new AcceptMove();
     private final DualConnection dualConnection;
-    private final Parser parser;
     private GameBoardState boardState;
 
-    private GameLifeCycle(DualConnection dualConnection, Parser parser) {
+    private GameLifeCycle(DualConnection dualConnection) {
         this.dualConnection = dualConnection;
-        this.parser = parser;
     }
 
     public static GameLifeCycle of(final Parser parser) {
-        return new GameLifeCycle(new DualConnection(), parser);
+        return new GameLifeCycle(new DualConnection(parser));
     }
 
     public void makeMove(final GameMove gameMove, final ConnectedClient client) {
@@ -41,18 +39,15 @@ public final class GameLifeCycle {
             isMade = boardState.makeMoveBy(move, client);
         }
         if (isMade) {
-            final var jsonMove = parser.toJson(gameMove);
-            dualConnection.sendMessageFrom(jsonMove, client);
-            final var jsonAccept = parser.toJson(ACCEPT_MOVE);
-            dualConnection.sendMessageTo(jsonAccept, client);
+            dualConnection.sendMessageFrom(gameMove, client);
+            dualConnection.sendMessageTo(ACCEPT_MOVE, client);
         } else {
-            final var jsonReject = parser.toJson(new RejectMove(gameMove));
-            dualConnection.sendMessageTo(jsonReject, client);
+            dualConnection.sendMessageTo(new RejectMove(gameMove), client);
         }
         if (boardState.isGameOver()) {
-            final var jsonWinner = parser.toJson(new GameEnd(Player.fromUsername(boardState.getWinner())));
-            dualConnection.sendMessageTo(jsonWinner, client);
-            dualConnection.sendMessageFrom(jsonWinner, client);
+            final var winner = new GameEnd(Player.fromUsername(boardState.getWinner()));
+            dualConnection.sendMessageTo(winner, client);
+            dualConnection.sendMessageFrom(winner, client);
         }
     }
 

@@ -1,5 +1,6 @@
 package com.github.lipinskipawel.domain;
 
+import com.github.lipinskipawel.server.Parser;
 import com.github.lipinskipawel.user.ConnectedClient;
 import com.github.lipinskipawel.util.ThreadSafe;
 
@@ -15,10 +16,12 @@ import java.util.List;
 final class DualConnection {
     private final List<ConnectedClient> connectedClients;
     private final Object lock;
+    private final Parser parser;
 
-    DualConnection() {
+    DualConnection(final Parser parser) {
         this.connectedClients = new ArrayList<>();
         this.lock = new Object();
+        this.parser = parser;
     }
 
     boolean accept(final ConnectedClient client) {
@@ -44,7 +47,7 @@ final class DualConnection {
         return connectedClients.get(1);
     }
 
-    void sendMessageFrom(final String message, final ConnectedClient sender) {
+    void sendMessageFrom(final Object message, final ConnectedClient sender) {
         if (connectedClients.size() != 2) {
             return;
         }
@@ -52,18 +55,18 @@ final class DualConnection {
                 .stream()
                 .filter(client -> findSender(client, sender))
                 .findFirst()
-                .ifPresent(client -> client.send(message));
+                .ifPresent(client -> client.send(parser.toJson(message)));
     }
 
     private boolean findSender(ConnectedClient client, ConnectedClient sender) {
         return !client.equals(sender);
     }
 
-    void sendMessageTo(final String message, final ConnectedClient receiver) {
+    void sendMessageTo(final Object message, final ConnectedClient receiver) {
         if (connectedClients.size() != 2) {
             return;
         }
-        receiver.send(message);
+        receiver.send(parser.toJson(message));
     }
 
     void dropConnectionFor(final ConnectedClient toLeave) {

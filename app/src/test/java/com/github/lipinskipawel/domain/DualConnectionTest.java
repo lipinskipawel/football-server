@@ -14,7 +14,7 @@ final class DualConnectionTest {
 
     @BeforeEach
     void setUp() {
-        dualConnection = new DualConnection();
+        dualConnection = new DualConnection(Object::toString);
     }
 
     @Nested
