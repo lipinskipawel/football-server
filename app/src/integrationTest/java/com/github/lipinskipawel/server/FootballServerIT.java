@@ -1,15 +1,19 @@
 package com.github.lipinskipawel.server;
 
-import com.github.lipinskipawel.client.FootballClientCreator;
+import com.github.lipinskipawel.api.Player;
 import com.github.lipinskipawel.client.SimpleWebSocketClient;
 import com.github.lipinskipawel.extension.Application;
+import com.google.gson.Gson;
 import org.junit.jupiter.api.Test;
 
+import static com.github.lipinskipawel.client.FootballClientCreator.getPairedClients;
+import static com.github.lipinskipawel.client.FootballClientCreator.waitFor;
 import static com.github.lipinskipawel.client.SimpleWebSocketClient.createClient;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @Application(port = FootballServerIT.PORT)
 final class FootballServerIT {
+    private static final Parser parser = new Gson()::toJson;
     static final int PORT = 8090;
     static final String SERVER_URI = "ws://localhost:%d".formatted(PORT);
 
@@ -25,8 +29,22 @@ final class FootballServerIT {
     }
 
     @Test
+    void shouldCloseConnectionWhenUnexpectedMessageArrives() throws InterruptedException {
+        final var client = createClient(SERVER_URI.concat("/lobby"));
+        client.connectBlocking();
+        final var player = Player.fromUsername("example");
+
+        client.send(parser.toJson(player));
+
+        waitFor(() -> client.getClose().size() == 1);
+        final var isOpen = client.isOpen();
+        client.closeBlocking();
+        assertThat(isOpen).isFalse();
+    }
+
+    @Test
     void shouldClientNotReceivedMessageWhenNotAGameMove() throws InterruptedException {
-        final var pairedClients = FootballClientCreator.getPairedClients(SERVER_URI.concat("/lobby"));
+        final var pairedClients = getPairedClients(SERVER_URI.concat("/lobby"));
 
         pairedClients[0].send("msg");
 
@@ -40,7 +58,7 @@ final class FootballServerIT {
 
     @Test
     void shouldAllowOnlyTwoClientsConnectToTheSameEndpoint() throws InterruptedException {
-        final var pairedClients = FootballClientCreator.getPairedClients(SERVER_URI.concat("/lobby"));
+        final var pairedClients = getPairedClients(SERVER_URI.concat("/lobby"));
         final var endpoint = pairedClients[0].getConnection().getResourceDescriptor();
 
         final var thirdClient = createClient(SERVER_URI.concat(endpoint));

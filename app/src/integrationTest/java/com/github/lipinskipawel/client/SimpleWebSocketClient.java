@@ -14,10 +14,12 @@ import java.util.List;
  */
 public final class SimpleWebSocketClient extends WebSocketClient {
     private final List<String> messages;
+    private final List<String> close;
 
     private SimpleWebSocketClient(final URI uri) {
         super(uri);
         this.messages = new ArrayList<>();
+        this.close = new ArrayList<>();
     }
 
     public static SimpleWebSocketClient createClient(String endpoint) {
@@ -26,6 +28,10 @@ public final class SimpleWebSocketClient extends WebSocketClient {
 
     public List<String> getMessages() {
         return this.messages;
+    }
+
+    public List<String> getClose() {
+        return this.close;
     }
 
     @Override
@@ -39,6 +45,7 @@ public final class SimpleWebSocketClient extends WebSocketClient {
 
     @Override
     public void onClose(int code, String reason, boolean remote) {
+        this.close.add(reason);
     }
 
     @Override

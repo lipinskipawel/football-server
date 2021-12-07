@@ -1,11 +1,11 @@
 package com.github.lipinskipawel.server;
 
+import com.github.lipinskipawel.api.Player;
 import com.github.lipinskipawel.api.RequestToPlay;
 import com.github.lipinskipawel.api.move.GameMove;
 import com.github.lipinskipawel.domain.GameLifeCycle;
 import com.github.lipinskipawel.user.ConnectedClient;
 import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
 import org.java_websocket.WebSocket;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.exceptions.InvalidDataException;
@@ -119,11 +119,10 @@ public final class FootballServer extends WebSocketServer {
         if (optionalClient.isPresent()) {
             final var client = optionalClient.get();
             if (conn.getResourceDescriptor().equals("/lobby")) {
-                final var requestToPlay = this.parser.fromJson(message, RequestToPlay.class);
-                final var optionalOpponentClient = findByUsername(requestToPlay.getOpponent().getUsername());
-                optionalOpponentClient.ifPresent(opponent -> {
-                    this.lobby.pair(() -> redirect.createNewRedirectEndpoint(client.getUsername(), opponent.getUsername()), client, opponent);
-                });
+                parseRequestToPlay(message)
+                        .flatMap(request -> findByUsername(request.getOpponent().getUsername()))
+                        .ifPresentOrElse(opponent -> pairBothClients(client, opponent),
+                                () -> closeWebSocketConnection(conn));
                 return;
             }
             parseToGameMove(message)
@@ -134,11 +133,34 @@ public final class FootballServer extends WebSocketServer {
         }
     }
 
+    private Optional<RequestToPlay> parseRequestToPlay(final String json) {
+        try {
+            final var value = this.parser.fromJson(json, RequestToPlay.class);
+            return Optional.of(RequestToPlay.with(Player.fromUsername(value.getOpponent().getUsername())));
+        } catch (Exception e) {
+            return Optional.empty();
+        }
+    }
+
+    private void pairBothClients(final ConnectedClient client, final ConnectedClient opponent) {
+        this.lobby.pair(
+                () -> redirect.createNewRedirectEndpoint(client.getUsername(), opponent.getUsername()),
+                client,
+                opponent
+        );
+    }
+
+    private void closeWebSocketConnection(WebSocket conn) {
+        final var message = "Server allows only RequestToPlay messages to be sent in the /lobby endpoint";
+        LOGGER.error(message);
+        conn.closeConnection(POLICY_VALIDATION, message);
+    }
+
     private Optional<GameMove> parseToGameMove(final String json) {
         try {
             final var value = this.parser.fromJson(json, GameMove.class);
             return GameMove.from(value.getMove());
-        } catch (JsonSyntaxException exception) {
+        } catch (Exception e) {
             return Optional.empty();
         }
     }
