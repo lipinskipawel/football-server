@@ -31,6 +31,20 @@ final class LobbyIT implements WithAssertions {
     }
 
     @Test
+    void shouldNotifyClientsWhenOneOfThemLeavesLobby() throws InterruptedException {
+        final var client = createClient(SERVER_URI);
+        final var secondClient = createClient(SERVER_URI);
+        client.connectBlocking();
+        secondClient.connectBlocking();
+        waitFor(() -> secondClient.getMessages().size() == 1);
+
+        client.closeBlocking();
+
+        waitFor(() -> secondClient.getMessages().size() == 2);
+        secondClient.closeBlocking();
+    }
+
+    @Test
     void shouldReceiveWaitingPlayersMessageWhenOnlyOnePlayerIsInTheLobby() throws InterruptedException {
         final var expectedWaitingPlayers = WaitingPlayers.fromPlayers(
                 List.of(Player.fromUsername("anonymous"))

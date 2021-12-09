@@ -44,12 +44,7 @@ final class Lobby {
     void accept(final ConnectedClient client) {
         executesUnderLock(() -> {
             this.connectedClients.add(client);
-            final var players = this.connectedClients
-                    .stream()
-                    .map(it -> Player.fromUsername(it.getUsername()))
-                    .collect(Collectors.toList());
-            final var dataToSend = this.parser.toJson(WaitingPlayers.fromPlayers(players));
-            this.connectedClients.forEach(it -> it.send(dataToSend));
+            sendWaitingPlayersToAllInTheLobby();
         });
     }
 
@@ -62,11 +57,21 @@ final class Lobby {
         }
     }
 
+    private void sendWaitingPlayersToAllInTheLobby() {
+        final var players = this.connectedClients
+                .stream()
+                .map(it -> Player.fromUsername(it.getUsername()))
+                .collect(Collectors.toList());
+        final var dataToSend = this.parser.toJson(WaitingPlayers.fromPlayers(players));
+        this.connectedClients.forEach(it -> it.send(dataToSend));
+    }
+
     void dropConnectionFor(final ConnectedClient leaveLobby) {
         executesUnderLock(() -> {
             if (this.connectedClients.contains(leaveLobby)) {
                 this.connectedClients.remove(leaveLobby);
                 leaveLobby.close();
+                sendWaitingPlayersToAllInTheLobby();
             }
         });
     }
