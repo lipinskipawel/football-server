@@ -2,7 +2,6 @@ package com.github.lipinskipawel.domain;
 
 import com.github.lipinskipawel.board.engine.Direction;
 import com.github.lipinskipawel.board.engine.Move;
-import com.github.lipinskipawel.board.engine.Player;
 import com.github.lipinskipawel.mocks.TestConnectedClient;
 import org.assertj.core.api.WithAssertions;
 import org.junit.jupiter.api.Nested;
@@ -28,7 +27,7 @@ class GameBoardStateTest implements WithAssertions {
             assertThat(isMade).isTrue();
             assertThat(state)
                     .extracting(GameBoardState::currentPlayerToMove)
-                    .isEqualTo(Player.SECOND);
+                    .isEqualTo(secondPlayer);
         }
 
         @Test
@@ -46,7 +45,7 @@ class GameBoardStateTest implements WithAssertions {
             assertThat(isMade).isTrue();
             assertThat(state)
                     .extracting(GameBoardState::currentPlayerToMove)
-                    .isEqualTo(Player.FIRST);
+                    .isEqualTo(firstPlayer);
         }
 
         @Test
@@ -65,7 +64,7 @@ class GameBoardStateTest implements WithAssertions {
             assertThat(isMade).isFalse();
             assertThat(state)
                     .extracting(GameBoardState::currentPlayerToMove)
-                    .isEqualTo(Player.FIRST);
+                    .isEqualTo(firstPlayer);
         }
     }
 }

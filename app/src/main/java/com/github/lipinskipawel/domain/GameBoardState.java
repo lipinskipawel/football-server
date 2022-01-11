@@ -3,7 +3,6 @@ package com.github.lipinskipawel.domain;
 import com.github.lipinskipawel.board.engine.Board;
 import com.github.lipinskipawel.board.engine.Boards;
 import com.github.lipinskipawel.board.engine.Move;
-import com.github.lipinskipawel.board.engine.Player;
 import com.github.lipinskipawel.user.ConnectedClient;
 
 /**
@@ -14,13 +13,13 @@ final class GameBoardState {
     private final ConnectedClient first;
     private final ConnectedClient second;
     private ConnectedClient currentlyMovingPlayer;
-    private Board boardState;
+    private Board<ConnectedClient> boardState;
 
     private GameBoardState(final ConnectedClient first, final ConnectedClient second) {
         this.first = first;
         this.second = second;
         this.currentlyMovingPlayer = first;
-        this.boardState = Boards.immutableBoard();
+        this.boardState = Boards.immutableBoardWithCustomPlayer(first, second);
     }
 
     /**
@@ -37,7 +36,7 @@ final class GameBoardState {
             return false;
         }
         final var afterMove = makeMove(move);
-        if (this.boardState.moveHistory().equals(afterMove.moveHistory())) {
+        if (this.boardState.getPlayer().equals(afterMove.getPlayer())) {
             return false;
         }
         this.boardState = afterMove;
@@ -45,15 +44,19 @@ final class GameBoardState {
         return true;
     }
 
-    private Board makeMove(final Move move) {
-        try {
-            return this.boardState.executeMove(move);
-        } catch (RuntimeException ex) {
-            return this.boardState;
+    private Board<ConnectedClient> makeMove(final Move move) {
+        var refOfBoard = this.boardState;
+        for (var singleMove : move.getMove()) {
+            if (refOfBoard.isMoveAllowed(singleMove)) {
+                refOfBoard = refOfBoard.executeMove(singleMove);
+            } else {
+                return this.boardState;
+            }
         }
+        return refOfBoard;
     }
 
-    Player currentPlayerToMove() {
+    ConnectedClient currentPlayerToMove() {
         return this.boardState.getPlayer();
     }
 
@@ -69,9 +72,7 @@ final class GameBoardState {
      * @return username of the winner
      */
     String getWinner() {
-        return this.boardState.takeTheWinner().get().name().equals("FIRST") ?
-                first.getUsername() :
-                second.getUsername();
+        return this.boardState.takeTheWinner().get().getUsername();
     }
 
 
