@@ -1,4 +1,4 @@
-package com.github.lipinskipawel.server;
+package com.github.lipinskipawel.domain;
 
 import com.github.lipinskipawel.user.ConnectedClient;
 import com.github.lipinskipawel.util.Pair;

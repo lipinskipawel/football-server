@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
  * This class ensures correctness of the user experience during playing game by synchronizing state between game logic
  * and sending messages to players.
  */
-public final class GameLifeCycle {
+final class GameLifeCycle {
     private static final AcceptMove ACCEPT_MOVE = new AcceptMove();
     private final DualConnection dualConnection;
     private GameBoardState boardState;
@@ -28,11 +28,11 @@ public final class GameLifeCycle {
         this.dualConnection = dualConnection;
     }
 
-    public static GameLifeCycle of(final Parser parser) {
+    static GameLifeCycle of(final Parser parser) {
         return new GameLifeCycle(new DualConnection(parser));
     }
 
-    public void makeMove(final GameMove gameMove, final ConnectedClient client) {
+    void makeMove(final GameMove gameMove, final ConnectedClient client) {
         final var move = new Move(toDirectionList(gameMove.getMove()));
         var isMade = false;
         synchronized (this) {
@@ -51,7 +51,7 @@ public final class GameLifeCycle {
         }
     }
 
-    public void dropConnectionFor(final ConnectedClient client) {
+    void dropConnectionFor(final ConnectedClient client) {
         dualConnection.dropConnectionFor(client);
     }
 
@@ -59,7 +59,7 @@ public final class GameLifeCycle {
         return listOfDirections.stream().map(Direction::valueOf).collect(Collectors.toList());
     }
 
-    public boolean accept(final ConnectedClient client) {
+    boolean accept(final ConnectedClient client) {
         final var isAccepted = dualConnection.accept(client);
         final var bothClients = dualConnection.areBothClientsConnected();
         if (bothClients) {

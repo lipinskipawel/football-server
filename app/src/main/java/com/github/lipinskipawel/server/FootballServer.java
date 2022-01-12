@@ -3,7 +3,7 @@ package com.github.lipinskipawel.server;
 import com.github.lipinskipawel.api.Player;
 import com.github.lipinskipawel.api.RequestToPlay;
 import com.github.lipinskipawel.api.move.GameMove;
-import com.github.lipinskipawel.domain.GameLifeCycle;
+import com.github.lipinskipawel.domain.ActiveGames;
 import com.github.lipinskipawel.user.ConnectedClient;
 import com.google.gson.Gson;
 import org.java_websocket.WebSocket;
@@ -16,8 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 import static com.github.lipinskipawel.server.HandshakePolicy.webConnectionPolicy;
@@ -30,15 +28,13 @@ public final class FootballServer extends WebSocketServer {
     private static final Logger LOGGER = LoggerFactory.getLogger(FootballServer.class);
     private final Gson parser;
     private final Lobby lobby;
-    private final Map<String, GameLifeCycle> gamesPerUrl;
-    private final RedirectEndpoint redirect;
+    private final ActiveGames activeGames;
 
     public FootballServer(final InetSocketAddress address) {
         super(address);
         this.parser = new Gson();
         this.lobby = Lobby.of(parser::toJson);
-        this.gamesPerUrl = new HashMap<>();
-        this.redirect = new RedirectEndpoint();
+        this.activeGames = ActiveGames.of();
     }
 
     @Override
@@ -78,21 +74,9 @@ public final class FootballServer extends WebSocketServer {
             final String username,
             final ConnectedClient client) {
         final var url = conn.getResourceDescriptor();
-        final var canPlay = redirect.canJoin(client.getUsername(), url);
-        if (!canPlay) {
-            final var message = "Server does not allow connecting to the game without going through /lobby first";
-            LOGGER.info(message);
-            conn.closeConnection(POLICY_VALIDATION, message);
-            return;
-        }
-        var gameLifeCycle = this.gamesPerUrl.get(url);
-        if (gameLifeCycle == null) {
-            gameLifeCycle = GameLifeCycle.of(parser::toJson);
-            this.gamesPerUrl.put(url, gameLifeCycle);
-        }
-        final var isAdded = gameLifeCycle.accept(client);
+        final var isAdded = this.activeGames.accept(url, client);
         if (!isAdded) {
-            final var message = "Server does not allow more than 2 clients to connect to the same endpoint";
+            final var message = "Server does not allow connecting to the game.";
             conn.closeConnection(POLICY_VALIDATION, message);
             LOGGER.info(message);
             LOGGER.info("Connection has been closed");
@@ -104,10 +88,7 @@ public final class FootballServer extends WebSocketServer {
         LOGGER.info("Server onClose: {}, reason: {}", code, reason);
         findBy(conn)
                 .ifPresent(client -> {
-                    final var gameLifeCycle = this.gamesPerUrl.get(conn.getResourceDescriptor());
-                    if (gameLifeCycle != null) {
-                        gameLifeCycle.dropConnectionFor(client);
-                    }
+                    this.activeGames.dropConnectionFor(conn.getResourceDescriptor(), client);
                     this.lobby.dropConnectionFor(client);
                 });
     }
@@ -127,7 +108,7 @@ public final class FootballServer extends WebSocketServer {
             }
             parseToGameMove(message)
                     .ifPresentOrElse(
-                            move -> this.gamesPerUrl.get(conn.getResourceDescriptor()).makeMove(move, client),
+                            move -> this.activeGames.registerMove(conn.getResourceDescriptor(), move, client),
                             () -> LOGGER.error("Can not parse given message to GameMove object. {}", message)
                     );
         }
@@ -143,11 +124,8 @@ public final class FootballServer extends WebSocketServer {
     }
 
     private void pairBothClients(final ConnectedClient client, final ConnectedClient opponent) {
-        this.lobby.pair(
-                () -> redirect.createNewRedirectEndpoint(client.getUsername(), opponent.getUsername()),
-                client,
-                opponent
-        );
+        final var urlForNewGame = this.activeGames.createNewGame(client, opponent);
+        this.lobby.pair(() -> urlForNewGame, client, opponent);
     }
 
     private void closeWebSocketConnection(WebSocket conn) {

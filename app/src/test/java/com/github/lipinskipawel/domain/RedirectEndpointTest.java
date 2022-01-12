@@ -1,4 +1,4 @@
-package com.github.lipinskipawel.server;
+package com.github.lipinskipawel.domain;
 
 import org.assertj.core.api.WithAssertions;
 import org.junit.jupiter.api.Nested;
