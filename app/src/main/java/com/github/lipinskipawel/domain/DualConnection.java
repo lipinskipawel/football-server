@@ -35,18 +35,6 @@ final class DualConnection {
         }
     }
 
-    boolean areBothClientsConnected() {
-        return connectedClients.size() == 2;
-    }
-
-    ConnectedClient first() {
-        return connectedClients.get(0);
-    }
-
-    ConnectedClient second() {
-        return connectedClients.get(1);
-    }
-
     void sendMessageFrom(final Object message, final ConnectedClient sender) {
         if (connectedClients.size() != 2) {
             return;

@@ -6,6 +6,7 @@ import com.google.gson.Gson;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * This is an entrypoint for registering and playing a football game.
@@ -17,14 +18,12 @@ import java.util.Map;
  */
 public final class ActiveGames {
     /**
-     * Each game is registered under the unique url
+     * Each game is registered under the url
      */
     private final Map<String, GameLifeCycle> gamesPerUrl;
-    private final RedirectEndpoint redirect;
 
     ActiveGames(Map<String, GameLifeCycle> gamesPerUrl) {
         this.gamesPerUrl = gamesPerUrl;
-        this.redirect = new RedirectEndpoint();
     }
 
     public static ActiveGames of() {
@@ -32,8 +31,8 @@ public final class ActiveGames {
     }
 
     /**
-     * This method is intended to create a new game for two players. Each game is registered under unique url. The order
-     * of parameters doesn't matter in a sense of first player will not be guaranteed to move first.
+     * This method is intended to create a new game for two players. Each game is registered under url. The order of
+     * parameters doesn't matter in a sense of first player will not be guaranteed to move first.
      *
      * @param first  client that want to play
      * @param second client that want to play
@@ -41,8 +40,8 @@ public final class ActiveGames {
      * @implNote This method will create a new ({@link GameLifeCycle}) object representing game
      */
     public String createNewGame(final ConnectedClient first, final ConnectedClient second) {
-        final var url = this.redirect.createNewRedirectEndpoint(first.getUsername(), second.getUsername());
-        this.gamesPerUrl.put(url, GameLifeCycle.of(new Gson()::toJson));
+        final var url = "/game/".concat(UUID.randomUUID().toString());
+        this.gamesPerUrl.put(url, GameLifeCycle.of(new Gson()::toJson, first.getUsername(), second.getUsername()));
         return url;
     }
 
@@ -56,10 +55,6 @@ public final class ActiveGames {
      * @return true or false, true on successful connection otherwise false
      */
     public boolean accept(final String urlOfTheGame, final ConnectedClient client) {
-        final var canPlay = this.redirect.canJoin(client.getUsername(), urlOfTheGame);
-        if (!canPlay) {
-            return false;
-        }
         var gameLifeCycle = this.gamesPerUrl.get(urlOfTheGame);
         if (gameLifeCycle == null) {
             return false;

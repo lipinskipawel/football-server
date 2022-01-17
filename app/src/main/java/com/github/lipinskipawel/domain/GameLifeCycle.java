@@ -22,21 +22,26 @@ import java.util.stream.Collectors;
 final class GameLifeCycle {
     private static final AcceptMove ACCEPT_MOVE = new AcceptMove();
     private final DualConnection dualConnection;
-    private GameBoardState boardState;
+    private final GameBoardState boardState;
 
-    private GameLifeCycle(DualConnection dualConnection) {
+    private GameLifeCycle(DualConnection dualConnection, GameBoardState gameBoardState) {
+        this.boardState = gameBoardState;
         this.dualConnection = dualConnection;
     }
 
-    static GameLifeCycle of(final Parser parser) {
-        return new GameLifeCycle(new DualConnection(parser));
+    static GameLifeCycle of(final Parser parser, final String first, final String second) {
+        final var gameState = GameBoardState.aGameBoardState()
+                .withFirstPlayer(first)
+                .withSecondPlayer(second)
+                .build();
+        return new GameLifeCycle(new DualConnection(parser), gameState);
     }
 
     void makeMove(final GameMove gameMove, final ConnectedClient client) {
         final var move = new Move(toDirectionList(gameMove.getMove()));
         var isMade = false;
         synchronized (this) {
-            isMade = boardState.makeMoveBy(move, client);
+            isMade = boardState.makeMoveBy(move, client.getUsername());
         }
         if (isMade) {
             dualConnection.sendMessageFrom(gameMove, client);
@@ -60,16 +65,14 @@ final class GameLifeCycle {
     }
 
     boolean accept(final ConnectedClient client) {
-        final var isAccepted = dualConnection.accept(client);
-        final var bothClients = dualConnection.areBothClientsConnected();
-        if (bothClients) {
-            synchronized (this) {
-                boardState = GameBoardState.aGameBoardState()
-                        .withFirstPlayer(dualConnection.first())
-                        .withSecondPlayer(dualConnection.second())
-                        .build();
-            }
+        if (isClientRegisteredToPlay(client.getUsername())) {
+            return dualConnection.accept(client);
+        } else {
+            return false;
         }
-        return isAccepted;
+    }
+
+    private boolean isClientRegisteredToPlay(final String clientUsername) {
+        return boardState.first().equals(clientUsername) || boardState.second().equals(clientUsername);
     }
 }

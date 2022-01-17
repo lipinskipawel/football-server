@@ -3,19 +3,18 @@ package com.github.lipinskipawel.domain;
 import com.github.lipinskipawel.board.engine.Board;
 import com.github.lipinskipawel.board.engine.Boards;
 import com.github.lipinskipawel.board.engine.Move;
-import com.github.lipinskipawel.user.ConnectedClient;
 
 /**
  * This class represents a game state.
  * It is a thin wrapper around the {@link Board} interface.
  */
 final class GameBoardState {
-    private final ConnectedClient first;
-    private final ConnectedClient second;
-    private ConnectedClient currentlyMovingPlayer;
-    private Board<ConnectedClient> boardState;
+    private final String first;
+    private final String second;
+    private String currentlyMovingPlayer;
+    private Board<String> boardState;
 
-    private GameBoardState(final ConnectedClient first, final ConnectedClient second) {
+    private GameBoardState(final String first, final String second) {
         this.first = first;
         this.second = second;
         this.currentlyMovingPlayer = first;
@@ -31,7 +30,7 @@ final class GameBoardState {
      * @param player that makes the move
      * @return true if the move was executed successfully or false otherwise
      */
-    boolean makeMoveBy(final Move move, final ConnectedClient player) {
+    boolean makeMoveBy(final Move move, final String player) {
         if (!this.currentlyMovingPlayer.equals(player)) {
             return false;
         }
@@ -40,11 +39,11 @@ final class GameBoardState {
             return false;
         }
         this.boardState = afterMove;
-        this.currentlyMovingPlayer = this.currentlyMovingPlayer == first ? second : first;
+        this.currentlyMovingPlayer = this.currentlyMovingPlayer.equals(first) ? second : first;
         return true;
     }
 
-    private Board<ConnectedClient> makeMove(final Move move) {
+    private Board<String> makeMove(final Move move) {
         var refOfBoard = this.boardState;
         for (var singleMove : move.getMove()) {
             if (refOfBoard.isMoveAllowed(singleMove)) {
@@ -56,8 +55,16 @@ final class GameBoardState {
         return refOfBoard;
     }
 
-    ConnectedClient currentPlayerToMove() {
+    String currentPlayerToMove() {
         return this.boardState.getPlayer();
+    }
+
+    String first() {
+        return this.first;
+    }
+
+    String second() {
+        return this.second;
     }
 
     boolean isGameOver() {
@@ -72,7 +79,7 @@ final class GameBoardState {
      * @return username of the winner
      */
     String getWinner() {
-        return this.boardState.takeTheWinner().get().getUsername();
+        return this.boardState.takeTheWinner().get();
     }
 
 
@@ -81,17 +88,17 @@ final class GameBoardState {
     }
 
     static class Builder {
-        private ConnectedClient first, second;
+        private String first, second;
 
         public Builder() {
         }
 
-        public Builder withFirstPlayer(final ConnectedClient firstPlayer) {
+        public Builder withFirstPlayer(final String firstPlayer) {
             this.first = firstPlayer;
             return this;
         }
 
-        public Builder withSecondPlayer(final ConnectedClient secondPlayer) {
+        public Builder withSecondPlayer(final String secondPlayer) {
             this.second = secondPlayer;
             return this;
         }
