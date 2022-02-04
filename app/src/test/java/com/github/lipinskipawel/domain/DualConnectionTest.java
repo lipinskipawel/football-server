@@ -52,6 +52,16 @@ final class DualConnectionTest {
 
             assertThat(notAccepted).isFalse();
         }
+
+        @Test
+        void shouldAcceptTheSamePlayerTwice() {
+            var firstClient = new TestConnectedClient("/example/1");
+
+            dualConnection.accept(firstClient);
+            var accepted = dualConnection.accept(firstClient);
+
+            assertThat(accepted).isTrue();
+        }
     }
 
     @Nested
@@ -107,4 +117,19 @@ final class DualConnectionTest {
         assertThat(firstClient.isClosed()).isTrue();
     }
 
+    @Test
+    void shouldNotSendMessageWhenClientIsNotAccepted() {
+        final var firstClient = new TestConnectedClient("/example/1");
+        final var secondClient = new TestConnectedClient("/example/1");
+        final var notAccepted = new TestConnectedClient("/example/1");
+        dualConnection.accept(secondClient);
+        dualConnection.accept(firstClient);
+
+        dualConnection.sendMessageTo(EXAMPLE_TEST_MESSAGE, notAccepted);
+
+        assertThat(notAccepted)
+                .extracting(TestConnectedClient::getMessages)
+                .asList()
+                .hasSize(0);
+    }
 }

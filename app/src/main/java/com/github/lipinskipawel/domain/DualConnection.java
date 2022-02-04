@@ -4,9 +4,6 @@ import com.github.lipinskipawel.server.Parser;
 import com.github.lipinskipawel.user.ConnectedClient;
 import com.github.lipinskipawel.util.ThreadSafe;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * This class represent a DualConnection where two clients are connected to each other. Therefore, it manages number of
  * clients connected to the same endpoint.
@@ -14,54 +11,93 @@ import java.util.List;
  */
 @ThreadSafe
 final class DualConnection {
-    private final List<ConnectedClient> connectedClients;
-    private final Object lock;
+    private ConnectedClient first;
+    private ConnectedClient second;
     private final Parser parser;
 
     DualConnection(final Parser parser) {
-        this.connectedClients = new ArrayList<>();
-        this.lock = new Object();
         this.parser = parser;
     }
 
+    /**
+     * This method stores the reference of {@link ConnectedClient} for later use such as sending messages or dropping
+     * connection.
+     * {@code DualConnection} can store only two references. {@code client} must not be null. In regard to the
+     * {@code client} reference identity, it is possible to call this method twice with the same reference.
+     *
+     * @param client that is trying to be accepted
+     * @return true or false, true only if {@code client} was stored successfully, otherwise false
+     */
     boolean accept(final ConnectedClient client) {
-        synchronized (lock) {
-            if (connectedClients.size() < 2) {
-                connectedClients.add(client);
+        if (client == null) {
+            return false;
+        }
+        synchronized (this) {
+            if (first == null) {
+                first = client;
                 return true;
-            } else {
-                return false;
+            } else if (second == null) {
+                second = client;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * This method will send the {@code message} to the receiving side.
+     *
+     * @param message to be sent
+     * @param sender  that is about ot send the message
+     */
+    void sendMessageFrom(final Object message, final ConnectedClient sender) {
+        if (sender == null) {
+            return;
+        }
+        synchronized (this) {
+            final var client = sender.equals(first) ? second : first;
+            if (client == null) {
+                return;
+            }
+            client.send(parser.toJson(message));
+        }
+    }
+
+    /**
+     * This method will send the {@code message} to the receiver. Prior to sending message the {@code receiver} must be
+     * accepted by the {@link DualConnection#accept(ConnectedClient)} method.
+     *
+     * @param message  to be sent
+     * @param receiver that will receive the message
+     */
+    void sendMessageTo(final Object message, final ConnectedClient receiver) {
+        if (receiver == null) {
+            return;
+        }
+        synchronized (this) {
+            if (receiver.equals(first) || receiver.equals(second)) {
+                receiver.send(parser.toJson(message));
             }
         }
     }
 
-    void sendMessageFrom(final Object message, final ConnectedClient sender) {
-        if (connectedClients.size() != 2) {
-            return;
-        }
-        connectedClients
-                .stream()
-                .filter(client -> findSender(client, sender))
-                .findFirst()
-                .ifPresent(client -> client.send(parser.toJson(message)));
-    }
-
-    private boolean findSender(ConnectedClient client, ConnectedClient sender) {
-        return !client.equals(sender);
-    }
-
-    void sendMessageTo(final Object message, final ConnectedClient receiver) {
-        if (connectedClients.size() != 2) {
-            return;
-        }
-        receiver.send(parser.toJson(message));
-    }
-
+    /**
+     * This method will close the underlying connection and remove the {@code toLeave} from the {@code DualConnection}
+     * storage.
+     *
+     * @param toLeave ConnectedClient that will be disconnected
+     */
     void dropConnectionFor(final ConnectedClient toLeave) {
-        synchronized (lock) {
-            final var removed = connectedClients.removeIf(client -> client.equals(toLeave));
-            if (removed) {
-                toLeave.close();
+        if (toLeave == null) {
+            return;
+        }
+        synchronized (this) {
+            if (toLeave.equals(first)) {
+                first.close();
+                first = null;
+            } else if (toLeave.equals(second)) {
+                second.close();
+                second = null;
             }
         }
     }
