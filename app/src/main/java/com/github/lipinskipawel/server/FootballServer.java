@@ -14,6 +14,7 @@ import org.java_websocket.handshake.ServerHandshakeBuilder;
 import org.java_websocket.server.WebSocketServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import java.net.InetSocketAddress;
 import java.util.Optional;
@@ -40,21 +41,24 @@ public final class FootballServer extends WebSocketServer {
     @Override
     public void onOpen(WebSocket conn, ClientHandshake handshake) {
         final var url = conn.getResourceDescriptor();
-        LOGGER.info("Server onOpen: {}", url);
+        MDC.put("gameUrl", url);
         final var username = usernameFromCookie(handshake);
         final var optionalClient = from(conn, username);
         if (optionalClient.isPresent()) {
             final var client = optionalClient.get();
+            MDC.put("ConnectedClientUsername", client.getUsername());
+            LOGGER.info("Server onOpen");
             if (url.equals("/lobby")) {
                 this.lobby.accept(client);
                 return;
             }
-            processGameConnection(conn, username, client);
+            processGameConnection(conn, client);
         }
         if (optionalClient.isEmpty()) {
             final var message = "Server does not allow two different clients authenticate using the same connection";
             LOGGER.error(message);
             conn.closeConnection(POLICY_VALIDATION, message);
+            MDC.clear();
         }
     }
 
@@ -71,8 +75,8 @@ public final class FootballServer extends WebSocketServer {
 
     private void processGameConnection(
             final WebSocket conn,
-            final String username,
-            final ConnectedClient client) {
+            final ConnectedClient client
+    ) {
         final var url = conn.getResourceDescriptor();
         final var isAdded = this.activeGames.accept(url, client);
         if (!isAdded) {
@@ -80,17 +84,21 @@ public final class FootballServer extends WebSocketServer {
             conn.closeConnection(POLICY_VALIDATION, message);
             LOGGER.info(message);
             LOGGER.info("Connection has been closed");
+            MDC.clear();
         }
     }
 
     @Override
     public void onClose(WebSocket conn, int code, String reason, boolean remote) {
-        LOGGER.info("Server onClose: {}, reason: {}", code, reason);
+        MDC.put("gameUrl", conn.getResourceDescriptor());
         findBy(conn)
                 .ifPresent(client -> {
+                    MDC.put("ConnectedClientUsername", client.getUsername());
                     this.activeGames.dropConnectionFor(conn.getResourceDescriptor(), client);
                     this.lobby.dropConnectionFor(client);
                 });
+        LOGGER.info("Server onClose: {}, reason: {}", code, reason);
+        MDC.clear();
     }
 
     @Override
@@ -112,6 +120,7 @@ public final class FootballServer extends WebSocketServer {
                             () -> LOGGER.error("Can not parse given message to GameMove object. {}", message)
                     );
         }
+        MDC.clear();
     }
 
     private Optional<RequestToPlay> parseRequestToPlay(final String json) {
@@ -132,6 +141,7 @@ public final class FootballServer extends WebSocketServer {
         final var message = "Server allows only RequestToPlay messages to be sent in the /lobby endpoint";
         LOGGER.error(message);
         conn.closeConnection(POLICY_VALIDATION, message);
+        MDC.clear();
     }
 
     private Optional<GameMove> parseToGameMove(final String json) {
@@ -145,7 +155,9 @@ public final class FootballServer extends WebSocketServer {
 
     @Override
     public void onError(WebSocket conn, Exception ex) {
+        MDC.put("gameUrl", conn.getResourceDescriptor());
         LOGGER.error("Server onError: ", ex);
+        MDC.clear();
     }
 
     @Override
