@@ -1,2 +1,2 @@
 rootProject.name = "football-server"
-include("app", "api")
+include("app", "api", "auth")
