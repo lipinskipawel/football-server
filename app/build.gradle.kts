@@ -14,6 +14,7 @@ repositories {
 
 dependencies {
     implementation(project(":api"))
+    implementation(project(":auth"))
     implementation("org.java-websocket:Java-WebSocket:1.5.2")
     implementation("com.google.code.gson:gson:2.8.8")
     implementation("com.github.lipinskipawel:game-engine:5.0.0")

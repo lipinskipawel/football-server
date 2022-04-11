@@ -67,4 +67,23 @@ final class Register {
         }
         return token;
     }
+
+    /**
+     * This method will try to find associated username with the given token.
+     *
+     * @param token that will be used to find username
+     * @return username
+     */
+    String getUsernameForToken(final String token) {
+        final var entries = usernamesToTokens
+                .entrySet()
+                .stream()
+                .filter(it -> it.getValue().equals(token))
+                .map(Map.Entry::getKey)
+                .toList();
+        if (entries.size() != 1) {
+            throw new IllegalArgumentException("Token [" + token + "] is not associated with any username.");
+        }
+        return entries.get(0);
+    }
 }

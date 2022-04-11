@@ -4,6 +4,7 @@ import com.github.lipinskipawel.api.Player;
 import com.github.lipinskipawel.api.WaitingPlayers;
 import com.github.lipinskipawel.client.FootballClientCreator;
 import com.github.lipinskipawel.extension.Application;
+import com.github.lipinskipawel.extension.AuthModuleFacade;
 import com.google.gson.Gson;
 import org.assertj.core.api.WithAssertions;
 import org.junit.jupiter.api.Test;
@@ -20,8 +21,10 @@ final class LobbyIT implements WithAssertions {
     static final String SERVER_URI = "ws://localhost:%d/lobby".formatted(PORT);
 
     @Test
-    void shouldAllowToConnectToLobby() throws InterruptedException {
+    void shouldAllowToConnectToLobby(AuthModuleFacade facade) throws InterruptedException {
+        facade.register("first", "aa");
         final var client = createClient(SERVER_URI);
+        client.addHeader("cookie", "aa");
         client.connectBlocking();
 
         final var isOpen = client.isOpen();
@@ -31,9 +34,13 @@ final class LobbyIT implements WithAssertions {
     }
 
     @Test
-    void shouldNotifyClientsWhenOneOfThemLeavesLobby() throws InterruptedException {
+    void shouldNotifyClientsWhenOneOfThemLeavesLobby(AuthModuleFacade facade) throws InterruptedException {
+        facade.register("first", "aa");
+        facade.register("second", "bb");
         final var client = createClient(SERVER_URI);
+        client.addHeader("cookie", "aa");
         final var secondClient = createClient(SERVER_URI);
+        secondClient.addHeader("cookie", "bb");
         client.connectBlocking();
         secondClient.connectBlocking();
         waitFor(() -> secondClient.getMessages().size() == 1);
@@ -45,11 +52,13 @@ final class LobbyIT implements WithAssertions {
     }
 
     @Test
-    void shouldReceiveWaitingPlayersMessageWhenOnlyOnePlayerIsInTheLobby() throws InterruptedException {
+    void shouldReceiveWaitingPlayersMessageWhenOnlyOnePlayerIsInTheLobby(AuthModuleFacade facade) throws InterruptedException {
+        facade.register("first", "aa");
         final var expectedWaitingPlayers = WaitingPlayers.fromPlayers(
-                List.of(Player.fromUsername("anonymous"))
+                List.of(Player.fromUsername("first"))
         );
         final var client = createClient(SERVER_URI);
+        client.addHeader("cookie", "aa");
         client.connectBlocking();
 
         waitFor(() -> client.getMessages().size() == 1);
@@ -60,10 +69,15 @@ final class LobbyIT implements WithAssertions {
     }
 
     @Test
-    void shouldReceivedWaitingPlayersMessageWithTwoEntriesWhenTwoClientAreInLobby() throws InterruptedException {
-        final var expected = Player.fromUsername("anonymous");
+    void shouldReceivedWaitingPlayersMessageWithTwoEntriesWhenTwoClientAreInLobby(AuthModuleFacade facade) throws InterruptedException {
+        facade.register("first", "aa");
+        facade.register("second", "bb");
+        final var expectedFirst = Player.fromUsername("first");
+        final var expectedSecond = Player.fromUsername("second");
         final var client = createClient(SERVER_URI);
+        client.addHeader("cookie", "aa");
         final var secondClient = createClient(SERVER_URI);
+        secondClient.addHeader("cookie", "bb");
         client.connectBlocking();
 
         secondClient.connectBlocking();
@@ -76,12 +90,12 @@ final class LobbyIT implements WithAssertions {
                 .extracting(WaitingPlayers::players)
                 .asList()
                 .hasSize(2)
-                .containsExactly(expected, expected);
+                .containsExactly(expectedFirst, expectedSecond);
     }
 
     @Test
-    void shouldPairBothClientsWhenRequested() throws InterruptedException {
-        final var pairedClients = FootballClientCreator.getPairedClients(SERVER_URI);
+    void shouldPairBothClientsWhenRequested(AuthModuleFacade facade) throws InterruptedException {
+        final var pairedClients = FootballClientCreator.getPairedClients(SERVER_URI, facade);
 
         assertThat(pairedClients).hasSize(2);
         final var isOpenFirst = pairedClients[0].isOpen();

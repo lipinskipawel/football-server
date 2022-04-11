@@ -1,11 +1,13 @@
 package com.github.lipinskipawel.extension;
 
+import com.github.lipinskipawel.api.QueryRegister;
 import com.github.lipinskipawel.server.FootballServer;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.platform.commons.support.AnnotationSupport;
 
+import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -21,15 +23,26 @@ final class FootballServerExtension implements BeforeAllCallback, AfterAllCallba
                 .ifPresent(element -> {
                             final var annotation = AnnotationSupport.findAnnotation(element, Application.class);
                             if (annotation.isPresent()) {
-                                final var port = annotation.get().port();
+                                final var application = annotation.get();
+                                final var port = application.port();
+                                final var register = createRegister(application);
                                 final var pool = Executors.newSingleThreadExecutor();
-                                final var server = new FootballServer(new InetSocketAddress("localhost", port));
+                                final var server = new FootballServer(new InetSocketAddress("localhost", port), register);
                                 pool.submit(server);
                                 getStore(context).put("server", server);
                                 getStore(context).put("pool", pool);
+                                getStore(context).put("register", register);
                             }
                         }
                 );
+    }
+
+    private QueryRegister createRegister(final Application application) {
+        try {
+            return (QueryRegister) application.authModuleQueryRegister().getDeclaredConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            throw new RuntimeException("Could not create QueryRegister via reflection. " + this.getClass() + " has failed.", e.getCause());
+        }
     }
 
     @Override
@@ -53,7 +66,7 @@ final class FootballServerExtension implements BeforeAllCallback, AfterAllCallba
     }
 
     private static ExtensionContext.Store getStore(final ExtensionContext context) {
-        final var namespace = ExtensionContext.Namespace.create(FootballServerExtension.class, context.getUniqueId());
+        final var namespace = ExtensionContext.Namespace.create(FootballServerExtension.class);
         return context.getStore(namespace);
     }
 }

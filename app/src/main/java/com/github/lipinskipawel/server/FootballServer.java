@@ -1,10 +1,12 @@
 package com.github.lipinskipawel.server;
 
 import com.github.lipinskipawel.api.Player;
+import com.github.lipinskipawel.api.QueryRegister;
 import com.github.lipinskipawel.api.RequestToPlay;
 import com.github.lipinskipawel.api.move.GameMove;
 import com.github.lipinskipawel.domain.ActiveGames;
 import com.github.lipinskipawel.user.ConnectedClient;
+import com.github.lipinskipawel.user.ConnectedClientFactory;
 import com.google.gson.Gson;
 import org.java_websocket.WebSocket;
 import org.java_websocket.drafts.Draft;
@@ -20,9 +22,6 @@ import java.net.InetSocketAddress;
 import java.util.Optional;
 
 import static com.github.lipinskipawel.server.HandshakePolicy.webConnectionPolicy;
-import static com.github.lipinskipawel.user.ConnectedClient.findBy;
-import static com.github.lipinskipawel.user.ConnectedClient.findByUsername;
-import static com.github.lipinskipawel.user.ConnectedClient.from;
 import static org.java_websocket.framing.CloseFrame.POLICY_VALIDATION;
 
 public final class FootballServer extends WebSocketServer {
@@ -30,12 +29,22 @@ public final class FootballServer extends WebSocketServer {
     private final Gson parser;
     private final Lobby lobby;
     private final ActiveGames activeGames;
+    private final ConnectedClientFactory factory;
 
     public FootballServer(final InetSocketAddress address) {
         super(address);
         this.parser = new Gson();
         this.lobby = Lobby.of(parser::toJson);
         this.activeGames = ActiveGames.of();
+        this.factory = new ConnectedClientFactory();
+    }
+
+    public FootballServer(final InetSocketAddress address, final QueryRegister register) {
+        super(address);
+        this.parser = new Gson();
+        this.lobby = Lobby.of(parser::toJson);
+        this.activeGames = ActiveGames.of();
+        this.factory = new ConnectedClientFactory(register);
     }
 
     @Override
@@ -43,9 +52,8 @@ public final class FootballServer extends WebSocketServer {
         final var url = conn.getResourceDescriptor();
         MDC.put("gameUrl", url);
         final var username = usernameFromCookie(handshake);
-        final var optionalClient = from(conn, username);
-        if (optionalClient.isPresent()) {
-            final var client = optionalClient.get();
+        try {
+            final var client = factory.from(conn, username);
             MDC.put("ConnectedClientUsername", client.getUsername());
             LOGGER.info("Server onOpen");
             if (url.equals("/lobby")) {
@@ -53,8 +61,7 @@ public final class FootballServer extends WebSocketServer {
                 return;
             }
             processGameConnection(conn, client);
-        }
-        if (optionalClient.isEmpty()) {
+        } catch (RuntimeException ee) {
             final var message = "Server does not allow two different clients authenticate using the same connection";
             LOGGER.error(message);
             conn.closeConnection(POLICY_VALIDATION, message);
@@ -91,7 +98,7 @@ public final class FootballServer extends WebSocketServer {
     @Override
     public void onClose(WebSocket conn, int code, String reason, boolean remote) {
         MDC.put("gameUrl", conn.getResourceDescriptor());
-        findBy(conn)
+        factory.findBy(conn)
                 .ifPresent(client -> {
                     MDC.put("ConnectedClientUsername", client.getUsername());
                     this.activeGames.dropConnectionFor(conn.getResourceDescriptor(), client);
@@ -104,12 +111,12 @@ public final class FootballServer extends WebSocketServer {
     @Override
     public void onMessage(WebSocket conn, String message) {
         LOGGER.info("Server onMessage: {}", message);
-        final var optionalClient = findBy(conn);
+        final var optionalClient = factory.findBy(conn);
         if (optionalClient.isPresent()) {
             final var client = optionalClient.get();
             if (conn.getResourceDescriptor().equals("/lobby")) {
                 parseRequestToPlay(message)
-                        .flatMap(request -> findByUsername(request.getOpponent().getUsername()))
+                        .flatMap(request -> factory.findByUsername(request.getOpponent().getUsername()))
                         .ifPresentOrElse(opponent -> pairBothClients(client, opponent),
                                 () -> closeWebSocketConnection(conn));
                 return;

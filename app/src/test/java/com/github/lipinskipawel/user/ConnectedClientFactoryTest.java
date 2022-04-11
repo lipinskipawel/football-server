@@ -1,5 +1,6 @@
 package com.github.lipinskipawel.user;
 
+import com.github.lipinskipawel.mocks.TestRegister;
 import org.assertj.core.api.WithAssertions;
 import org.java_websocket.WebSocket;
 import org.java_websocket.drafts.Draft;
@@ -7,6 +8,7 @@ import org.java_websocket.enums.Opcode;
 import org.java_websocket.enums.ReadyState;
 import org.java_websocket.framing.Framedata;
 import org.java_websocket.protocols.IProtocol;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -15,7 +17,16 @@ import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 
-final class MinimalisticClientContextTest implements WithAssertions {
+final class ConnectedClientFactoryTest implements WithAssertions {
+    private ConnectedClientFactory subject;
+    private TestRegister register;
+
+    @BeforeEach
+    void setUp() {
+        register = new TestRegister();
+        register.register("a", "a");
+        subject = new ConnectedClientFactory(register);
+    }
 
     @Nested
     class FromStaticFactoryMethod {
@@ -23,55 +34,62 @@ final class MinimalisticClientContextTest implements WithAssertions {
         void shouldCreateConnectedClientWhenGivenWebSocket() {
             final WebSocket webSocket = new TestWebSocket("/lobby");
 
-            final var client = ConnectedClient.from(webSocket, "a");
+            final var client = subject.from(webSocket, "a");
 
-            assertThat(client)
-                    .get()
-                    .isNotNull();
+            assertThat(client).isNotNull();
         }
 
         @Test
         void shouldReturnNewConnectedClientWhenGivenWasClosed() {
             final WebSocket webSocket = new TestWebSocket("/lobby");
 
-            final var firstClient = ConnectedClient.from(webSocket, "a");
+            final var firstClient = subject.from(webSocket, "a");
             webSocket.close();
-            final var secondClient = ConnectedClient.from(webSocket, "a");
-
-            assertThat(secondClient).get().isNotNull();
-            assertThat(firstClient)
-                    .get()
-                    .isNotNull()
-                    .isNotSameAs(secondClient);
-        }
-
-        @Test
-        void shouldReturnDifferentConnectedClientsWhenTheSameUsernameButDifferentWebSocket() {
-            final WebSocket firstWebSocket = new TestWebSocket("/lobby");
-            final WebSocket secondWebSocket = new TestWebSocket("/lobby");
-
-            final var firstClient = ConnectedClient.from(firstWebSocket, "a");
-            final var secondClient = ConnectedClient.from(secondWebSocket, "a");
+            final var secondClient = subject.from(webSocket, "a");
 
             assertThat(secondClient).isNotNull();
             assertThat(firstClient)
-                    .get()
                     .isNotNull()
                     .isNotSameAs(secondClient);
         }
 
         @Test
-        void shouldReturnEmptyOptionalOfConnectedClientWhenTheSameWebSocketTriesToRegisteredWithDifferentUsername() {
+        void shouldNotAllowToHaveMoreThanOneRegistrationAtTheSameTime() {
+            final WebSocket firstWebSocket = new TestWebSocket("/lobby");
+            final WebSocket secondWebSocket = new TestWebSocket("/lobby");
+
+            final var firstClient = subject.from(firstWebSocket, "a");
+            final var throwable = catchThrowable(() -> subject.from(secondWebSocket, "a"));
+
+            assertThat(firstClient).isNotNull();
+            assertThat(throwable)
+                    .isInstanceOf(RuntimeException.class)
+                    .hasMessage("Already authenticated");
+        }
+
+        @Test
+        void shouldThrowExceptionWhenUsernameIsNotRegistered() {
             final WebSocket webSocket = new TestWebSocket("/lobby");
 
-            final var firstClient = ConnectedClient.from(webSocket, "a");
-            final var secondClient = ConnectedClient.from(webSocket, "b");
+            final var throwable = catchThrowable(() -> subject.from(webSocket, "b"));
 
-            assertThat(secondClient).isEmpty();
-            assertThat(firstClient)
-                    .get()
-                    .isNotNull()
-                    .isNotSameAs(secondClient);
+            assertThat(throwable)
+                    .isInstanceOf(RuntimeException.class)
+                    .hasMessage("Username wasn't registered");
+        }
+
+        @Test
+        void shouldThrowRuntimeWhenTheSameWebSocketTriesToPlaysWithDifferentUsername() {
+            final WebSocket webSocket = new TestWebSocket("/lobby");
+
+            final var firstClient = subject.from(webSocket, "a");
+            register.register("b", "b");
+            final var throwable = catchThrowable(() -> subject.from(webSocket, "b"));
+
+            assertThat(firstClient).isNotNull();
+            assertThat(throwable)
+                    .isInstanceOf(RuntimeException.class)
+                    .hasMessage("Already authenticated");
         }
     }
 
@@ -80,9 +98,9 @@ final class MinimalisticClientContextTest implements WithAssertions {
         @Test
         void shouldFindByWebSocket() {
             final WebSocket webSocket = new TestWebSocket("/lobby");
-            ConnectedClient.from(webSocket, "a");
+            subject.from(webSocket, "a");
 
-            final var client = ConnectedClient.findBy(webSocket);
+            final var client = subject.findBy(webSocket);
 
             assertThat(client)
                     .get()
@@ -92,10 +110,10 @@ final class MinimalisticClientContextTest implements WithAssertions {
         @Test
         void shouldReturnCachedConnectedClientWhenGivenTheSameWebSocket() {
             final WebSocket webSocket = new TestWebSocket("/lobby");
-            ConnectedClient.from(webSocket, "a");
+            subject.from(webSocket, "a");
 
-            final var firstClient = ConnectedClient.findBy(webSocket);
-            final var secondClient = ConnectedClient.findBy(webSocket);
+            final var firstClient = subject.findBy(webSocket);
+            final var secondClient = subject.findBy(webSocket);
 
             assertThat(secondClient).get().isNotNull();
             assertThat(firstClient)
@@ -110,9 +128,9 @@ final class MinimalisticClientContextTest implements WithAssertions {
         @Test
         void shouldFindByUsername() {
             final WebSocket webSocket = new TestWebSocket("/lobby");
-            ConnectedClient.from(webSocket, "a");
+            subject.from(webSocket, "a");
 
-            final var client = ConnectedClient.findByUsername("a");
+            final var client = subject.findByUsername("a");
 
             assertThat(client)
                     .get()
@@ -122,10 +140,10 @@ final class MinimalisticClientContextTest implements WithAssertions {
         @Test
         void shouldReturnCachedConnectedClientWhenAskedForTheSameUsername() {
             final WebSocket webSocket = new TestWebSocket("/lobby");
-            ConnectedClient.from(webSocket, "a");
+            subject.from(webSocket, "a");
 
-            final var firstClient = ConnectedClient.findByUsername("a");
-            final var secondClient = ConnectedClient.findByUsername("a");
+            final var firstClient = subject.findByUsername("a");
+            final var secondClient = subject.findByUsername("a");
 
             assertThat(secondClient).get().isNotNull();
             assertThat(firstClient)

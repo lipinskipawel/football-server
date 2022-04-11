@@ -3,6 +3,7 @@ package com.github.lipinskipawel.server;
 import com.github.lipinskipawel.api.Player;
 import com.github.lipinskipawel.client.SimpleWebSocketClient;
 import com.github.lipinskipawel.extension.Application;
+import com.github.lipinskipawel.extension.AuthModuleFacade;
 import com.google.gson.Gson;
 import org.junit.jupiter.api.Test;
 
@@ -18,8 +19,10 @@ final class FootballServerIT {
     static final String SERVER_URI = "ws://localhost:%d".formatted(PORT);
 
     @Test
-    void shouldRejectClientWhenURIDoNotMeetPolicy() throws InterruptedException {
+    void shouldRejectClientWhenURIDoNotMeetPolicy(AuthModuleFacade facade) throws InterruptedException {
+        facade.register("first", "aa");
         final var client = createClient(SERVER_URI.concat("/example"));
+        client.addHeader("cookie", "aa");
 
         client.connectBlocking();
 
@@ -29,8 +32,10 @@ final class FootballServerIT {
     }
 
     @Test
-    void shouldCloseConnectionWhenUnexpectedMessageArrives() throws InterruptedException {
+    void shouldCloseConnectionWhenUnexpectedMessageArrives(AuthModuleFacade facade) throws InterruptedException {
+        facade.register("first", "aa");
         final var client = createClient(SERVER_URI.concat("/lobby"));
+        client.addHeader("cookie", "aa");
         client.connectBlocking();
         final var player = Player.fromUsername("example");
 
@@ -43,8 +48,8 @@ final class FootballServerIT {
     }
 
     @Test
-    void shouldClientNotReceivedMessageWhenNotAGameMove() throws InterruptedException {
-        final var pairedClients = getPairedClients(SERVER_URI.concat("/lobby"));
+    void shouldClientNotReceivedMessageWhenNotAGameMove(AuthModuleFacade facade) throws InterruptedException {
+        final var pairedClients = getPairedClients(SERVER_URI.concat("/lobby"), facade);
 
         pairedClients[0].send("msg");
 
@@ -57,11 +62,13 @@ final class FootballServerIT {
     }
 
     @Test
-    void shouldAllowOnlyTwoClientsConnectToTheSameEndpoint() throws InterruptedException {
-        final var pairedClients = getPairedClients(SERVER_URI.concat("/lobby"));
+    void shouldAllowOnlyTwoClientsConnectToTheSameEndpoint(AuthModuleFacade facade) throws InterruptedException {
+        final var pairedClients = getPairedClients(SERVER_URI.concat("/lobby"), facade);
         final var endpoint = pairedClients[0].getConnection().getResourceDescriptor();
 
         final var thirdClient = createClient(SERVER_URI.concat(endpoint));
+        facade.register("third", "cc");
+        thirdClient.addHeader("cookie", "cc");
         thirdClient.connectBlocking();
 
         final var isOpenFirst = pairedClients[0].isOpen();

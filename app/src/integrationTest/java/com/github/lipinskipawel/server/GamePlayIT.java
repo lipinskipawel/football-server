@@ -6,6 +6,7 @@ import com.github.lipinskipawel.api.move.RejectMove;
 import com.github.lipinskipawel.client.FootballClientCreator;
 import com.github.lipinskipawel.client.SimpleWebSocketClient;
 import com.github.lipinskipawel.extension.Application;
+import com.github.lipinskipawel.extension.AuthModuleFacade;
 import com.google.gson.Gson;
 import org.assertj.core.api.WithAssertions;
 import org.junit.jupiter.api.Test;
@@ -22,8 +23,8 @@ final class GamePlayIT implements WithAssertions {
     static final String SERVER_LOBBY = "ws://localhost:%d/lobby".formatted(PORT);
 
     @Test
-    void shouldAllowToSendMoveToAnotherPlayerWhenPlayingTogether() throws InterruptedException {
-        final var pairedClients = FootballClientCreator.getPairedClients(SERVER_LOBBY);
+    void shouldAllowToSendMoveToAnotherPlayerWhenPlayingTogether(AuthModuleFacade facade) throws InterruptedException {
+        final var pairedClients = FootballClientCreator.getPairedClients(SERVER_LOBBY, facade);
 
         final var move = GameMove.from(List.of("N")).get();
         final var message = parser.toJson(move);
@@ -46,8 +47,8 @@ final class GamePlayIT implements WithAssertions {
     }
 
     @Test
-    void shouldAllowToExchangeMovesBetweenPlayersWhenPlayingTogether() throws InterruptedException {
-        final var pairedClients = FootballClientCreator.getPairedClients(SERVER_LOBBY);
+    void shouldAllowToExchangeMovesBetweenPlayersWhenPlayingTogether(AuthModuleFacade facade) throws InterruptedException {
+        final var pairedClients = FootballClientCreator.getPairedClients(SERVER_LOBBY, facade);
 
         final var moveToSecond = GameMove.from(List.of("N")).get();
         final var messageForSecond = parser.toJson(moveToSecond);
@@ -74,8 +75,8 @@ final class GamePlayIT implements WithAssertions {
     }
 
     @Test
-    void shouldNotAllowToMoveTwiceByTheSamePlayer() throws InterruptedException {
-        final var pairedClients = FootballClientCreator.getPairedClients(SERVER_LOBBY);
+    void shouldNotAllowToMoveTwiceByTheSamePlayer(AuthModuleFacade facade) throws InterruptedException {
+        final var pairedClients = FootballClientCreator.getPairedClients(SERVER_LOBBY, facade);
 
         final var moveToSecond = GameMove.from(List.of("N")).get();
         final var messageForSecond = parser.toJson(moveToSecond);

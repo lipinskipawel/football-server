@@ -3,6 +3,7 @@ package com.github.lipinskipawel.client;
 import com.github.lipinskipawel.api.PlayPairing;
 import com.github.lipinskipawel.api.RequestToPlay;
 import com.github.lipinskipawel.api.WaitingPlayers;
+import com.github.lipinskipawel.extension.AuthModuleFacade;
 import com.google.gson.Gson;
 
 import java.time.Duration;
@@ -27,7 +28,10 @@ public final class FootballClientCreator {
      * @param serverEndpoint must be ws://localhost:{PORT}/lobby
      * @return two connected clients
      */
-    public static SimpleWebSocketClient[] getPairedClients(final String serverEndpoint) throws InterruptedException {
+    public static SimpleWebSocketClient[] getPairedClients(final String serverEndpoint, final AuthModuleFacade register)
+            throws InterruptedException {
+        register.register("firstClient", "firstClient");
+        register.register("secondClient", "secondClient");
         final var result = new SimpleWebSocketClient[2];
         final var firstClient = createClient(serverEndpoint);
         final var secondClient = createClient(serverEndpoint);
