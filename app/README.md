@@ -3,7 +3,7 @@
 This module contains the code of Football Server. Here is the code responsible for accepting WebSocket connections. Each
 client that attempts to connect to Football Server must follow defied [policy].
 
-[policy]: README.md#Internals
+[policy]: README.md#Policy
 
 ### Development
 
@@ -17,7 +17,7 @@ Run local server by executing `gradle app:run`.
 
 Unit tests can be run by `gradle test`. Integration tests can be run by `gradle iT`.
 
-### Internals
+### Policy
 
 In order to establish connection to the server the client must use WebSocket technology. Furthermore, it must open the
 connection at `/lobby` endpoint. It will be possible now for a client to select an opponent to play with. After choosing

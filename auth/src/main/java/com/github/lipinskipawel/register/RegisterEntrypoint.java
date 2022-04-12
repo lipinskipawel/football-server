@@ -21,9 +21,9 @@ public final class RegisterEntrypoint {
     }
 
     /**
-     * This method returns
+     * This method returns production ready implementation of {@link QueryRegister} interface.
      *
-     * @return register
+     * @return query register object
      */
     public static QueryRegister getRegister() {
         return new QueryRegister() {
