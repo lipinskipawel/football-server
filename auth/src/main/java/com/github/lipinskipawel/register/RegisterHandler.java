@@ -29,7 +29,7 @@ final class RegisterHandler extends SimpleChannelInboundHandler<FullHttpRequest>
     private final Register register;
 
     RegisterHandler(Register register) {
-        super();
+        super(false);
         this.register = register;
     }
 
@@ -48,7 +48,7 @@ final class RegisterHandler extends SimpleChannelInboundHandler<FullHttpRequest>
 
         final var token = register.getTokenForUsername(username);
         ctx.writeAndFlush(buildOKResponse(token));
-        msg.retain();
+        ctx.fireChannelRead(msg);
     }
 
     private boolean isNotPostOnRegisterURI(final FullHttpRequest msg) {
