@@ -18,8 +18,5 @@ public interface AuthModuleFacade extends QueryRegister {
     void register(String username, String token);
 
     @Override
-    boolean isRegistered(final String username);
-
-    @Override
     Optional<String> usernameForToken(final String token);
 }

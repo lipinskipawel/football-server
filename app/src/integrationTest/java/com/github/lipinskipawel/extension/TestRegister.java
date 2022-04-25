@@ -28,11 +28,6 @@ final class TestRegister implements AuthModuleFacade {
     }
 
     @Override
-    public boolean isRegistered(final String token) {
-        return usernamesToTokens.containsValue(token);
-    }
-
-    @Override
     public Optional<String> usernameForToken(String token) {
         final var username = this.usernamesToTokens
                 .entrySet()

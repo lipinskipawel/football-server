@@ -8,15 +8,6 @@ import java.util.Optional;
 public interface QueryRegister {
 
     /**
-     * Checks whether given username was registered. Every username must be registered beforehand this method will
-     * return true.
-     *
-     * @param username to check for registrations
-     * @return true or false, true when user was registered, otherwise false
-     */
-    boolean isRegistered(final String username);
-
-    /**
      * Finds username that is associated with the given token.
      *
      * @param token that will be used to find associated username

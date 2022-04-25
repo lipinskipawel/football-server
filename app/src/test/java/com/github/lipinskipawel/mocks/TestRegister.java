@@ -28,12 +28,7 @@ public class TestRegister implements QueryRegister {
     }
 
     @Override
-    public boolean isRegistered(final String token) {
-        return tokensToUsernames.containsKey(token);
-    }
-
-    @Override
     public Optional<String> usernameForToken(String token) {
-        return Optional.of(this.tokensToUsernames.get(token));
+        return Optional.ofNullable(this.tokensToUsernames.get(token));
     }
 }

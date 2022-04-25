@@ -48,17 +48,19 @@ public final class ConnectedClientFactory {
      * @return instance of {@link ConnectedClient}
      */
     public ConnectedClient from(final WebSocket connection, final String token) {
-        if (!register.isRegistered(token)) {
-            throw new RuntimeException("Username wasn't registered");
+        Optional<String> maybeUsername = register.usernameForToken(token);
+        if (maybeUsername.isPresent()) {
+            final var username = maybeUsername.get();
+            clearConnection();
+            final var authenticatedUser = authenticatedWithToken.get(connection);
+            if (noConnectionAndNoToken(token, authenticatedUser)) {
+                authenticatedWithToken.put(connection, token);
+                authenticatedConnectedClients.put(connection, new AuthorizedClient(connection, username));
+                return authenticatedConnectedClients.get(connection);
+            }
+            throw new RuntimeException("Already authenticated");
         }
-        clearConnection();
-        final var authenticatedUser = authenticatedWithToken.get(connection);
-        if (noConnectionAndNoToken(token, authenticatedUser)) {
-            authenticatedWithToken.put(connection, token);
-            authenticatedConnectedClients.put(connection, new AuthorizedClient(connection, register.usernameForToken(token).get()));
-            return authenticatedConnectedClients.get(connection);
-        }
-        throw new RuntimeException("Already authenticated");
+        throw new RuntimeException("Username wasn't registered");
     }
 
     /**
