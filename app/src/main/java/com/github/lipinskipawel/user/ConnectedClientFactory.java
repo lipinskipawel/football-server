@@ -48,7 +48,7 @@ public final class ConnectedClientFactory {
      * @return instance of {@link ConnectedClient}
      */
     public ConnectedClient from(final WebSocket connection, final String token) {
-        Optional<String> maybeUsername = register.usernameForToken(token);
+        final var maybeUsername = register.findUsernameByToken(token);
         if (maybeUsername.isPresent()) {
             final var username = maybeUsername.get();
             clearConnection();

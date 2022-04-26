@@ -13,5 +13,5 @@ public interface QueryRegister {
      * @param token that will be used to find associated username
      * @return Optional username that is associated with the given token
      */
-    Optional<String> usernameForToken(final String token);
+    Optional<String> findUsernameByToken(final String token);
 }

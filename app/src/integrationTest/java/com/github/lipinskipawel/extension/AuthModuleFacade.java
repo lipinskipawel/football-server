@@ -18,5 +18,5 @@ public interface AuthModuleFacade extends QueryRegister {
     void register(String username, String token);
 
     @Override
-    Optional<String> usernameForToken(final String token);
+    Optional<String> findUsernameByToken(final String token);
 }

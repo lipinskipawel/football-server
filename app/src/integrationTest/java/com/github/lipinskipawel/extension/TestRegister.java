@@ -28,7 +28,7 @@ final class TestRegister implements AuthModuleFacade {
     }
 
     @Override
-    public Optional<String> usernameForToken(String token) {
+    public Optional<String> findUsernameByToken(String token) {
         final var username = this.usernamesToTokens
                 .entrySet()
                 .stream()
