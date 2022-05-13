@@ -56,4 +56,27 @@ final class RegisterTest implements WithAssertions {
         assertThat(johnsToken).isEqualTo("yJQU7YCyGBQUx9XA");
         assertThat(marksToken).isNotEqualTo(johnsToken);
     }
+
+    @Test
+    void shouldReturnUsernameWhenGivenToken() {
+        final var givenUsername = "mark";
+        register.register(givenUsername);
+        final var marksToken = register.getTokenForUsername(givenUsername);
+
+        final var username = register.getUsernameForToken(marksToken);
+
+        assertThat(username).isEqualTo(givenUsername);
+    }
+
+    @Test
+    void shouldReturnUsernameWhenRegisterHaveManyUsers() {
+        final var givenUsername = "mark";
+        register.register("john");
+        register.register(givenUsername);
+        final var marksToken = register.getTokenForUsername(givenUsername);
+
+        final var username = register.getUsernameForToken(marksToken);
+
+        assertThat(username).isEqualTo(givenUsername);
+    }
 }
