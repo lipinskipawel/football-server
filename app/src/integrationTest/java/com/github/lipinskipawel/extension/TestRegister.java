@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
  * This class is designed to implement {@link AuthModuleFacade} that implements Register from AuthModule.
  * Its usage is only though the integration tests.
  */
-final class TestRegister implements AuthModuleFacade {
+public final class TestRegister implements AuthModuleFacade {
     private final Map<String, String> usernamesToTokens;
 
     public TestRegister() {
@@ -23,6 +23,7 @@ final class TestRegister implements AuthModuleFacade {
      * @param username to register
      * @param token    to register
      */
+    @Override
     public void register(final String username, final String token) {
         this.usernamesToTokens.put(username, token);
     }
@@ -37,6 +38,11 @@ final class TestRegister implements AuthModuleFacade {
                 .toList();
         if (username.size() != 1) return Optional.empty();
         return Optional.of(username.get(0));
+    }
+
+    @Override
+    public void clearAll() {
+        this.usernamesToTokens.clear();
     }
 
     @Override

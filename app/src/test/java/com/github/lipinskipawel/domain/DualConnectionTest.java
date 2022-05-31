@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 final class DualConnectionTest {
     private static final String EXAMPLE_TEST_MESSAGE = "example test message";
+    private static final String USERNAME_MARK = "mark";
     private DualConnection dualConnection;
 
     @BeforeEach
@@ -22,7 +23,7 @@ final class DualConnectionTest {
     class NumberOfPlayers {
         @Test
         void shouldAcceptOnePlayer() {
-            var firstClient = new TestConnectedClient("/example/1");
+            var firstClient = new TestConnectedClient(USERNAME_MARK);
 
             var accepted = dualConnection.accept(firstClient);
 
@@ -31,8 +32,8 @@ final class DualConnectionTest {
 
         @Test
         void shouldAcceptTwoPlayers() {
-            var firstClient = new TestConnectedClient("/example/1");
-            var secondClient = new TestConnectedClient("/example/1");
+            var firstClient = new TestConnectedClient(USERNAME_MARK);
+            var secondClient = new TestConnectedClient(USERNAME_MARK);
 
             dualConnection.accept(firstClient);
             var accepted = dualConnection.accept(secondClient);
@@ -42,9 +43,9 @@ final class DualConnectionTest {
 
         @Test
         void shouldNotAcceptThreePlayers() {
-            var firstClient = new TestConnectedClient("/example/1");
-            var secondClient = new TestConnectedClient("/example/1");
-            var thirdClient = new TestConnectedClient("/example/1");
+            var firstClient = new TestConnectedClient(USERNAME_MARK);
+            var secondClient = new TestConnectedClient(USERNAME_MARK);
+            var thirdClient = new TestConnectedClient(USERNAME_MARK);
 
             dualConnection.accept(firstClient);
             dualConnection.accept(secondClient);
@@ -55,7 +56,7 @@ final class DualConnectionTest {
 
         @Test
         void shouldAcceptTheSamePlayerTwice() {
-            var firstClient = new TestConnectedClient("/example/1");
+            var firstClient = new TestConnectedClient(USERNAME_MARK);
 
             dualConnection.accept(firstClient);
             var accepted = dualConnection.accept(firstClient);
@@ -69,8 +70,8 @@ final class DualConnectionTest {
     class EndpointOfPlayers {
         @Test
         void shouldReceivedMessagesConnectedToTheSameURL() {
-            final var firstClient = new TestConnectedClient("/example/1");
-            final var secondClient = new TestConnectedClient("/example/1");
+            final var firstClient = new TestConnectedClient(USERNAME_MARK);
+            final var secondClient = new TestConnectedClient(USERNAME_MARK);
             dualConnection.accept(firstClient);
             dualConnection.accept(secondClient);
 
@@ -81,7 +82,7 @@ final class DualConnectionTest {
 
         @Test
         void shouldNotReceivedMessagesConnectedToDifferentUrl() {
-            final var firstClient = new TestConnectedClient("/example/1");
+            final var firstClient = new TestConnectedClient(USERNAME_MARK);
             final var secondClient = new TestConnectedClient("/example/2");
             dualConnection.accept(firstClient);
             dualConnection.accept(secondClient);
@@ -94,8 +95,8 @@ final class DualConnectionTest {
 
     @Test
     void shouldLeaveTheTable() {
-        final var firstClient = new TestConnectedClient("/example/1");
-        final var secondClient = new TestConnectedClient("/example/1");
+        final var firstClient = new TestConnectedClient(USERNAME_MARK);
+        final var secondClient = new TestConnectedClient(USERNAME_MARK);
         dualConnection.accept(firstClient);
         dualConnection.accept(secondClient);
 
@@ -107,8 +108,8 @@ final class DualConnectionTest {
 
     @Test
     void shouldNotLeakConnection() {
-        final var firstClient = new TestConnectedClient("/example/1");
-        final var secondClient = new TestConnectedClient("/example/1");
+        final var firstClient = new TestConnectedClient(USERNAME_MARK);
+        final var secondClient = new TestConnectedClient(USERNAME_MARK);
         dualConnection.accept(firstClient);
         dualConnection.accept(secondClient);
 
@@ -119,9 +120,9 @@ final class DualConnectionTest {
 
     @Test
     void shouldNotSendMessageWhenClientIsNotAccepted() {
-        final var firstClient = new TestConnectedClient("/example/1");
-        final var secondClient = new TestConnectedClient("/example/1");
-        final var notAccepted = new TestConnectedClient("/example/1");
+        final var firstClient = new TestConnectedClient(USERNAME_MARK);
+        final var secondClient = new TestConnectedClient(USERNAME_MARK);
+        final var notAccepted = new TestConnectedClient(USERNAME_MARK);
         dualConnection.accept(secondClient);
         dualConnection.accept(firstClient);
 

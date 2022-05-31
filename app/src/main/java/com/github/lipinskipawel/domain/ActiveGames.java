@@ -17,6 +17,7 @@ import java.util.UUID;
  * <p>
  */
 public final class ActiveGames {
+    private static final String BASE_GAME_URL = "/ws/game/";
     /**
      * Each game is registered under the url
      */
@@ -40,7 +41,7 @@ public final class ActiveGames {
      * @implNote This method will create a new ({@link GameLifeCycle}) object representing game
      */
     public String createNewGame(final ConnectedClient first, final ConnectedClient second) {
-        final var url = "/game/".concat(UUID.randomUUID().toString());
+        final var url = BASE_GAME_URL.concat(UUID.randomUUID().toString());
         this.gamesPerUrl.put(url, GameLifeCycle.of(new Gson()::toJson, first.getUsername(), second.getUsername()));
         return url;
     }
@@ -74,6 +75,32 @@ public final class ActiveGames {
      */
     public void registerMove(final String urlOfTheGame, final GameMove move, final ConnectedClient client) {
         this.gamesPerUrl.get(urlOfTheGame).makeMove(move, client);
+    }
+
+    /**
+     * This method will attempt to make a move by the given client. Whether the move has been made or not is in power of
+     * the underlying game object. Any game state communication with the clients such as
+     * {@link com.github.lipinskipawel.api.move.GameMove}, {@link com.github.lipinskipawel.api.move.AcceptMove} and
+     * {@link com.github.lipinskipawel.api.game.GameEnd} is handled by the underlying object.
+     * <p>
+     * This method will throw {@link RuntimeException} every time when number of active games by the client is different
+     * from 1.
+     *
+     * @param move   that s about to be made
+     * @param client that is attempting to make a move
+     * @throws RuntimeException when client is playing more than one game
+     */
+    public void registerMove(final GameMove move, final ConnectedClient client) {
+        final var games = this.gamesPerUrl
+                .values()
+                .stream()
+                .filter(gameLifeCycle -> gameLifeCycle.isClientAllowedToPlay(client))
+                .toList();
+        if (games.size() == 1) {
+            games.get(0).makeMove(move, client);
+            return;
+        }
+        throw new RuntimeException("We do not support multiple games played at the same time by the user");
     }
 
     /**

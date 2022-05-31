@@ -20,7 +20,7 @@ public final class AuthModuleResolver implements ParameterResolver {
     @Override
     public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
         return extensionContext
-                .getStore(ExtensionContext.Namespace.create(FootballServerExtension.class))
+                .getStore(ExtensionContext.Namespace.create(WebSocketServerExtension.class))
                 .get("register");
     }
 }

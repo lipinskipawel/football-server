@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
  * - adding new client to the lobby
  * - removing client from the lobby
  * - pairing two clients together
- * This class is a helper class and used as a dependency for the {@link FootballServer} class.
+ * This class is a helper class and used as a dependency for the {@link WebSocketServer} class.
  */
 @ThreadSafe
 final class Lobby {
@@ -112,5 +112,9 @@ final class Lobby {
 
     private boolean checkWhetherBothAreInLobby(final ConnectedClient first, final ConnectedClient second) {
         return connectedClients.contains(first) && connectedClients.contains(second);
+    }
+
+    boolean isInLobby(final ConnectedClient client) {
+        return connectedClients.contains(client);
     }
 }

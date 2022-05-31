@@ -75,4 +75,8 @@ final class GameLifeCycle {
     private boolean isClientRegisteredToPlay(final String clientUsername) {
         return boardState.first().equals(clientUsername) || boardState.second().equals(clientUsername);
     }
+
+    boolean isClientAllowedToPlay(final ConnectedClient client) {
+        return dualConnection.isConnected(client);
+    }
 }

@@ -15,7 +15,7 @@ repositories {
 dependencies {
     implementation(project(":api"))
     implementation(project(":auth"))
-    implementation("org.java-websocket:Java-WebSocket:1.5.2")
+    implementation("io.netty:netty-all:4.1.73.Final")
     implementation("com.google.code.gson:gson:2.8.8")
     implementation("com.github.lipinskipawel:game-engine:5.0.0")
     // currently, org.slf4j:slf4j-api:2.0.0-alpha5 is failing https://issues.apache.org/jira/browse/LOG4J2-3139
@@ -53,6 +53,7 @@ val integrationTestImplementation: Configuration by configurations.getting {
 
 dependencies {
     integrationTestImplementation("org.awaitility:awaitility:4.1.1")
+    integrationTestImplementation("org.java-websocket:Java-WebSocket:1.5.2")
 }
 
 configurations["integrationTestRuntimeOnly"].extendsFrom(configurations.runtimeOnly.get())

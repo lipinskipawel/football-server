@@ -17,7 +17,7 @@ class LobbyTest implements WithAssertions {
         @Test
         void shouldAcceptOneClient() {
             final var list = new ArrayList<ConnectedClient>();
-            final var client = new TestConnectedClient("/lobby", "a");
+            final var client = new TestConnectedClient("a");
             final var lobby = Lobby.of(list, Objects::toString);
 
             lobby.accept(client);
@@ -30,8 +30,8 @@ class LobbyTest implements WithAssertions {
         @Test
         void shouldAcceptTwoClients() {
             final var numberOfConnectedClients = new ArrayList<ConnectedClient>();
-            final var firstClient = new TestConnectedClient("/lobby", "a");
-            final var secondClient = new TestConnectedClient("/lobby", "b");
+            final var firstClient = new TestConnectedClient("a");
+            final var secondClient = new TestConnectedClient("b");
             final var lobby = Lobby.of(numberOfConnectedClients, Objects::toString);
 
             lobby.accept(firstClient);
@@ -45,8 +45,8 @@ class LobbyTest implements WithAssertions {
         @Test
         void shouldSendMessagesWhenTwoClientsJoins() {
             final var numberOfConnectedClients = new ArrayList<ConnectedClient>();
-            final var firstClient = new TestConnectedClient("/lobby", "a");
-            final var secondClient = new TestConnectedClient("/lobby", "b");
+            final var firstClient = new TestConnectedClient("a");
+            final var secondClient = new TestConnectedClient("b");
             final var lobby = Lobby.of(numberOfConnectedClients, Objects::toString);
 
             lobby.accept(firstClient);
@@ -74,7 +74,7 @@ class LobbyTest implements WithAssertions {
         @Test
         void shouldNoOneBeInTheLobbyWhenOneJoinsAndLeave() {
             final var numberOfConnectedClients = new ArrayList<ConnectedClient>();
-            final var client = new TestConnectedClient("/lobby", "a");
+            final var client = new TestConnectedClient("a");
             final var lobby = Lobby.of(numberOfConnectedClients, Objects::toString);
 
             lobby.accept(client);
@@ -89,8 +89,8 @@ class LobbyTest implements WithAssertions {
         @Test
         void shouldPairTwoClientsWhenRequested() {
             final var numberOfConnectedClients = new ArrayList<ConnectedClient>();
-            final var firstClient = new TestConnectedClient("/lobby", "a");
-            final var secondClient = new TestConnectedClient("/lobby", "b");
+            final var firstClient = new TestConnectedClient("a");
+            final var secondClient = new TestConnectedClient("b");
             final var lobby = Lobby.of(numberOfConnectedClients, Objects::toString);
             lobby.accept(firstClient);
             lobby.accept(secondClient);

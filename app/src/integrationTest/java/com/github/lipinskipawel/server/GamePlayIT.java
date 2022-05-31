@@ -20,7 +20,7 @@ final class GamePlayIT implements WithAssertions {
     private static final Gson parser = new Gson();
     private static final String ACCEPT_RESPONSE = parser.toJson(new AcceptMove());
     static final int PORT = 8092;
-    static final String SERVER_LOBBY = "ws://localhost:%d/lobby".formatted(PORT);
+    static final String SERVER_LOBBY = "ws://localhost:%d/ws/lobby".formatted(PORT);
 
     @Test
     void shouldAllowToSendMoveToAnotherPlayerWhenPlayingTogether(AuthModuleFacade facade) throws InterruptedException {

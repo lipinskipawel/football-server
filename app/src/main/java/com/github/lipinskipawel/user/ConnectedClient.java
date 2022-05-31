@@ -1,9 +1,9 @@
 package com.github.lipinskipawel.user;
 
-import com.github.lipinskipawel.server.FootballServer;
+import com.github.lipinskipawel.server.WebSocketServer;
 
 /**
- * This interface represents a connected client to the {@link FootballServer}.
+ * This interface represents a connected client to the {@link WebSocketServer}.
  */
 public interface ConnectedClient {
 
@@ -13,17 +13,12 @@ public interface ConnectedClient {
     void send(final String message);
 
     /**
-     * @return url which the client is connected to.
-     */
-    String getUrl();
-
-    /**
      * @return username which the client is identified as.
      */
     String getUsername();
 
     /**
-     * This method close client connection to the {@link FootballServer}. Closing connection is not blocking current
+     * This method close client connection to the {@link WebSocketServer}. Closing connection is not blocking current
      * thread.
      */
     void close();

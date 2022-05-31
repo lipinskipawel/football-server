@@ -1,24 +1,25 @@
 package com.github.lipinskipawel.user;
 
-import org.java_websocket.WebSocket;
+import io.netty.channel.Channel;
+import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 
 final class AuthorizedClient implements ConnectedClient {
-    private final WebSocket connection;
+    private final Channel channel;
     private final String username;
 
-    public AuthorizedClient(WebSocket connection, String username) {
-        this.connection = connection;
+    public AuthorizedClient(Channel channel, String username) {
+        this.channel = channel;
         this.username = username;
     }
 
     @Override
     public void send(String message) {
-        this.connection.send(message);
-    }
-
-    @Override
-    public String getUrl() {
-        return this.connection.getResourceDescriptor();
+        try {
+            final var frame = new TextWebSocketFrame(message);
+            this.channel.writeAndFlush(frame).sync();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -28,6 +29,6 @@ final class AuthorizedClient implements ConnectedClient {
 
     @Override
     public void close() {
-        this.connection.close();
+        this.channel.close();
     }
 }

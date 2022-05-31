@@ -1,36 +1,21 @@
 package com.github.lipinskipawel.user;
 
 import com.github.lipinskipawel.api.QueryRegister;
-import com.github.lipinskipawel.register.RegisterEntrypoint;
-import org.java_websocket.WebSocket;
+import io.netty.channel.Channel;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * This class is an improved factory for {@link ConnectedClient} objects. Not only this class acts like a factory, but
- * also caches its object ({@link ConnectedClient}). Therefore, it must remove any connections that are closed.
- * <p>
- * This class acts like a bridge between App module (WebSocket connections/Football server) and Auth module (HTTP connections/
- * Authorization module).
- * <p>
- * This class is not Thread safe.
- */
 public final class ConnectedClientFactory {
-    private final Map<WebSocket, String> authenticatedWithToken;
-    private final Map<WebSocket, ConnectedClient> authenticatedConnectedClients;
-    private final QueryRegister register;
-
-    public ConnectedClientFactory() {
-        this.authenticatedWithToken = new HashMap<>();
-        this.authenticatedConnectedClients = new HashMap<>();
-        this.register = RegisterEntrypoint.getRegister();
+    private record ConnectedClientWithToken(String token, ConnectedClient client) {
     }
 
+    private final Map<Channel, ConnectedClientWithToken> authenticatedConnectedClients;
+    private final QueryRegister register;
+
     public ConnectedClientFactory(QueryRegister register) {
-        this.authenticatedWithToken = new HashMap<>();
-        this.authenticatedConnectedClients = new HashMap<>();
+        this.authenticatedConnectedClients = new ConcurrentHashMap<>();
         this.register = register;
     }
 
@@ -38,25 +23,24 @@ public final class ConnectedClientFactory {
      * This method is a factory for {@link ConnectedClient} objects.
      *
      * <p>This method does <strong>NOT</strong> acts like a cache. In order to retrieve already accepted
-     * {@link ConnectedClient} use {@link #findBy(WebSocket)} and {@link #findByUsername(String)}.</p>
+     * {@link ConnectedClient} use {@link #findBy(Channel)} and {@link #findByUsername(String)}.</p>
      *
      * <p> This method is an entrypoint for any sort of authorization.
-     * It will check whether given token has been already registered as well as {@link WebSocket} itself.</p>
+     * It will check whether given token has been already registered as well as {@link Channel} itself.</p>
      *
      * @param connection that tires to authenticate
      * @param token      that was passed along the way with the connection
      * @return instance of {@link ConnectedClient}
      */
-    public ConnectedClient from(final WebSocket connection, final String token) {
+    public ConnectedClient from(final Channel connection, final String token) {
         final var maybeUsername = register.findUsernameByToken(token);
         if (maybeUsername.isPresent()) {
             final var username = maybeUsername.get();
             clearConnection();
-            final var authenticatedUser = authenticatedWithToken.get(connection);
+            final var authenticatedUser = authenticatedConnectedClients.get(connection);
             if (noConnectionAndNoToken(token, authenticatedUser)) {
-                authenticatedWithToken.put(connection, token);
-                authenticatedConnectedClients.put(connection, new AuthorizedClient(connection, username));
-                return authenticatedConnectedClients.get(connection);
+                authenticatedConnectedClients.put(connection, new ConnectedClientWithToken(token, new AuthorizedClient(connection, username)));
+                return authenticatedConnectedClients.get(connection).client;
             }
             throw new RuntimeException("Already authenticated");
         }
@@ -67,12 +51,15 @@ public final class ConnectedClientFactory {
      * Prevent holding closed connections.
      */
     private void clearConnection() {
-        authenticatedWithToken.entrySet().removeIf(it -> it.getKey().isClosed());
-        authenticatedConnectedClients.entrySet().removeIf(it -> it.getKey().isClosed());
+        authenticatedConnectedClients.entrySet().removeIf(it -> !it.getKey().isActive());
     }
 
-    private boolean noConnectionAndNoToken(String token, String authenticatedUser) {
-        return authenticatedUser == null && !authenticatedWithToken.containsValue(token);
+    private boolean noConnectionAndNoToken(String token, ConnectedClientWithToken authenticatedUser) {
+        return authenticatedUser == null && authenticatedConnectedClients
+                .values()
+                .stream()
+                .map(it -> it.token)
+                .noneMatch(it -> it.equals(token));
     }
 
     /**
@@ -81,11 +68,10 @@ public final class ConnectedClientFactory {
      * @param connection which will be used to find {@link ConnectedClient}
      * @return Optional {@link ConnectedClient}
      */
-    public Optional<ConnectedClient> findBy(final WebSocket connection) {
-        clearConnection();
+    public Optional<ConnectedClient> findBy(final Channel connection) {
         final var authenticated = authenticatedConnectedClients.get(connection);
         if (authenticated != null) {
-            return Optional.of(authenticated);
+            return Optional.of(authenticated.client);
         }
         return Optional.empty();
     }
@@ -97,15 +83,14 @@ public final class ConnectedClientFactory {
      * @return Optional {@link ConnectedClient}
      */
     public Optional<ConnectedClient> findByUsername(final String username) {
-        clearConnection();
         final var connectedClients = authenticatedConnectedClients
                 .values()
                 .stream()
-                .filter(it -> it.getUsername().equals(username))
+                .filter(it -> it.client.getUsername().equals(username))
                 .toList();
         if (connectedClients.size() != 1) {
             return Optional.empty();
         }
-        return Optional.of(connectedClients.get(0));
+        return Optional.of(connectedClients.get(0).client);
     }
 }

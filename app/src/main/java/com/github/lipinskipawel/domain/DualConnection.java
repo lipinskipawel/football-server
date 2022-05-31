@@ -101,4 +101,16 @@ final class DualConnection {
             }
         }
     }
+
+    /**
+     * Checks whether given client is connected or not.
+     *
+     * @param client to check if it is connected
+     * @return true or false, true only when connected
+     */
+    boolean isConnected(final ConnectedClient client) {
+        synchronized (this) {
+            return first == client || second == client;
+        }
+    }
 }

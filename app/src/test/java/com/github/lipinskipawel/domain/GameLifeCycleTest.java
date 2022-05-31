@@ -23,8 +23,8 @@ class GameLifeCycleTest implements WithAssertions {
 
     @Test
     void shouldAllowToMakeAMove() {
-        final var firstClient = new TestConnectedClient("/one", "first");
-        final var secondClient = new TestConnectedClient("/one", "second");
+        final var firstClient = new TestConnectedClient("first");
+        final var secondClient = new TestConnectedClient("second");
         game.accept(firstClient);
         game.accept(secondClient);
 
@@ -45,8 +45,8 @@ class GameLifeCycleTest implements WithAssertions {
 
     @Test
     void shouldNotAllowToMakeAMoveTwiceByTheSamePlayer() {
-        final var firstClient = new TestConnectedClient("/one", "first");
-        final var secondClient = new TestConnectedClient("/one", "second");
+        final var firstClient = new TestConnectedClient("first");
+        final var secondClient = new TestConnectedClient("second");
         game.accept(firstClient);
         game.accept(secondClient);
 
@@ -68,8 +68,8 @@ class GameLifeCycleTest implements WithAssertions {
 
     @Test
     void shouldNotAllowToMakeIllegalMove() {
-        final var firstClient = new TestConnectedClient("/one", "first");
-        final var secondClient = new TestConnectedClient("/one", "second");
+        final var firstClient = new TestConnectedClient("first");
+        final var secondClient = new TestConnectedClient("second");
         game.accept(firstClient);
         game.accept(secondClient);
         final var gameMove = GameMove.from(List.of("N")).get();
@@ -92,8 +92,8 @@ class GameLifeCycleTest implements WithAssertions {
 
     @Test
     void shouldDetectWhenGameIsEnded() {
-        final var firstClient = new TestConnectedClient("/one", "first");
-        final var secondClient = new TestConnectedClient("/one", "second");
+        final var firstClient = new TestConnectedClient("first");
+        final var secondClient = new TestConnectedClient("second");
         final var expectedWinner = new GameEnd(Player.fromUsername(firstClient.getUsername()));
         game.accept(firstClient);
         game.accept(secondClient);

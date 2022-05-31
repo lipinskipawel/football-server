@@ -18,7 +18,7 @@ import static com.github.lipinskipawel.client.SimpleWebSocketClient.createClient
 final class LobbyIT implements WithAssertions {
     private static final Gson parser = new Gson();
     static final int PORT = 8091;
-    static final String SERVER_URI = "ws://localhost:%d/lobby".formatted(PORT);
+    static final String SERVER_URI = "ws://localhost:%d/ws/lobby".formatted(PORT);
 
     @Test
     void shouldAllowToConnectToLobby(AuthModuleFacade facade) throws InterruptedException {

@@ -12,11 +12,25 @@ import static com.github.lipinskipawel.client.FootballClientCreator.waitFor;
 import static com.github.lipinskipawel.client.SimpleWebSocketClient.createClient;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-@Application(port = FootballServerIT.PORT)
-final class FootballServerIT {
+@Application(port = WebSocketServerIT.PORT)
+final class WebSocketServerIT {
     private static final Parser parser = new Gson()::toJson;
     static final int PORT = 8090;
-    static final String SERVER_URI = "ws://localhost:%d".formatted(PORT);
+    static final String SERVER_URI = "ws://localhost:%d/ws".formatted(PORT);
+
+    @Test
+    void shouldRejectClientWhenURIDoesNotStartsWithWs(AuthModuleFacade facade) throws InterruptedException {
+        facade.register("first", "aa");
+        final var client = createClient(SERVER_URI.replace("/ws", "/example"));
+        client.addHeader("cookie", "aa");
+
+        client.connectBlocking();
+
+        waitFor(() -> client.getClose().size() == 1);
+        final var isOpen = client.isOpen();
+        client.closeBlocking();
+        assertThat(isOpen).isFalse();
+    }
 
     @Test
     void shouldRejectClientWhenURIDoNotMeetPolicy(AuthModuleFacade facade) throws InterruptedException {
@@ -26,9 +40,10 @@ final class FootballServerIT {
 
         client.connectBlocking();
 
-        final var connectionClose = client.isOpen();
+        waitFor(() -> client.getClose().size() == 1);
+        final var isOpen = client.isOpen();
         client.closeBlocking();
-        assertThat(connectionClose).isFalse();
+        assertThat(isOpen).isFalse();
     }
 
     @Test
@@ -55,6 +70,7 @@ final class FootballServerIT {
 
         pairedClients[0].closeBlocking();
         pairedClients[1].closeBlocking();
+        waitFor(() -> pairedClients[1].getClose().size() == 1);
         assertThat(pairedClients[1])
                 .extracting(SimpleWebSocketClient::getMessages)
                 .asList()
@@ -75,7 +91,7 @@ final class FootballServerIT {
         final var isOpenSecond = pairedClients[1].isOpen();
         pairedClients[0].closeBlocking();
         pairedClients[1].closeBlocking();
-        assertThat(thirdClient.isClosed()).isTrue();
+        waitFor(() -> thirdClient.getClose().size() == 1);
         assertThat(thirdClient.isClosed()).isTrue();
         assertThat(isOpenFirst).isTrue();
         assertThat(isOpenSecond).isTrue();

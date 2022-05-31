@@ -19,4 +19,9 @@ public interface AuthModuleFacade extends QueryRegister {
 
     @Override
     Optional<String> findUsernameByToken(final String token);
+
+    /**
+     * Clears all registered usernames so far.
+     */
+    void clearAll();
 }

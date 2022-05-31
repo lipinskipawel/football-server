@@ -77,7 +77,7 @@ public final class FootballClientCreator {
     }
 
     private static SimpleWebSocketClient createNewClient(SimpleWebSocketClient client, String serverUri) {
-        final var redirectedServerUri = serverUri.replace("/lobby", "");
+        final var redirectedServerUri = serverUri.replace("/ws/lobby", "");
 
         final var size = client.getMessages().size();
         final var playPairing = parser.fromJson(client.getMessages().get(size - 1), PlayPairing.class);
