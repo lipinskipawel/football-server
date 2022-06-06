@@ -18,14 +18,22 @@ Football Server repository is made of two modules:
 
 - [api]
 - [app]
+- [auth]
+- [domain]
 
-The `api` module defines every object that the server understands. Those objects are the API and must be used after
-successful connection to the server. The `app` module contains the server code and the main class to start the server.
-Please refer to the documentation of each module for mode information.
+The `domain` module is where the logic of the server is developed. The `api` module defines every object that the server
+understands. Those objects are the API and must be used after successful connection to the server. The `app` module
+contains the websocket server code and the main class to start the server. It also starts the second server (HTTP) from
+the `auth` module. `auth` contains logic related to authorization. Please refer to the documentation of each module for
+mode information.
 
 [api]: ./api
 
 [app]: ./app
+
+[app]: ./auth
+
+[app]: ./domain
 
 ### Football game
 

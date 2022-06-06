@@ -1,8 +1,8 @@
-package com.github.lipinskipawel.domain;
+package com.github.lipinskipawel.domain.game;
 
 import com.github.lipinskipawel.api.move.GameMove;
+import com.github.lipinskipawel.spi.Parser;
 import com.github.lipinskipawel.user.ConnectedClient;
-import com.google.gson.Gson;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,17 +18,25 @@ import java.util.UUID;
  */
 public final class ActiveGames {
     private static final String BASE_GAME_URL = "/ws/game/";
+    private final Parser parser;
     /**
      * Each game is registered under the url
      */
     private final Map<String, GameLifeCycle> gamesPerUrl;
 
-    ActiveGames(Map<String, GameLifeCycle> gamesPerUrl) {
+    ActiveGames(Parser parser, Map<String, GameLifeCycle> gamesPerUrl) {
+        this.parser = parser;
         this.gamesPerUrl = gamesPerUrl;
     }
 
-    public static ActiveGames of() {
-        return new ActiveGames(new HashMap<>());
+    /**
+     * Public factory method for creating new object of {@link ActiveGames}.
+     *
+     * @param parser that will be used
+     * @return activeGame object
+     */
+    public static ActiveGames of(Parser parser) {
+        return new ActiveGames(parser, new HashMap<>());
     }
 
     /**
@@ -42,7 +50,7 @@ public final class ActiveGames {
      */
     public String createNewGame(final ConnectedClient first, final ConnectedClient second) {
         final var url = BASE_GAME_URL.concat(UUID.randomUUID().toString());
-        this.gamesPerUrl.put(url, GameLifeCycle.of(new Gson()::toJson, first.getUsername(), second.getUsername()));
+        this.gamesPerUrl.put(url, GameLifeCycle.of(parser, first.getUsername(), second.getUsername()));
         return url;
     }
 
@@ -66,7 +74,7 @@ public final class ActiveGames {
     /**
      * This method will attempt to make a move by the given client. Whether the move has been made or not is in power of
      * the underlying game object. Any game state communication with the clients such as
-     * {@link com.github.lipinskipawel.api.move.GameMove}, {@link com.github.lipinskipawel.api.move.AcceptMove} and
+     * {@link GameMove}, {@link com.github.lipinskipawel.api.move.AcceptMove} and
      * {@link com.github.lipinskipawel.api.game.GameEnd} is handled by the underlying object.
      *
      * @param urlOfTheGame of the game
@@ -80,7 +88,7 @@ public final class ActiveGames {
     /**
      * This method will attempt to make a move by the given client. Whether the move has been made or not is in power of
      * the underlying game object. Any game state communication with the clients such as
-     * {@link com.github.lipinskipawel.api.move.GameMove}, {@link com.github.lipinskipawel.api.move.AcceptMove} and
+     * {@link GameMove}, {@link com.github.lipinskipawel.api.move.AcceptMove} and
      * {@link com.github.lipinskipawel.api.game.GameEnd} is handled by the underlying object.
      * <p>
      * This method will throw {@link RuntimeException} every time when number of active games by the client is different

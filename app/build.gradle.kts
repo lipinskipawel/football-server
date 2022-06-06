@@ -15,6 +15,7 @@ repositories {
 dependencies {
     implementation(project(":api"))
     implementation(project(":auth"))
+    implementation(project(":domain"))
     implementation("io.netty:netty-all:4.1.73.Final")
     implementation("com.google.code.gson:gson:2.8.8")
     implementation("com.github.lipinskipawel:game-engine:5.0.0")

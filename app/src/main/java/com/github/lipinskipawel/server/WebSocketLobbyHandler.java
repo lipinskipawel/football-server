@@ -2,7 +2,8 @@ package com.github.lipinskipawel.server;
 
 import com.github.lipinskipawel.api.Player;
 import com.github.lipinskipawel.api.RequestToPlay;
-import com.github.lipinskipawel.domain.ActiveGames;
+import com.github.lipinskipawel.domain.game.ActiveGames;
+import com.github.lipinskipawel.domain.lobby.Lobby;
 import com.github.lipinskipawel.user.ConnectedClient;
 import com.github.lipinskipawel.user.ConnectedClientFactory;
 import com.google.gson.Gson;

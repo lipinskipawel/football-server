@@ -1,6 +1,7 @@
 package com.github.lipinskipawel.server;
 
-import com.github.lipinskipawel.domain.ActiveGames;
+import com.github.lipinskipawel.domain.game.ActiveGames;
+import com.github.lipinskipawel.domain.lobby.Lobby;
 import com.github.lipinskipawel.user.ConnectedClientFactory;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;

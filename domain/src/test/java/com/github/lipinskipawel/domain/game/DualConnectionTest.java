@@ -1,6 +1,6 @@
-package com.github.lipinskipawel.domain;
+package com.github.lipinskipawel.domain.game;
 
-import com.github.lipinskipawel.mocks.TestConnectedClient;
+import com.github.lipinskipawel.domain.mocks.TestConnectedClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

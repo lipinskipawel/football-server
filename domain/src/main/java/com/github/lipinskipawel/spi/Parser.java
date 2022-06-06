@@ -1,6 +1,5 @@
-package com.github.lipinskipawel.server;
+package com.github.lipinskipawel.spi;
 
 public interface Parser {
-
     String toJson(Object data);
 }

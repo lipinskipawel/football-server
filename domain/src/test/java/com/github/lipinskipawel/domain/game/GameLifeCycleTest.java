@@ -1,11 +1,11 @@
-package com.github.lipinskipawel.domain;
+package com.github.lipinskipawel.domain.game;
 
 import com.github.lipinskipawel.api.Player;
 import com.github.lipinskipawel.api.game.GameEnd;
 import com.github.lipinskipawel.api.move.AcceptMove;
 import com.github.lipinskipawel.api.move.GameMove;
 import com.github.lipinskipawel.api.move.RejectMove;
-import com.github.lipinskipawel.mocks.TestConnectedClient;
+import com.github.lipinskipawel.domain.mocks.TestConnectedClient;
 import org.assertj.core.api.WithAssertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -1,4 +1,4 @@
-package com.github.lipinskipawel.domain;
+package com.github.lipinskipawel.domain.game;
 
 import com.github.lipinskipawel.board.engine.Direction;
 import com.github.lipinskipawel.board.engine.Move;

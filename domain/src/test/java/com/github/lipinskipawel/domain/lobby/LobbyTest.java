@@ -1,6 +1,6 @@
-package com.github.lipinskipawel.server;
+package com.github.lipinskipawel.domain.lobby;
 
-import com.github.lipinskipawel.mocks.TestConnectedClient;
+import com.github.lipinskipawel.domain.mocks.TestConnectedClient;
 import com.github.lipinskipawel.user.ConnectedClient;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.assertj.core.api.WithAssertions;

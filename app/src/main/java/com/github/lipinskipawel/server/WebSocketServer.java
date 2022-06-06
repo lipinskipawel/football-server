@@ -1,7 +1,8 @@
 package com.github.lipinskipawel.server;
 
 import com.github.lipinskipawel.api.QueryRegister;
-import com.github.lipinskipawel.domain.ActiveGames;
+import com.github.lipinskipawel.domain.game.ActiveGames;
+import com.github.lipinskipawel.domain.lobby.Lobby;
 import com.github.lipinskipawel.user.ConnectedClientFactory;
 import com.google.gson.Gson;
 import io.netty.bootstrap.ServerBootstrap;
@@ -49,7 +50,7 @@ public final class WebSocketServer {
                     .childHandler(initForTest(
                             Lobby.of(new Gson()::toJson),
                             new ConnectedClientFactory(register),
-                            ActiveGames.of())
+                            ActiveGames.of(new Gson()::toJson))
                     );
 
             this.channel = nettyServer.bind().sync().channel();

@@ -4,6 +4,7 @@ import com.github.lipinskipawel.api.Player;
 import com.github.lipinskipawel.client.SimpleWebSocketClient;
 import com.github.lipinskipawel.extension.Application;
 import com.github.lipinskipawel.extension.AuthModuleFacade;
+import com.github.lipinskipawel.spi.Parser;
 import com.google.gson.Gson;
 import org.junit.jupiter.api.Test;
 

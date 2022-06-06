@@ -1,7 +1,7 @@
 package com.github.lipinskipawel.server;
 
 import com.github.lipinskipawel.api.move.GameMove;
-import com.github.lipinskipawel.domain.ActiveGames;
+import com.github.lipinskipawel.domain.game.ActiveGames;
 import com.github.lipinskipawel.user.ConnectedClientFactory;
 import com.google.gson.Gson;
 import io.netty.channel.ChannelHandlerContext;

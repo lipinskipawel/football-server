@@ -1,4 +1,4 @@
-package com.github.lipinskipawel.domain;
+package com.github.lipinskipawel.domain.game;
 
 import com.github.lipinskipawel.api.Player;
 import com.github.lipinskipawel.api.game.GameEnd;
@@ -7,7 +7,7 @@ import com.github.lipinskipawel.api.move.GameMove;
 import com.github.lipinskipawel.api.move.RejectMove;
 import com.github.lipinskipawel.board.engine.Direction;
 import com.github.lipinskipawel.board.engine.Move;
-import com.github.lipinskipawel.server.Parser;
+import com.github.lipinskipawel.spi.Parser;
 import com.github.lipinskipawel.user.ConnectedClient;
 
 import java.util.List;

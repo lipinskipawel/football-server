@@ -1,4 +1,4 @@
-package com.github.lipinskipawel.mocks;
+package com.github.lipinskipawel.domain.mocks;
 
 import com.github.lipinskipawel.user.ConnectedClient;
 

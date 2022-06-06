@@ -1,6 +1,6 @@
-package com.github.lipinskipawel.domain;
+package com.github.lipinskipawel.domain.game;
 
-import com.github.lipinskipawel.server.Parser;
+import com.github.lipinskipawel.spi.Parser;
 import com.github.lipinskipawel.user.ConnectedClient;
 import com.github.lipinskipawel.util.ThreadSafe;
 

@@ -1,8 +1,9 @@
-package com.github.lipinskipawel.server;
+package com.github.lipinskipawel.domain.lobby;
 
 import com.github.lipinskipawel.api.PlayPairing;
 import com.github.lipinskipawel.api.Player;
 import com.github.lipinskipawel.api.WaitingPlayers;
+import com.github.lipinskipawel.spi.Parser;
 import com.github.lipinskipawel.user.ConnectedClient;
 import com.github.lipinskipawel.util.ThreadSafe;
 
@@ -18,10 +19,9 @@ import java.util.stream.Collectors;
  * - adding new client to the lobby
  * - removing client from the lobby
  * - pairing two clients together
- * This class is a helper class and used as a dependency for the {@link WebSocketServer} class.
  */
 @ThreadSafe
-final class Lobby {
+public final class Lobby {
     private final List<ConnectedClient> connectedClients;
     private final ReentrantLock lock;
     private final Parser parser;
@@ -33,7 +33,13 @@ final class Lobby {
         this.parser = parser;
     }
 
-    static Lobby of(final Parser parser) {
+    /**
+     * Public factory method for creating new object of {@link Lobby}.
+     *
+     * @param parser that will be used
+     * @return lobby object
+     */
+    public static Lobby of(final Parser parser) {
         return new Lobby(new ArrayList<>(), parser);
     }
 
@@ -41,7 +47,7 @@ final class Lobby {
         return new Lobby(connectedClients, parser);
     }
 
-    void accept(final ConnectedClient client) {
+    public void accept(final ConnectedClient client) {
         executesUnderLock(() -> {
             this.connectedClients.add(client);
             sendWaitingPlayersToAllInTheLobby();
@@ -66,7 +72,7 @@ final class Lobby {
         this.connectedClients.forEach(it -> it.send(dataToSend));
     }
 
-    void dropConnectionFor(final ConnectedClient leaveLobby) {
+    public void dropConnectionFor(final ConnectedClient leaveLobby) {
         executesUnderLock(() -> {
             if (this.connectedClients.contains(leaveLobby)) {
                 this.connectedClients.remove(leaveLobby);
@@ -85,7 +91,7 @@ final class Lobby {
         }
     }
 
-    void pair(final Supplier<String> endpoint, final ConnectedClient first, final ConnectedClient second) {
+    public void pair(final Supplier<String> endpoint, final ConnectedClient first, final ConnectedClient second) {
         final boolean areBothInLobby = executesUnderLock(() -> {
             final var areBothInTheLobby = checkWhetherBothAreInLobby(first, second);
             if (areBothInTheLobby) {
@@ -114,7 +120,7 @@ final class Lobby {
         return connectedClients.contains(first) && connectedClients.contains(second);
     }
 
-    boolean isInLobby(final ConnectedClient client) {
+    public boolean isInLobby(final ConnectedClient client) {
         return connectedClients.contains(client);
     }
 }
