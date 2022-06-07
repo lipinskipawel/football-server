@@ -72,6 +72,7 @@ final class WebSocketLobbyHandler extends SimpleChannelInboundHandler<WebSocketF
             log.info("Server closes connection.");
             ctx.close();
         } else {
+            frame.retain();
             ctx.fireChannelRead(frame);
         }
     }
