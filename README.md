@@ -31,9 +31,9 @@ mode information.
 
 [app]: ./app
 
-[app]: ./auth
+[auth]: ./auth
 
-[app]: ./domain
+[domain]: ./domain
 
 ### Football game
 

@@ -23,10 +23,6 @@ final class WebSocketInitializer extends ChannelInitializer<SocketChannel> {
         this.activeGames = activeGames;
     }
 
-    public static WebSocketInitializer initForTest(Lobby lobby, ConnectedClientFactory factory, ActiveGames activeGames) {
-        return new WebSocketInitializer(lobby, factory, activeGames);
-    }
-
     @Override
     public void initChannel(SocketChannel ch) {
         ChannelPipeline p = ch.pipeline();

@@ -29,7 +29,7 @@ class GameLifeCycleTest implements WithAssertions {
         game.accept(secondClient);
 
         final var gameMove = GameMove.from(List.of("N")).get();
-        game.makeMove(gameMove, firstClient);
+        game.tryMakeMove(gameMove, firstClient);
 
         assertThat(secondClient)
                 .extracting(TestConnectedClient::getMessages)
@@ -51,8 +51,8 @@ class GameLifeCycleTest implements WithAssertions {
         game.accept(secondClient);
 
         final var gameMove = GameMove.from(List.of("N")).get();
-        game.makeMove(gameMove, firstClient);
-        game.makeMove(gameMove, firstClient);
+        game.tryMakeMove(gameMove, firstClient);
+        game.tryMakeMove(gameMove, firstClient);
 
         assertThat(secondClient)
                 .extracting(TestConnectedClient::getMessages)
@@ -73,10 +73,10 @@ class GameLifeCycleTest implements WithAssertions {
         game.accept(firstClient);
         game.accept(secondClient);
         final var gameMove = GameMove.from(List.of("N")).get();
-        game.makeMove(gameMove, firstClient);
+        game.tryMakeMove(gameMove, firstClient);
 
         final var illegalMove = GameMove.from(List.of("S")).get();
-        game.makeMove(illegalMove, secondClient);
+        game.tryMakeMove(illegalMove, secondClient);
 
         assertThat(secondClient)
                 .extracting(TestConnectedClient::getMessages)
@@ -99,12 +99,12 @@ class GameLifeCycleTest implements WithAssertions {
         game.accept(secondClient);
 
         final var northMove = GameMove.from(List.of("N")).get();
-        game.makeMove(northMove, firstClient);
-        game.makeMove(northMove, secondClient);
-        game.makeMove(northMove, firstClient);
-        game.makeMove(northMove, secondClient);
-        game.makeMove(northMove, firstClient);
-        game.makeMove(northMove, secondClient);
+        game.tryMakeMove(northMove, firstClient);
+        game.tryMakeMove(northMove, secondClient);
+        game.tryMakeMove(northMove, firstClient);
+        game.tryMakeMove(northMove, secondClient);
+        game.tryMakeMove(northMove, firstClient);
+        game.tryMakeMove(northMove, secondClient);
 
         final var msgWithoutAccept = List.of(
                 northMove.toString(), northMove.toString(), northMove.toString(), expectedWinner.toString()

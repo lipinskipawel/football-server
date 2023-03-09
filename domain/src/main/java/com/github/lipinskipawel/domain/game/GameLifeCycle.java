@@ -37,13 +37,9 @@ final class GameLifeCycle {
         return new GameLifeCycle(new DualConnection(parser), gameState);
     }
 
-    void makeMove(final GameMove gameMove, final ConnectedClient client) {
-        final var move = new Move(toDirectionList(gameMove.getMove()));
-        var isMade = false;
-        synchronized (this) {
-            isMade = boardState.makeMoveBy(move, client.getUsername());
-        }
-        if (isMade) {
+    void tryMakeMove(final GameMove gameMove, final ConnectedClient client) {
+        final var moveToMade = new Move(toDirectionList(gameMove.getMove()));
+        if (tryMakeMove(moveToMade, client)) {
             dualConnection.sendMessageFrom(gameMove, client);
             dualConnection.sendMessageTo(ACCEPT_MOVE, client);
         } else {
@@ -53,6 +49,12 @@ final class GameLifeCycle {
             final var winner = new GameEnd(Player.fromUsername(boardState.getWinner()));
             dualConnection.sendMessageTo(winner, client);
             dualConnection.sendMessageFrom(winner, client);
+        }
+    }
+
+    boolean tryMakeMove(Move move, ConnectedClient client) {
+        synchronized (this) {
+            return boardState.makeMoveBy(move, client.getUsername());
         }
     }
 

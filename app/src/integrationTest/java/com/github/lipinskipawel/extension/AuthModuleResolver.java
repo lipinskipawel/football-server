@@ -10,7 +10,7 @@ import org.junit.jupiter.api.extension.ParameterResolver;
  * {@link Application} annotation.
  * This class is used to resolve test method parameter which is {@link AuthModuleFacade}.
  */
-public final class AuthModuleResolver implements ParameterResolver {
+final class AuthModuleResolver implements ParameterResolver {
 
     @Override
     public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {

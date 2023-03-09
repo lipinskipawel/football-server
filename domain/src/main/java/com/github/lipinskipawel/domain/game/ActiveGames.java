@@ -82,7 +82,7 @@ public final class ActiveGames {
      * @param client       that is attempting to make a move
      */
     public void registerMove(final String urlOfTheGame, final GameMove move, final ConnectedClient client) {
-        this.gamesPerUrl.get(urlOfTheGame).makeMove(move, client);
+        this.gamesPerUrl.get(urlOfTheGame).tryMakeMove(move, client);
     }
 
     /**
@@ -105,7 +105,7 @@ public final class ActiveGames {
                 .filter(gameLifeCycle -> gameLifeCycle.isClientAllowedToPlay(client))
                 .toList();
         if (games.size() == 1) {
-            games.get(0).makeMove(move, client);
+            games.get(0).tryMakeMove(move, client);
             return;
         }
         throw new RuntimeException("We do not support multiple games played at the same time by the user");

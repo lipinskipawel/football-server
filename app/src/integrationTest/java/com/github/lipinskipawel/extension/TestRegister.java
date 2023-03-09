@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
  * This class is designed to implement {@link AuthModuleFacade} that implements Register from AuthModule.
  * Its usage is only though the integration tests.
  */
-public final class TestRegister implements AuthModuleFacade {
+final class TestRegister implements AuthModuleFacade {
     private final Map<String, String> usernamesToTokens;
 
     public TestRegister() {

@@ -15,8 +15,6 @@ import io.netty.handler.logging.LoggingHandler;
 
 import java.net.InetSocketAddress;
 
-import static com.github.lipinskipawel.server.WebSocketInitializer.initForTest;
-
 /**
  * Simple wrapper class that can start the Netty WebSocket server.
  */
@@ -36,18 +34,16 @@ public final class WebSocketServer {
      * @param address  to start the server on
      * @param register API from auth module
      */
-    public void start(
-            InetSocketAddress address,
-            QueryRegister register) {
+    public void start(InetSocketAddress address, QueryRegister register) {
         try {
-            ServerBootstrap nettyServer = new ServerBootstrap();
+            final var nettyServer = new ServerBootstrap();
             nettyServer
                     .option(ChannelOption.SO_BACKLOG, 1024)
                     .localAddress(address)
                     .group(boss, worker)
                     .channel(NioServerSocketChannel.class)
                     .handler(new LoggingHandler(LogLevel.INFO))
-                    .childHandler(initForTest(
+                    .childHandler(new WebSocketInitializer(
                             Lobby.of(new Gson()::toJson),
                             new ConnectedClientFactory(register),
                             ActiveGames.of(new Gson()::toJson))
