@@ -11,14 +11,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.Objects;
 
 class GameLifeCycleTest implements WithAssertions {
     private GameLifeCycle game;
 
     @BeforeEach
     public void setUp() {
-        game = GameLifeCycle.of(Objects::toString, "first", "second");
+        game = GameLifeCycle.of("first", "second");
     }
 
     @Test

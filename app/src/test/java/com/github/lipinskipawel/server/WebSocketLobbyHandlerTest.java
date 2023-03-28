@@ -11,9 +11,9 @@ import org.junit.jupiter.api.Test;
 
 class WebSocketLobbyHandlerTest implements WithAssertions {
     private final Lobby lobby = Lobby.of(Object::toString);
-    private final ActiveGames activeGames = ActiveGames.of(Object::toString);
+    private final ActiveGames activeGames = ActiveGames.of();
     private final TestRegister register = new TestRegister();
-    private final ConnectedClientFactory factory = new ConnectedClientFactory(register);
+    private final ConnectedClientFactory factory = new ConnectedClientFactory(register, Object::toString);
 
     @Test
     void shouldPassGameMoveWithoutReleasingMessage() {

@@ -1,6 +1,5 @@
 package com.github.lipinskipawel.domain.game;
 
-import com.github.lipinskipawel.spi.Parser;
 import com.github.lipinskipawel.user.ConnectedClient;
 import com.github.lipinskipawel.util.ThreadSafe;
 
@@ -13,10 +12,8 @@ import com.github.lipinskipawel.util.ThreadSafe;
 final class DualConnection {
     private ConnectedClient first;
     private ConnectedClient second;
-    private final Parser parser;
 
-    DualConnection(final Parser parser) {
-        this.parser = parser;
+    DualConnection() {
     }
 
     /**
@@ -59,7 +56,7 @@ final class DualConnection {
             if (client == null) {
                 return;
             }
-            client.send(parser.toJson(message));
+            client.send(message);
         }
     }
 
@@ -76,7 +73,7 @@ final class DualConnection {
         }
         synchronized (this) {
             if (receiver.equals(first) || receiver.equals(second)) {
-                receiver.send(parser.toJson(message));
+                receiver.send(message);
             }
         }
     }

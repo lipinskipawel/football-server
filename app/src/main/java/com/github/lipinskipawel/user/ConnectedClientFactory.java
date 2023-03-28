@@ -1,6 +1,7 @@
 package com.github.lipinskipawel.user;
 
 import com.github.lipinskipawel.api.QueryRegister;
+import com.github.lipinskipawel.spi.Parser;
 import io.netty.channel.Channel;
 
 import java.util.Map;
@@ -13,10 +14,12 @@ public final class ConnectedClientFactory {
 
     private final Map<Channel, ConnectedClientWithToken> authenticatedConnectedClients;
     private final QueryRegister register;
+    private final Parser parser;
 
-    public ConnectedClientFactory(QueryRegister register) {
+    public ConnectedClientFactory(QueryRegister register, Parser parser) {
         this.authenticatedConnectedClients = new ConcurrentHashMap<>();
         this.register = register;
+        this.parser = parser;
     }
 
     /**
@@ -39,7 +42,7 @@ public final class ConnectedClientFactory {
             clearConnection();
             final var authenticatedUser = authenticatedConnectedClients.get(connection);
             if (noConnectionAndNoToken(token, authenticatedUser)) {
-                authenticatedConnectedClients.put(connection, new ConnectedClientWithToken(token, new AuthorizedClient(connection, username)));
+                authenticatedConnectedClients.put(connection, new ConnectedClientWithToken(token, new AuthorizedClient(connection, username, parser)));
                 return authenticatedConnectedClients.get(connection).client;
             }
             throw new RuntimeException("Already authenticated");

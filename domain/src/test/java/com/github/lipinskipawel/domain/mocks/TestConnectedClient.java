@@ -22,6 +22,11 @@ public final class TestConnectedClient implements ConnectedClient {
     }
 
     @Override
+    public void send(Object objectToSend) {
+        this.messages.add(objectToSend.toString());
+    }
+
+    @Override
     public String getUsername() {
         return this.username;
     }

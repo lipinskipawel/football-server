@@ -45,8 +45,8 @@ public final class WebSocketServer {
                     .handler(new LoggingHandler(LogLevel.INFO))
                     .childHandler(new WebSocketInitializer(
                             Lobby.of(new Gson()::toJson),
-                            new ConnectedClientFactory(register),
-                            ActiveGames.of(new Gson()::toJson))
+                            new ConnectedClientFactory(register, new Gson()::toJson),
+                            ActiveGames.of())
                     );
 
             this.channel = nettyServer.bind().sync().channel();

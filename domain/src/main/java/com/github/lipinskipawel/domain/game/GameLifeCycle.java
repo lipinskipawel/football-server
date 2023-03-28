@@ -7,7 +7,6 @@ import com.github.lipinskipawel.api.move.GameMove;
 import com.github.lipinskipawel.api.move.RejectMove;
 import com.github.lipinskipawel.board.engine.Direction;
 import com.github.lipinskipawel.board.engine.Move;
-import com.github.lipinskipawel.spi.Parser;
 import com.github.lipinskipawel.user.ConnectedClient;
 
 import java.util.List;
@@ -29,12 +28,12 @@ final class GameLifeCycle {
         this.dualConnection = dualConnection;
     }
 
-    static GameLifeCycle of(final Parser parser, final String first, final String second) {
+    static GameLifeCycle of(final String first, final String second) {
         final var gameState = GameBoardState.aGameBoardState()
                 .withFirstPlayer(first)
                 .withSecondPlayer(second)
                 .build();
-        return new GameLifeCycle(new DualConnection(parser), gameState);
+        return new GameLifeCycle(new DualConnection(), gameState);
     }
 
     void tryMakeMove(final GameMove gameMove, final ConnectedClient client) {

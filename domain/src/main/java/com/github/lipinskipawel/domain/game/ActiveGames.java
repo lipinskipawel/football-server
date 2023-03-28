@@ -1,7 +1,6 @@
 package com.github.lipinskipawel.domain.game;
 
 import com.github.lipinskipawel.api.move.GameMove;
-import com.github.lipinskipawel.spi.Parser;
 import com.github.lipinskipawel.user.ConnectedClient;
 
 import java.util.HashMap;
@@ -18,25 +17,22 @@ import java.util.UUID;
  */
 public final class ActiveGames {
     private static final String BASE_GAME_URL = "/ws/game/";
-    private final Parser parser;
     /**
      * Each game is registered under the url
      */
     private final Map<String, GameLifeCycle> gamesPerUrl;
 
-    ActiveGames(Parser parser, Map<String, GameLifeCycle> gamesPerUrl) {
-        this.parser = parser;
+    ActiveGames(Map<String, GameLifeCycle> gamesPerUrl) {
         this.gamesPerUrl = gamesPerUrl;
     }
 
     /**
      * Public factory method for creating new object of {@link ActiveGames}.
      *
-     * @param parser that will be used
      * @return activeGame object
      */
-    public static ActiveGames of(Parser parser) {
-        return new ActiveGames(parser, new HashMap<>());
+    public static ActiveGames of() {
+        return new ActiveGames(new HashMap<>());
     }
 
     /**
@@ -50,7 +46,7 @@ public final class ActiveGames {
      */
     public String createNewGame(final ConnectedClient first, final ConnectedClient second) {
         final var url = BASE_GAME_URL.concat(UUID.randomUUID().toString());
-        this.gamesPerUrl.put(url, GameLifeCycle.of(parser, first.getUsername(), second.getUsername()));
+        this.gamesPerUrl.put(url, GameLifeCycle.of(first.getUsername(), second.getUsername()));
         return url;
     }
 
