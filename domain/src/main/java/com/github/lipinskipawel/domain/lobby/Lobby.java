@@ -3,7 +3,6 @@ package com.github.lipinskipawel.domain.lobby;
 import com.github.lipinskipawel.api.PlayPairing;
 import com.github.lipinskipawel.api.Player;
 import com.github.lipinskipawel.api.WaitingPlayers;
-import com.github.lipinskipawel.spi.Parser;
 import com.github.lipinskipawel.user.ConnectedClient;
 import com.github.lipinskipawel.util.ThreadSafe;
 
@@ -24,27 +23,23 @@ import java.util.stream.Collectors;
 public final class Lobby {
     private final List<ConnectedClient> connectedClients;
     private final ReentrantLock lock;
-    private final Parser parser;
 
-    private Lobby(final List<ConnectedClient> connectedClients,
-                  final Parser parser) {
+    private Lobby(final List<ConnectedClient> connectedClients) {
         this.connectedClients = connectedClients;
         this.lock = new ReentrantLock();
-        this.parser = parser;
     }
 
     /**
      * Public factory method for creating new object of {@link Lobby}.
      *
-     * @param parser that will be used
      * @return lobby object
      */
-    public static Lobby of(final Parser parser) {
-        return new Lobby(new ArrayList<>(), parser);
+    public static Lobby of() {
+        return new Lobby(new ArrayList<>());
     }
 
-    static Lobby of(final List<ConnectedClient> connectedClients, final Parser parser) {
-        return new Lobby(connectedClients, parser);
+    static Lobby of(final List<ConnectedClient> connectedClients) {
+        return new Lobby(connectedClients);
     }
 
     public void accept(final ConnectedClient client) {
@@ -68,8 +63,7 @@ public final class Lobby {
                 .stream()
                 .map(it -> Player.fromUsername(it.getUsername()))
                 .collect(Collectors.toList());
-        final var dataToSend = this.parser.toJson(WaitingPlayers.fromPlayers(players));
-        this.connectedClients.forEach(it -> it.send(dataToSend));
+        this.connectedClients.forEach(it -> it.send(WaitingPlayers.fromPlayers(players)));
     }
 
     public void dropConnectionFor(final ConnectedClient leaveLobby) {
@@ -109,8 +103,8 @@ public final class Lobby {
                     .withFirst(Player.fromUsername(first.getUsername()))
                     .withSecond(Player.fromUsername(second.getUsername()))
                     .build();
-            first.send(this.parser.toJson(reply));
-            second.send(this.parser.toJson(reply));
+            first.send(reply);
+            second.send(reply);
             first.close();
             second.close();
         }

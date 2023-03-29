@@ -44,7 +44,7 @@ public final class WebSocketServer {
                     .channel(NioServerSocketChannel.class)
                     .handler(new LoggingHandler(LogLevel.INFO))
                     .childHandler(new WebSocketInitializer(
-                            Lobby.of(new Gson()::toJson),
+                            Lobby.of(),
                             new ConnectedClientFactory(register, new Gson()::toJson),
                             ActiveGames.of())
                     );

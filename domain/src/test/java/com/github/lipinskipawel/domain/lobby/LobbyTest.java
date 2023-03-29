@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
-import java.util.Objects;
 
 class LobbyTest implements WithAssertions {
 
@@ -18,7 +17,7 @@ class LobbyTest implements WithAssertions {
         void shouldAcceptOneClient() {
             final var list = new ArrayList<ConnectedClient>();
             final var client = new TestConnectedClient("a");
-            final var lobby = Lobby.of(list, Objects::toString);
+            final var lobby = Lobby.of(list);
 
             lobby.accept(client);
 
@@ -32,7 +31,7 @@ class LobbyTest implements WithAssertions {
             final var numberOfConnectedClients = new ArrayList<ConnectedClient>();
             final var firstClient = new TestConnectedClient("a");
             final var secondClient = new TestConnectedClient("b");
-            final var lobby = Lobby.of(numberOfConnectedClients, Objects::toString);
+            final var lobby = Lobby.of(numberOfConnectedClients);
 
             lobby.accept(firstClient);
             lobby.accept(secondClient);
@@ -47,7 +46,7 @@ class LobbyTest implements WithAssertions {
             final var numberOfConnectedClients = new ArrayList<ConnectedClient>();
             final var firstClient = new TestConnectedClient("a");
             final var secondClient = new TestConnectedClient("b");
-            final var lobby = Lobby.of(numberOfConnectedClients, Objects::toString);
+            final var lobby = Lobby.of(numberOfConnectedClients);
 
             lobby.accept(firstClient);
             lobby.accept(secondClient);
@@ -64,7 +63,7 @@ class LobbyTest implements WithAssertions {
         void shouldNotThrowExceptionWhenRemovingClientWhenClientIsNotInTheLobby() {
             final var numberOfConnectedClients = new ArrayList<ConnectedClient>();
             final var client = new TestConnectedClient("/lobby");
-            final var lobby = Lobby.of(numberOfConnectedClients, Objects::toString);
+            final var lobby = Lobby.of(numberOfConnectedClients);
 
             lobby.dropConnectionFor(client);
 
@@ -75,7 +74,7 @@ class LobbyTest implements WithAssertions {
         void shouldNoOneBeInTheLobbyWhenOneJoinsAndLeave() {
             final var numberOfConnectedClients = new ArrayList<ConnectedClient>();
             final var client = new TestConnectedClient("a");
-            final var lobby = Lobby.of(numberOfConnectedClients, Objects::toString);
+            final var lobby = Lobby.of(numberOfConnectedClients);
 
             lobby.accept(client);
             lobby.dropConnectionFor(client);
@@ -91,7 +90,7 @@ class LobbyTest implements WithAssertions {
             final var numberOfConnectedClients = new ArrayList<ConnectedClient>();
             final var firstClient = new TestConnectedClient("a");
             final var secondClient = new TestConnectedClient("b");
-            final var lobby = Lobby.of(numberOfConnectedClients, Objects::toString);
+            final var lobby = Lobby.of(numberOfConnectedClients);
             lobby.accept(firstClient);
             lobby.accept(secondClient);
 
