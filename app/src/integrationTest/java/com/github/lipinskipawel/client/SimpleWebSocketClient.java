@@ -1,5 +1,6 @@
 package com.github.lipinskipawel.client;
 
+import com.github.lipinskipawel.user.ConnectedClient;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
@@ -12,7 +13,7 @@ import java.util.List;
  * It connects to server using {@link org.java_websocket.client.WebSocketClient}.
  * This class keeps track of all messages received through WebSocket.
  */
-public final class SimpleWebSocketClient extends WebSocketClient {
+public final class SimpleWebSocketClient extends WebSocketClient implements ConnectedClient {
     private final List<String> messages;
     private final List<String> close;
 
@@ -50,5 +51,15 @@ public final class SimpleWebSocketClient extends WebSocketClient {
 
     @Override
     public void onError(Exception ex) {
+    }
+
+    @Override
+    public void send(Object objectToSend) {
+        send(objectToSend.toString());
+    }
+
+    @Override
+    public String getUsername() {
+        return "no username";
     }
 }

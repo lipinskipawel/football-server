@@ -4,8 +4,6 @@ import com.github.lipinskipawel.api.Player;
 import com.github.lipinskipawel.client.SimpleWebSocketClient;
 import com.github.lipinskipawel.extension.Application;
 import com.github.lipinskipawel.extension.AuthModuleFacade;
-import com.github.lipinskipawel.spi.Parser;
-import com.google.gson.Gson;
 import org.junit.jupiter.api.Test;
 
 import static com.github.lipinskipawel.client.FootballClientCreator.getPairedClients;
@@ -15,7 +13,6 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @Application(port = WebSocketServerIT.PORT)
 final class WebSocketServerIT {
-    private static final Parser parser = new Gson()::toJson;
     static final int PORT = 8090;
     static final String SERVER_URI = "ws://localhost:%d/ws".formatted(PORT);
 
@@ -55,7 +52,7 @@ final class WebSocketServerIT {
         client.connectBlocking();
         final var player = Player.fromUsername("example");
 
-        client.send(parser.toJson(player));
+        client.send(player);
 
         waitFor(() -> client.getClose().size() == 1);
         final var isOpen = client.isOpen();
