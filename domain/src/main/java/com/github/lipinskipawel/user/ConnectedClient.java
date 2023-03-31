@@ -7,13 +7,6 @@ public interface ConnectedClient {
 
     /**
      * This method will send a message to the connected client.
-     * Replacement is {@link ConnectedClient#send(Object)}.
-     */
-    @Deprecated
-    void send(final String message);
-
-    /**
-     * This method will send a message to the connected client.
      *
      * @param objectToSend to send
      */

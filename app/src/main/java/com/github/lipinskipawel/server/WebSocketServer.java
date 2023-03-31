@@ -4,7 +4,6 @@ import com.github.lipinskipawel.api.QueryRegister;
 import com.github.lipinskipawel.domain.game.ActiveGames;
 import com.github.lipinskipawel.domain.lobby.Lobby;
 import com.github.lipinskipawel.user.ConnectedClientFactory;
-import com.google.gson.Gson;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelOption;
@@ -45,7 +44,7 @@ public final class WebSocketServer {
                     .handler(new LoggingHandler(LogLevel.INFO))
                     .childHandler(new WebSocketInitializer(
                             Lobby.of(),
-                            new ConnectedClientFactory(register, new Gson()::toJson),
+                            new ConnectedClientFactory(register),
                             ActiveGames.of())
                     );
 

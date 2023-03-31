@@ -13,7 +13,7 @@ class WebSocketLobbyHandlerTest implements WithAssertions {
     private final Lobby lobby = Lobby.of();
     private final ActiveGames activeGames = ActiveGames.of();
     private final TestRegister register = new TestRegister();
-    private final ConnectedClientFactory factory = new ConnectedClientFactory(register, Object::toString);
+    private final ConnectedClientFactory factory = new ConnectedClientFactory(register);
 
     @Test
     void shouldPassGameMoveWithoutReleasingMessage() {

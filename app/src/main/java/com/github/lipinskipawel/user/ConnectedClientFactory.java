@@ -1,7 +1,7 @@
 package com.github.lipinskipawel.user;
 
 import com.github.lipinskipawel.api.QueryRegister;
-import com.github.lipinskipawel.spi.Parser;
+import com.google.gson.Gson;
 import io.netty.channel.Channel;
 
 import java.util.Map;
@@ -16,10 +16,10 @@ public final class ConnectedClientFactory {
     private final QueryRegister register;
     private final Parser parser;
 
-    public ConnectedClientFactory(QueryRegister register, Parser parser) {
+    public ConnectedClientFactory(QueryRegister register) {
         this.authenticatedConnectedClients = new ConcurrentHashMap<>();
         this.register = register;
-        this.parser = parser;
+        this.parser = new Gson()::toJson;
     }
 
     /**

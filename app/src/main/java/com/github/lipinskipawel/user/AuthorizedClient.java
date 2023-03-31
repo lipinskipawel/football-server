@@ -1,6 +1,5 @@
 package com.github.lipinskipawel.user;
 
-import com.github.lipinskipawel.spi.Parser;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 
@@ -16,18 +15,14 @@ final class AuthorizedClient implements ConnectedClient {
     }
 
     @Override
-    public void send(String message) {
+    public void send(Object objectToSend) {
         try {
+            final var message = parser.toJson(objectToSend);
             final var frame = new TextWebSocketFrame(message);
             this.channel.writeAndFlush(frame).sync();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    @Override
-    public void send(Object objectToSend) {
-        send(parser.toJson(objectToSend));
     }
 
     @Override
