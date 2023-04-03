@@ -1,16 +1,8 @@
 plugins {
     application
-    java
 }
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
-}
-
-repositories {
-    mavenCentral()
-}
+java.toolchain.languageVersion.set(JavaLanguageVersion.of(17))
 
 dependencies {
     implementation(project(":api"))
@@ -33,10 +25,6 @@ dependencies {
 
 application {
     mainClass.set("com.github.lipinskipawel.Main")
-}
-
-tasks.test {
-    useJUnitPlatform()
 }
 
 sourceSets {
