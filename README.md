@@ -1,3 +1,5 @@
+![build workflow](https://github.com/lipinskipawel/football-server/actions/workflows/build.yml/badge.svg)
+
 # Football Server
 
 This repository contains the server code for the football game. Server accepts WebSocket connections as defined in the
