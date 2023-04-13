@@ -1,5 +1,6 @@
 plugins {
     application
+    `jvm-test-suite`
 }
 
 java.toolchain.languageVersion.set(JavaLanguageVersion.of(17))
@@ -17,44 +18,49 @@ dependencies {
     implementation("org.apache.logging.log4j:log4j-core:2.17.1")
     // The log4j2 binding for slf4j https://logging.apache.org/log4j/2.x/log4j-slf4j-impl/index.html
     implementation("org.apache.logging.log4j:log4j-slf4j18-impl:2.17.1")
-
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.0")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.0")
-    testImplementation("org.assertj:assertj-core:3.20.2")
 }
 
 application {
     mainClass.set("com.github.lipinskipawel.Main")
 }
 
-sourceSets {
-    create("integrationTest") {
-        compileClasspath += sourceSets.main.get().output
-        runtimeClasspath += sourceSets.main.get().output
+testing {
+    suites {
+        configureEach {
+            if (this is JvmTestSuite) {
+                useJUnitJupiter()
+                dependencies {
+                    implementation("org.junit.jupiter:junit-jupiter-api:5.7.0")
+                    implementation("org.junit.jupiter:junit-jupiter-engine:5.7.0")
+                    implementation("org.assertj:assertj-core:3.20.2")
+                }
+            }
+        }
+
+        val test by getting(JvmTestSuite::class)
+        val testIntegration by registering(JvmTestSuite::class) {
+            dependencies {
+                implementation(project(":api"))
+                implementation(project(":app"))
+                implementation(project(":auth"))
+                implementation(project(":domain"))
+                implementation("com.google.code.gson:gson:2.8.8")
+                implementation("org.awaitility:awaitility:4.1.1")
+                implementation("org.java-websocket:Java-WebSocket:1.5.2")
+            }
+
+            targets {
+                all {
+                    testTask.configure {
+                        description = "Runs the integration test suite."
+                        shouldRunAfter(test)
+                    }
+                }
+            }
+        }
     }
 }
 
-val integrationTestImplementation: Configuration by configurations.getting {
-    extendsFrom(configurations.implementation.get())
-    extendsFrom(configurations.testImplementation.get())
-    extendsFrom(configurations.testRuntimeOnly.get())
+tasks.named("check") {
+    dependsOn(testing.suites.named("testIntegration"))
 }
-
-dependencies {
-    integrationTestImplementation("org.awaitility:awaitility:4.1.1")
-    integrationTestImplementation("org.java-websocket:Java-WebSocket:1.5.2")
-}
-
-configurations["integrationTestRuntimeOnly"].extendsFrom(configurations.runtimeOnly.get())
-
-val integrationTest = task<Test>("integrationTest") {
-    useJUnitPlatform()
-    description = "Runs integration tests."
-    group = "verification"
-
-    testClassesDirs = sourceSets["integrationTest"].output.classesDirs
-    classpath = sourceSets["integrationTest"].runtimeClasspath
-    shouldRunAfter("test")
-}
-
-tasks.check { dependsOn(integrationTest) }
