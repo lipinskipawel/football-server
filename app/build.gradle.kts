@@ -3,7 +3,9 @@ plugins {
     `jvm-test-suite`
 }
 
-java.toolchain.languageVersion.set(JavaLanguageVersion.of(17))
+application {
+    mainClass.set("com.github.lipinskipawel.Main")
+}
 
 dependencies {
     implementation(project(":api"))
@@ -20,23 +22,8 @@ dependencies {
     implementation("org.apache.logging.log4j:log4j-slf4j18-impl:2.17.1")
 }
 
-application {
-    mainClass.set("com.github.lipinskipawel.Main")
-}
-
 testing {
     suites {
-        configureEach {
-            if (this is JvmTestSuite) {
-                useJUnitJupiter()
-                dependencies {
-                    implementation("org.junit.jupiter:junit-jupiter-api:5.7.0")
-                    implementation("org.junit.jupiter:junit-jupiter-engine:5.7.0")
-                    implementation("org.assertj:assertj-core:3.20.2")
-                }
-            }
-        }
-
         val test by getting(JvmTestSuite::class)
         val testIntegration by registering(JvmTestSuite::class) {
             dependencies {
