@@ -1,10 +1,7 @@
 plugins {
     application
     `jvm-test-suite`
-}
-
-application {
-    mainClass.set("com.github.lipinskipawel.Main")
+    id("com.github.johnrengelman.shadow") version("7.1.2")
 }
 
 dependencies {
@@ -50,4 +47,15 @@ testing {
 
 tasks.named("check") {
     dependsOn(testing.suites.named("testIntegration"))
+}
+
+val mainApplicationClassToRun = "com.github.lipinskipawel.Main"
+tasks.withType<Jar> {
+    manifest {
+        attributes("Main-Class" to mainApplicationClassToRun)
+    }
+}
+
+application {
+    mainClass.set(mainApplicationClassToRun)
 }
