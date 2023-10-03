@@ -1,45 +1,36 @@
 package com.github.lipinskipawel;
 
-import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.logging.LogLevel;
-import io.netty.handler.logging.LoggingHandler;
+import com.github.lipinskipawel.register.AuthRegister;
+import com.github.lipinskipawel.register.RegisterEntrypoint;
+import com.github.lipinskipawel.register.RegisterResource;
+import io.javalin.Javalin;
+import io.javalin.plugin.bundled.CorsPluginConfig;
 
-import java.net.SocketAddress;
+import java.net.InetSocketAddress;
+
+import static io.javalin.Javalin.create;
 
 /**
  * Simple wrapper class that can start the Netty HTTP server.
  */
 public final class AuthServer {
-    /**
-     * This method will start the http server. This method is blocking.
-     *
-     * @param address to start the server on
-     * @throws InterruptedException
-     */
-    public void startServer(final SocketAddress address) throws InterruptedException {
-        EventLoopGroup bossGroup = new NioEventLoopGroup(1);
-        EventLoopGroup workerGroup = new NioEventLoopGroup();
-        try {
-            ServerBootstrap nettyServer = new ServerBootstrap();
-            nettyServer
-                    .option(ChannelOption.SO_BACKLOG, 1024)
-                    .localAddress(address)
-                    .group(bossGroup, workerGroup)
-                    .channel(NioServerSocketChannel.class)
-                    .handler(new LoggingHandler(LogLevel.INFO))
-                    .childHandler(new HttpServerInitializer());
+    private final Javalin app = createApp();
 
-            Channel ch = nettyServer.bind().sync().channel();
+    private Javalin createApp() {
+        var app = create(conf -> {
+            conf.http.defaultContentType = "application/json";
+            conf.plugins.enableCors(cors -> cors.add(CorsPluginConfig::anyHost));
+        })
+                .routes(new RegisterResource(new AuthRegister(RegisterEntrypoint.register)));
+        Runtime.getRuntime().addShutdownHook(new Thread(this::closeHttpServer));
+        return app;
+    }
 
-            ch.closeFuture().sync();
-        } finally {
-            bossGroup.shutdownGracefully();
-            workerGroup.shutdownGracefully();
-        }
+    public void startServer(final InetSocketAddress address) {
+        app.start(address.getPort());
+    }
+
+    public void closeHttpServer() {
+        app.close();
     }
 }

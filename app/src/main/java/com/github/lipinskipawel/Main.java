@@ -14,15 +14,14 @@ final class Main {
 
     public static void main(String[] args) {
         try {
-            pool.submit(() -> wsServer.start(
+            pool.submit(() -> httpServer.startServer(new InetSocketAddress("localhost", 8090)));
+
+            wsServer.start(
                     new InetSocketAddress("localhost", 8080),
                     RegisterEntrypoint.getRegister()
-            ));
-
-            httpServer.startServer(new InetSocketAddress("localhost", 8090));
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            );
         } finally {
+            httpServer.closeHttpServer();
             wsServer.stop();
             pool.shutdown();
         }

@@ -9,7 +9,7 @@ import java.util.Optional;
  * This class holds method to obtain production ready implementation of the {@link RegisterHandler} class.
  */
 public final class RegisterEntrypoint {
-    private static final Register register = new Register(new TokenGenerator());
+    public static final Register register = new Register(new TokenGenerator());
 
     /**
      * Production ready RegisterHandler.
