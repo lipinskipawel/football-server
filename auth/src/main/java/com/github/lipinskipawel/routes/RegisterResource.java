@@ -1,5 +1,6 @@
-package com.github.lipinskipawel.register;
+package com.github.lipinskipawel.routes;
 
+import com.github.lipinskipawel.register.AuthRegister;
 import io.javalin.apibuilder.EndpointGroup;
 import io.javalin.http.Handler;
 import io.javalin.http.UnauthorizedResponse;
