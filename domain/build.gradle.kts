@@ -2,10 +2,6 @@ plugins {
     `java-library`
 }
 
-repositories {
-    mavenCentral()
-}
-
 dependencies {
     implementation(project(":api"))
     implementation(libs.lipinskipawel.gameEngine)

@@ -4,10 +4,6 @@ plugins {
     alias(libs.plugins.shadowJar)
 }
 
-repositories {
-    mavenCentral()
-}
-
 dependencies {
     implementation(project(":api"))
     implementation(project(":auth"))

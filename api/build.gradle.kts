@@ -2,10 +2,6 @@ plugins {
     `java-library`
 }
 
-repositories {
-    mavenCentral()
-}
-
 testing {
     suites {
         val test by getting(JvmTestSuite::class) {
