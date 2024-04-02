@@ -1,22 +1,26 @@
 plugins {
     application
     `jvm-test-suite`
-    id("com.github.johnrengelman.shadow") version ("7.1.2")
+    alias(libs.plugins.shadowJar)
+}
+
+repositories {
+    mavenCentral()
 }
 
 dependencies {
     implementation(project(":api"))
     implementation(project(":auth"))
     implementation(project(":domain"))
-    implementation("io.netty:netty-all:4.1.73.Final")
-    implementation("com.google.code.gson:gson:2.8.8")
-    implementation("com.github.lipinskipawel:game-engine:5.0.0")
+    implementation(libs.lipinskipawel.gameEngine)
+    implementation(libs.io.netty)
+    implementation(libs.com.google.gson)
 
-    implementation("org.slf4j:slf4j-api:2.0.9")
-    implementation("org.apache.logging.log4j:log4j-api:2.21.0")
-    implementation("org.apache.logging.log4j:log4j-core:2.21.0")
+    implementation(libs.org.slf4j.api2)
+    implementation(libs.com.apache.log4j.api)
+    implementation(libs.com.apache.log4j.core)
     // bindings between log4j2 and slf4j
-    implementation("org.apache.logging.log4j:log4j-slf4j2-impl:2.21.0")
+    implementation(libs.com.apache.log4j.slf4j2)
 }
 
 testing {
@@ -24,9 +28,9 @@ testing {
         withType<JvmTestSuite> {
             useJUnitJupiter()
             dependencies {
-                implementation("org.junit.jupiter:junit-jupiter-api:5.7.0")
-                implementation("org.junit.jupiter:junit-jupiter-engine:5.7.0")
-                implementation("org.assertj:assertj-core:3.20.2")
+                implementation(libs.testing.junit.api)
+                implementation(libs.testing.junit.engine)
+                implementation(libs.testing.assertj)
             }
         }
         val test by getting(JvmTestSuite::class)
@@ -37,9 +41,9 @@ testing {
                 implementation(project(":app"))
                 implementation(project(":auth"))
                 implementation(project(":domain"))
-                implementation("com.google.code.gson:gson:2.8.8")
-                implementation("org.awaitility:awaitility:4.1.1")
-                implementation("org.java-websocket:Java-WebSocket:1.5.2")
+                implementation(libs.com.google.gson)
+                implementation(libs.org.awaitility)
+                implementation(libs.org.javaWebSocket)
             }
 
             targets {

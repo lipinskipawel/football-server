@@ -2,8 +2,12 @@ plugins {
     `java-library`
 }
 
+repositories {
+    mavenCentral()
+}
+
 dependencies {
-    implementation("io.javalin:javalin:5.6.2")
+    implementation(libs.io.javalin)
 }
 
 testing {
@@ -11,9 +15,9 @@ testing {
         val test by getting(JvmTestSuite::class) {
             useJUnitJupiter()
             dependencies {
-                implementation("org.junit.jupiter:junit-jupiter-api:5.7.0")
-                implementation("org.junit.jupiter:junit-jupiter-engine:5.7.0")
-                implementation("org.assertj:assertj-core:3.20.2")
+                implementation(libs.testing.junit.api)
+                implementation(libs.testing.junit.engine)
+                implementation(libs.testing.assertj)
             }
         }
     }
