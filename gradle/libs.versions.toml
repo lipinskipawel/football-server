@@ -21,5 +21,4 @@ testing-junit-api = { group = "org.junit.jupiter", name = "junit-jupiter-api", v
 testing-junit-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", version.ref = "junit" }
 testing-assertj = { module = "org.assertj:assertj-core", version.ref = "assertj" }
 
-[plugins]
-shadowJar = { id = "com.github.johnrengelman.shadow", version = "7.1.2" }
+gradlePlugin-shadowJar = { module = "gradle.plugin.com.github.johnrengelman:shadow", version = "7.1.2" }

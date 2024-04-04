@@ -1,5 +1,5 @@
 plugins {
-    `java-library`
+    id("football-server.library-conventions")
 }
 
 dependencies {
@@ -7,17 +7,4 @@ dependencies {
     implementation(libs.lipinskipawel.gameEngine)
 
     implementation(libs.org.slf4j.api)
-}
-
-testing {
-    suites {
-        val test by getting(JvmTestSuite::class) {
-            useJUnitJupiter()
-            dependencies {
-                implementation(libs.testing.junit.api)
-                implementation(libs.testing.junit.engine)
-                implementation(libs.testing.assertj)
-            }
-        }
-    }
 }

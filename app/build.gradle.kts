@@ -1,7 +1,5 @@
 plugins {
-    application
-    `jvm-test-suite`
-    alias(libs.plugins.shadowJar)
+    id("football-server.application-conventions")
 }
 
 dependencies {
@@ -21,16 +19,7 @@ dependencies {
 
 testing {
     suites {
-        withType<JvmTestSuite> {
-            useJUnitJupiter()
-            dependencies {
-                implementation(libs.testing.junit.api)
-                implementation(libs.testing.junit.engine)
-                implementation(libs.testing.assertj)
-            }
-        }
         val test by getting(JvmTestSuite::class)
-
         val testIntegration by registering(JvmTestSuite::class) {
             dependencies {
                 implementation(project(":api"))
@@ -67,4 +56,17 @@ tasks.withType<Jar> {
 
 application {
     mainClass.set(mainApplicationClassToRun)
+}
+
+tasks {
+    shadowJar {
+        archiveBaseName.set("football-server")
+        archiveClassifier.set("")
+        archiveVersion.set(project.version.toString())
+        isZip64 = true
+        mergeServiceFiles()
+        manifest {
+            attributes("Main-Class" to mainApplicationClassToRun)
+        }
+    }
 }
