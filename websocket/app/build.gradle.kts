@@ -3,9 +3,9 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":api"))
+    implementation(project(":websocket:api"))
+    implementation(project(":websocket:domain"))
     implementation(project(":auth"))
-    implementation(project(":domain"))
     implementation(libs.lipinskipawel.gameEngine)
     implementation(libs.io.netty)
     implementation(libs.com.google.gson)
@@ -22,10 +22,10 @@ testing {
         val test by getting(JvmTestSuite::class)
         val testIntegration by registering(JvmTestSuite::class) {
             dependencies {
-                implementation(project(":api"))
-                implementation(project(":app"))
+                implementation(project(":websocket:api"))
+                implementation(project(":websocket:app"))
+                implementation(project(":websocket:domain"))
                 implementation(project(":auth"))
-                implementation(project(":domain"))
                 implementation(libs.com.google.gson)
                 implementation(libs.org.awaitility)
                 implementation(libs.org.javaWebSocket)

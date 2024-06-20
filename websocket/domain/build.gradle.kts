@@ -3,7 +3,7 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":api"))
+    implementation(project(":websocket:api"))
     implementation(libs.lipinskipawel.gameEngine)
 
     implementation(libs.org.slf4j.api)
