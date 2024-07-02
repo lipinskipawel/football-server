@@ -22,10 +22,11 @@ testing {
         val test by getting(JvmTestSuite::class)
         val testIntegration by registering(JvmTestSuite::class) {
             dependencies {
+                implementation(project)
                 implementation(project(":websocket:api"))
-                implementation(project(":websocket:app"))
                 implementation(project(":websocket:domain"))
                 implementation(project(":auth"))
+
                 implementation(libs.com.google.gson)
                 implementation(libs.org.awaitility)
                 implementation(libs.org.javaWebSocket)
