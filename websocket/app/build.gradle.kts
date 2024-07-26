@@ -5,7 +5,7 @@ plugins {
 dependencies {
     implementation(project(":websocket:api"))
     implementation(project(":websocket:domain"))
-    implementation(project(":auth"))
+    implementation(project(":auth:app"))
     implementation(libs.lipinskipawel.gameEngine)
     implementation(libs.io.netty)
     implementation(libs.com.google.gson)
@@ -25,7 +25,7 @@ testing {
                 implementation(project)
                 implementation(project(":websocket:api"))
                 implementation(project(":websocket:domain"))
-                implementation(project(":auth"))
+                implementation(project(":auth:app"))
 
                 implementation(libs.com.google.gson)
                 implementation(libs.org.awaitility)

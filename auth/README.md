@@ -1,7 +1,7 @@
-# Auth module
+# Auth project
 
-This module contains the code responsible for the authentication. Auth module also provides a simple [AuthServer] class
-that can start the HTTP server. Currently, auth module provides registration of usernames. Any client can register a
+This project contains the code responsible for the authentication. Auth also provides a simple [AuthServer] class that
+can start the HTTP server. Currently, auth module provides registration of usernames. Any client can register a
 username, and it will get a token in return. This token can be used to prove the authentication.
 
 [AuthServer]: src/main/java/com/github/lipinskipawel/AuthServer.java
