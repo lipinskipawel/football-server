@@ -63,9 +63,12 @@ final class RegisterTest implements WithAssertions {
         register.register(givenUsername);
         final var marksToken = register.getTokenForUsername(givenUsername);
 
-        final var username = register.getUsernameForToken(marksToken);
+        final var username = register.findUsernameForToken(marksToken);
 
-        assertThat(username).isEqualTo(givenUsername);
+        assertThat(username).satisfies(it -> {
+            assertThat(it).isPresent();
+            assertThat(it.get()).isEqualTo(givenUsername);
+        });
     }
 
     @Test
@@ -75,8 +78,11 @@ final class RegisterTest implements WithAssertions {
         register.register(givenUsername);
         final var marksToken = register.getTokenForUsername(givenUsername);
 
-        final var username = register.getUsernameForToken(marksToken);
+        final var username = register.findUsernameForToken(marksToken);
 
-        assertThat(username).isEqualTo(givenUsername);
+        assertThat(username).satisfies(it -> {
+            assertThat(it).isPresent();
+            assertThat(it.get()).isEqualTo(givenUsername);
+        });
     }
 }

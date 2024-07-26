@@ -17,4 +17,8 @@ public final class AuthRegister {
                 .filter(register::register)
                 .map(register::getTokenForUsername);
     }
+
+    public Optional<String> findUsernameByToken(final String token) {
+        return register.findUsernameForToken(token);
+    }
 }

@@ -15,7 +15,7 @@ public final class RegisterEntrypoint {
     public static QueryRegister getRegister() {
         return token -> {
             try {
-                return Optional.of(register.getUsernameForToken(token));
+                return register.findUsernameForToken(token);
             } catch (IllegalArgumentException ex) {
                 return Optional.empty();
             }

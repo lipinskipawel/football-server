@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import static java.util.Optional.empty;
+
 /**
  * This class is an entrypoint for all related things to the registering usernames functionalities.
  * Responsibilities of this class:
@@ -51,7 +53,7 @@ final class Register {
             }
             return Optional.of(randomToken);
         }
-        return Optional.empty();
+        return empty();
     }
 
     /**
@@ -74,16 +76,19 @@ final class Register {
      * @param token that will be used to find username
      * @return username
      */
-    String getUsernameForToken(final String token) {
+    Optional<String> findUsernameForToken(final String token) {
         final var entries = usernamesToTokens
                 .entrySet()
                 .stream()
                 .filter(it -> it.getValue().equals(token))
                 .map(Map.Entry::getKey)
                 .toList();
-        if (entries.size() != 1) {
-            throw new IllegalArgumentException("Token [" + token + "] is not associated with any username.");
+        if (entries.isEmpty()) {
+            return empty();
         }
-        return entries.get(0);
+        if (entries.size() > 1) {
+            throw new IllegalStateException("Token [%s] is associated with more than one username".formatted(token));
+        }
+        return Optional.of(entries.get(0));
     }
 }
