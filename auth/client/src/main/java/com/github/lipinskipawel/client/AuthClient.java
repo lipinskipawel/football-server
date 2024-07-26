@@ -1,11 +1,16 @@
-package com.github.lipinskipawel.api;
+package com.github.lipinskipawel.client;
 
 import java.util.Optional;
 
-/**
- * This is high level interface designed to encapsulate registering domain as an application program interface (API).
- */
-public interface QueryRegister {
+public interface AuthClient {
+
+    /**
+     * Register username.
+     *
+     * @param username that would like to register
+     * @return true if username was registered, false otherwise
+     */
+    boolean register(final String username);
 
     /**
      * Finds username that is associated with the given token.
