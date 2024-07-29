@@ -7,32 +7,27 @@ import com.github.lipinskipawel.routes.RegisterResource;
 import io.javalin.Javalin;
 import io.javalin.plugin.bundled.CorsPluginConfig;
 
-import java.net.InetSocketAddress;
-
 import static io.javalin.Javalin.create;
 
-/**
- * Simple wrapper class that can start the Netty HTTP server.
- */
-public final class AuthServer {
-    private final Javalin app = createApp();
+public final class Application {
+    private static final Javalin app = createApp();
 
-    public void startServer(final InetSocketAddress address) {
-        app.start(address.getPort());
+    public static void main(String[] args) {
+        app.start(8090);
     }
 
-    public void closeHttpServer() {
-        app.close();
-    }
-
-    private Javalin createApp() {
+    private static Javalin createApp() {
         var app = create(conf -> {
             conf.http.defaultContentType = "application/json";
             conf.plugins.enableCors(cors -> cors.add(CorsPluginConfig::anyHost));
         })
                 .routes(new LoggingResource())
                 .routes(new RegisterResource(new AuthRegister(RegisterEntrypoint.register)));
-        Runtime.getRuntime().addShutdownHook(new Thread(this::closeHttpServer));
+        Runtime.getRuntime().addShutdownHook(new Thread(Application::closeHttpServer));
         return app;
+    }
+
+    private static void closeHttpServer() {
+        app.close();
     }
 }
