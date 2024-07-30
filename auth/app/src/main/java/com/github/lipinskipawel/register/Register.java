@@ -17,11 +17,11 @@ import static java.util.Optional.empty;
  * <p>
  * This class holds usernames and tokens in memory, so on every restart of the application the information is lost.
  */
-final class Register {
+public final class Register {
     private final Map<String, String> usernamesToTokens;
     private final Supplier<String> tokenGenerator;
 
-    Register(final Supplier<String> tokenGenerator) {
+    public Register(final Supplier<String> tokenGenerator) {
         this.usernamesToTokens = new HashMap<>();
         this.tokenGenerator = tokenGenerator;
     }
@@ -32,7 +32,7 @@ final class Register {
      * @param username to be registered
      * @return true or false, true when the username has been registered otherwise false
      */
-    boolean register(final String username) {
+    public boolean register(final String username) {
         if (usernamesToTokens.get(username) != null) {
             return false;
         }
@@ -62,7 +62,7 @@ final class Register {
      * @param username to get the token for
      * @return token that is associated with the given username
      */
-    String getTokenForUsername(final String username) {
+    public String getTokenForUsername(final String username) {
         final var token = usernamesToTokens.get(username);
         if (token == null) {
             throw new IllegalArgumentException("The " + username + " has not been registered yet.");
@@ -76,7 +76,7 @@ final class Register {
      * @param token that will be used to find username
      * @return username
      */
-    Optional<String> findUsernameForToken(final String token) {
+    public Optional<String> findUsernameForToken(final String token) {
         final var entries = usernamesToTokens
                 .entrySet()
                 .stream()
@@ -90,5 +90,9 @@ final class Register {
             throw new IllegalStateException("Token [%s] is associated with more than one username".formatted(token));
         }
         return Optional.of(entries.get(0));
+    }
+
+    Map<String, String> store() {
+        return usernamesToTokens;
     }
 }

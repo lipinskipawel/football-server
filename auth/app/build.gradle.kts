@@ -19,6 +19,27 @@ tasks.withType<Jar> {
     }
 }
 
+testing {
+    suites {
+        val test by getting(JvmTestSuite::class)
+        val testIntegration by registering(JvmTestSuite::class) {
+            dependencies {
+                implementation(project)
+                implementation(project(":auth:client"))
+            }
+
+            targets {
+                all {
+                    testTask.configure {
+                        description = "Runs the integration test suite."
+                        shouldRunAfter(test)
+                    }
+                }
+            }
+        }
+    }
+}
+
 application {
     mainClass.set(mainApplicationClassToRun)
 }

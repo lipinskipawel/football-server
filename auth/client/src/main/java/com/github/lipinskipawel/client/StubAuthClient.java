@@ -4,17 +4,20 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static java.util.Optional.empty;
+
 public final class StubAuthClient implements AuthClient {
 
     public final Map<String, String> usernamesToTokens = new ConcurrentHashMap<>();
 
     @Override
-    public boolean register(String username) {
+    public Optional<String> register(String username) {
         if (usernamesToTokens.containsKey(username)) {
-            return false;
+            return empty();
         }
-        usernamesToTokens.put(username, username + "_token");
-        return true;
+        final var token = username + "_token";
+        usernamesToTokens.put(username, token);
+        return Optional.of(token);
     }
 
     @Override

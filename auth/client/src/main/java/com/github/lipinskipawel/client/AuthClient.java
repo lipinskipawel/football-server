@@ -8,9 +8,9 @@ public interface AuthClient {
      * Register username.
      *
      * @param username that would like to register
-     * @return true if username was registered, false otherwise
+     * @return Optional with token if username was registered, empty otherwise
      */
-    boolean register(final String username);
+    Optional<String> register(final String username);
 
     /**
      * Finds username that is associated with the given token.

@@ -28,7 +28,7 @@ public final class HttpAuthClient implements AuthClient {
     }
 
     @Override
-    public boolean register(String username) {
+    public Optional<String> register(String username) {
         final var request = HttpRequest.newBuilder(requestConfig.baseUri().resolve("/register"))
                 .POST(noBody())
                 .header("username", username)
@@ -37,8 +37,7 @@ public final class HttpAuthClient implements AuthClient {
         try {
             return httpClient.send(request, discarding())
                     .headers()
-                    .firstValue("token")
-                    .isPresent();
+                    .firstValue("token");
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }

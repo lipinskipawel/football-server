@@ -11,12 +11,12 @@ import java.util.stream.IntStream;
  * Tokens will be created out of fixed characters.
  * The default length of the token is 16, but it can be customizable.
  */
-final class TokenGenerator implements Supplier<String> {
+public final class TokenGenerator implements Supplier<String> {
     private static final String ALLOWED_CHARACTERS = "abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXZY";
     private final Random random;
     private final int tokenLength;
 
-    TokenGenerator() {
+    public TokenGenerator() {
         this.random = ThreadLocalRandom.current();
         this.tokenLength = 16;
     }

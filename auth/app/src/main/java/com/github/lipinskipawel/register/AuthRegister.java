@@ -21,4 +21,8 @@ public final class AuthRegister {
     public Optional<String> findUsernameByToken(final String token) {
         return register.findUsernameForToken(token);
     }
+
+    public void clearAll() {
+        register.store().clear();
+    }
 }

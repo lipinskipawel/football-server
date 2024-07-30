@@ -10,13 +10,14 @@ import io.javalin.http.UnauthorizedResponse;
 import static io.javalin.apibuilder.ApiBuilder.before;
 import static io.javalin.apibuilder.ApiBuilder.get;
 import static io.javalin.apibuilder.ApiBuilder.post;
+import static java.util.Objects.requireNonNull;
 
 public final class RegisterResource implements EndpointGroup {
     private final AuthRegister authRegister;
     private final Routes routes = new Routes();
 
     public RegisterResource(AuthRegister authRegister) {
-        this.authRegister = authRegister;
+        this.authRegister = requireNonNull(authRegister);
     }
 
     @Override
