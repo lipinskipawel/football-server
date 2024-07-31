@@ -2,25 +2,20 @@ package com.github.lipinskipawel.server;
 
 import com.github.lipinskipawel.api.Player;
 import com.github.lipinskipawel.client.SimpleWebSocketClient;
-import com.github.lipinskipawel.extension.Application;
-import com.github.lipinskipawel.extension.AuthModuleFacade;
+import com.github.lipinskipawel.extension.IntegrationSpec;
 import org.junit.jupiter.api.Test;
 
-import static com.github.lipinskipawel.client.FootballClientCreator.getPairedClients;
-import static com.github.lipinskipawel.client.FootballClientCreator.waitFor;
 import static com.github.lipinskipawel.client.SimpleWebSocketClient.createClient;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-@Application(port = WebSocketServerIT.PORT)
-final class WebSocketServerIT {
-    static final int PORT = 8090;
+final class WebSocketServerIT extends IntegrationSpec {
     static final String SERVER_URI = "ws://localhost:%d/ws".formatted(PORT);
 
     @Test
-    void shouldRejectClientWhenURIDoesNotStartsWithWs(AuthModuleFacade facade) throws InterruptedException {
-        facade.register("first", "aa");
+    void shouldRejectClientWhenURIDoesNotStartsWithWs() throws InterruptedException {
+        registerUsername("first");
         final var client = createClient(SERVER_URI.replace("/ws", "/example"));
-        client.addHeader("cookie", "aa");
+        client.addHeader("cookie", "first_token");
 
         client.connectBlocking();
 
@@ -31,10 +26,10 @@ final class WebSocketServerIT {
     }
 
     @Test
-    void shouldRejectClientWhenURIDoNotMeetPolicy(AuthModuleFacade facade) throws InterruptedException {
-        facade.register("first", "aa");
+    void shouldRejectClientWhenURIDoNotMeetPolicy() throws InterruptedException {
+        registerUsername("first");
         final var client = createClient(SERVER_URI.concat("/example"));
-        client.addHeader("cookie", "aa");
+        client.addHeader("cookie", "first_token");
 
         client.connectBlocking();
 
@@ -45,10 +40,10 @@ final class WebSocketServerIT {
     }
 
     @Test
-    void shouldCloseConnectionWhenUnexpectedMessageArrives(AuthModuleFacade facade) throws InterruptedException {
-        facade.register("first", "aa");
+    void shouldCloseConnectionWhenUnexpectedMessageArrives() throws InterruptedException {
+        registerUsername("first");
         final var client = createClient(SERVER_URI.concat("/lobby"));
-        client.addHeader("cookie", "aa");
+        client.addHeader("cookie", "first_token");
         client.connectBlocking();
         final var player = Player.fromUsername("example");
 
@@ -61,8 +56,8 @@ final class WebSocketServerIT {
     }
 
     @Test
-    void shouldClientNotReceivedMessageWhenNotAGameMove(AuthModuleFacade facade) throws InterruptedException {
-        final var pairedClients = getPairedClients(SERVER_URI.concat("/lobby"), facade);
+    void shouldClientNotReceivedMessageWhenNotAGameMove() throws InterruptedException {
+        final var pairedClients = getPairedClients(SERVER_URI.concat("/lobby"));
 
         pairedClients[0].send("msg");
 
@@ -76,13 +71,13 @@ final class WebSocketServerIT {
     }
 
     @Test
-    void shouldAllowOnlyTwoClientsConnectToTheSameEndpoint(AuthModuleFacade facade) throws InterruptedException {
-        final var pairedClients = getPairedClients(SERVER_URI.concat("/lobby"), facade);
+    void shouldAllowOnlyTwoClientsConnectToTheSameEndpoint() throws InterruptedException {
+        final var pairedClients = getPairedClients(SERVER_URI.concat("/lobby"));
         final var endpoint = pairedClients[0].getConnection().getResourceDescriptor();
 
         final var thirdClient = createClient(SERVER_URI.concat(endpoint));
-        facade.register("third", "cc");
-        thirdClient.addHeader("cookie", "cc");
+        registerUsername("third");
+        thirdClient.addHeader("cookie", "third_token");
         thirdClient.connectBlocking();
 
         final var isOpenFirst = pairedClients[0].isOpen();

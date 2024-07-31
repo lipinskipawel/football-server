@@ -1,6 +1,6 @@
 package com.github.lipinskipawel.user;
 
-import com.github.lipinskipawel.api.QueryRegister;
+import com.github.lipinskipawel.client.AuthClient;
 import com.google.gson.Gson;
 import io.netty.channel.Channel;
 
@@ -13,12 +13,12 @@ public final class ConnectedClientFactory {
     }
 
     private final Map<Channel, ConnectedClientWithToken> authenticatedConnectedClients;
-    private final QueryRegister register;
     private final Parser parser;
+    private final AuthClient authClient;
 
-    public ConnectedClientFactory(QueryRegister register) {
+    public ConnectedClientFactory(AuthClient authClient) {
         this.authenticatedConnectedClients = new ConcurrentHashMap<>();
-        this.register = register;
+        this.authClient = authClient;
         this.parser = new Gson()::toJson;
     }
 
@@ -36,7 +36,7 @@ public final class ConnectedClientFactory {
      * @return instance of {@link ConnectedClient}
      */
     public ConnectedClient from(final Channel connection, final String token) {
-        final var maybeUsername = register.findUsernameByToken(token);
+        final var maybeUsername = authClient.findUsernameByToken(token);
         if (maybeUsername.isPresent()) {
             final var username = maybeUsername.get();
             clearConnection();

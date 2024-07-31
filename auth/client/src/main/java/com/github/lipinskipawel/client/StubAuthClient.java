@@ -8,7 +8,7 @@ import static java.util.Optional.empty;
 
 public final class StubAuthClient implements AuthClient {
 
-    public final Map<String, String> usernamesToTokens = new ConcurrentHashMap<>();
+    private final Map<String, String> usernamesToTokens = new ConcurrentHashMap<>();
 
     @Override
     public Optional<String> register(String username) {

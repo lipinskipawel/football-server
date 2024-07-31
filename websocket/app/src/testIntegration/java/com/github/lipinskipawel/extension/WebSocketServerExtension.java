@@ -1,5 +1,6 @@
 package com.github.lipinskipawel.extension;
 
+import com.github.lipinskipawel.client.StubAuthClient;
 import com.github.lipinskipawel.server.WebSocketServer;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
@@ -31,7 +32,7 @@ final class WebSocketServerExtension implements BeforeAllCallback, AfterAllCallb
                                 final var server = new WebSocketServer();
                                 pool.submit(() -> server.start(
                                         new InetSocketAddress("localhost", port),
-                                        register
+                                        new StubAuthClient()
                                 ));
                                 waitOneSecond();
                                 getStore(context).put("pool", pool);

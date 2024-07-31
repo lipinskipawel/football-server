@@ -1,6 +1,6 @@
 package com.github.lipinskipawel.server;
 
-import com.github.lipinskipawel.api.QueryRegister;
+import com.github.lipinskipawel.client.AuthClient;
 import com.github.lipinskipawel.domain.game.ActiveGames;
 import com.github.lipinskipawel.domain.lobby.Lobby;
 import com.github.lipinskipawel.user.ConnectedClientFactory;
@@ -20,7 +20,7 @@ import java.net.InetSocketAddress;
 public final class WebSocketServer {
     private final NioEventLoopGroup boss;
     private final NioEventLoopGroup worker;
-    private Channel channel;
+    private volatile Channel channel;
 
     public WebSocketServer() {
         this.boss = new NioEventLoopGroup(1);
@@ -30,10 +30,9 @@ public final class WebSocketServer {
     /**
      * This method will start the websocket server. This method is blocking.
      *
-     * @param address  to start the server on
-     * @param register API from auth module
+     * @param address to start the server on
      */
-    public void start(InetSocketAddress address, QueryRegister register) {
+    public void start(InetSocketAddress address, AuthClient authClient) {
         try {
             final var nettyServer = new ServerBootstrap();
             nettyServer
@@ -44,18 +43,18 @@ public final class WebSocketServer {
                     .handler(new LoggingHandler(LogLevel.INFO))
                     .childHandler(new WebSocketInitializer(
                             Lobby.of(),
-                            new ConnectedClientFactory(register),
+                            new ConnectedClientFactory(authClient),
                             ActiveGames.of())
                     );
 
             this.channel = nettyServer.bind().sync().channel();
-
-            this.channel.closeFuture().sync();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
-        } finally {
-            stop();
         }
+    }
+
+    public void waitForClosureOfServerSocket() throws InterruptedException {
+        this.channel.closeFuture().sync();
     }
 
     public void stop() {

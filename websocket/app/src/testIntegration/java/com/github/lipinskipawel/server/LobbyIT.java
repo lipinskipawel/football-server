@@ -2,29 +2,24 @@ package com.github.lipinskipawel.server;
 
 import com.github.lipinskipawel.api.Player;
 import com.github.lipinskipawel.api.WaitingPlayers;
-import com.github.lipinskipawel.client.FootballClientCreator;
-import com.github.lipinskipawel.extension.Application;
-import com.github.lipinskipawel.extension.AuthModuleFacade;
+import com.github.lipinskipawel.extension.IntegrationSpec;
 import com.google.gson.Gson;
 import org.assertj.core.api.WithAssertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static com.github.lipinskipawel.client.FootballClientCreator.waitFor;
 import static com.github.lipinskipawel.client.SimpleWebSocketClient.createClient;
 
-@Application(port = LobbyIT.PORT)
-final class LobbyIT implements WithAssertions {
+final class LobbyIT extends IntegrationSpec implements WithAssertions {
     private static final Gson parser = new Gson();
-    static final int PORT = 8091;
     static final String SERVER_URI = "ws://localhost:%d/ws/lobby".formatted(PORT);
 
     @Test
-    void shouldAllowToConnectToLobby(AuthModuleFacade facade) throws InterruptedException {
-        facade.register("first", "aa");
+    void shouldAllowToConnectToLobby() throws InterruptedException {
+        registerUsername("first");
         final var client = createClient(SERVER_URI);
-        client.addHeader("cookie", "aa");
+        client.addHeader("cookie", "first_token");
         client.connectBlocking();
 
         final var isOpen = client.isOpen();
@@ -34,13 +29,13 @@ final class LobbyIT implements WithAssertions {
     }
 
     @Test
-    void shouldNotifyClientsWhenOneOfThemLeavesLobby(AuthModuleFacade facade) throws InterruptedException {
-        facade.register("first", "aa");
-        facade.register("second", "bb");
+    void shouldNotifyClientsWhenOneOfThemLeavesLobby() throws InterruptedException {
+        registerUsername("first");
+        registerUsername("second");
         final var client = createClient(SERVER_URI);
-        client.addHeader("cookie", "aa");
+        client.addHeader("cookie", "first_token");
         final var secondClient = createClient(SERVER_URI);
-        secondClient.addHeader("cookie", "bb");
+        secondClient.addHeader("cookie", "second_token");
         client.connectBlocking();
         secondClient.connectBlocking();
         waitFor(() -> secondClient.getMessages().size() == 1);
@@ -52,13 +47,13 @@ final class LobbyIT implements WithAssertions {
     }
 
     @Test
-    void shouldReceiveWaitingPlayersMessageWhenOnlyOnePlayerIsInTheLobby(AuthModuleFacade facade) throws InterruptedException {
-        facade.register("first", "aa");
+    void shouldReceiveWaitingPlayersMessageWhenOnlyOnePlayerIsInTheLobby() throws InterruptedException {
+        registerUsername("first");
         final var expectedWaitingPlayers = WaitingPlayers.fromPlayers(
                 List.of(Player.fromUsername("first"))
         );
         final var client = createClient(SERVER_URI);
-        client.addHeader("cookie", "aa");
+        client.addHeader("cookie", "first_token");
         client.connectBlocking();
 
         waitFor(() -> client.getMessages().size() == 1);
@@ -69,15 +64,15 @@ final class LobbyIT implements WithAssertions {
     }
 
     @Test
-    void shouldReceivedWaitingPlayersMessageWithTwoEntriesWhenTwoClientAreInLobby(AuthModuleFacade facade) throws InterruptedException {
-        facade.register("first", "aa");
-        facade.register("second", "bb");
+    void shouldReceivedWaitingPlayersMessageWithTwoEntriesWhenTwoClientAreInLobby() throws InterruptedException {
+        registerUsername("first");
+        registerUsername("second");
         final var expectedFirst = Player.fromUsername("first");
         final var expectedSecond = Player.fromUsername("second");
         final var client = createClient(SERVER_URI);
-        client.addHeader("cookie", "aa");
+        client.addHeader("cookie", "first_token");
         final var secondClient = createClient(SERVER_URI);
-        secondClient.addHeader("cookie", "bb");
+        secondClient.addHeader("cookie", "second_token");
         client.connectBlocking();
 
         secondClient.connectBlocking();
@@ -94,8 +89,8 @@ final class LobbyIT implements WithAssertions {
     }
 
     @Test
-    void shouldPairBothClientsWhenRequested(AuthModuleFacade facade) throws InterruptedException {
-        final var pairedClients = FootballClientCreator.getPairedClients(SERVER_URI, facade);
+    void shouldPairBothClientsWhenRequested() throws InterruptedException {
+        final var pairedClients = getPairedClients(SERVER_URI);
 
         assertThat(pairedClients).hasSize(2);
         final var isOpenFirst = pairedClients[0].isOpen();
