@@ -1,11 +1,11 @@
 package com.github.lipinskipawel.server;
 
 import com.github.lipinskipawel.api.Player;
-import com.github.lipinskipawel.client.SimpleWebSocketClient;
-import com.github.lipinskipawel.extension.IntegrationSpec;
+import com.github.lipinskipawel.SimpleWebSocketClient;
+import com.github.lipinskipawel.IntegrationSpec;
 import org.junit.jupiter.api.Test;
 
-import static com.github.lipinskipawel.client.SimpleWebSocketClient.createClient;
+import static com.github.lipinskipawel.SimpleWebSocketClient.createClient;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 final class WebSocketServerIT extends IntegrationSpec {

@@ -1,4 +1,4 @@
-package com.github.lipinskipawel.client;
+package com.github.lipinskipawel;
 
 import com.github.lipinskipawel.user.ConnectedClient;
 import org.java_websocket.client.WebSocketClient;

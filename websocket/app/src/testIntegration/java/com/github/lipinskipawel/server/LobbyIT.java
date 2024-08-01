@@ -2,14 +2,14 @@ package com.github.lipinskipawel.server;
 
 import com.github.lipinskipawel.api.Player;
 import com.github.lipinskipawel.api.WaitingPlayers;
-import com.github.lipinskipawel.extension.IntegrationSpec;
+import com.github.lipinskipawel.IntegrationSpec;
 import com.google.gson.Gson;
 import org.assertj.core.api.WithAssertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static com.github.lipinskipawel.client.SimpleWebSocketClient.createClient;
+import static com.github.lipinskipawel.SimpleWebSocketClient.createClient;
 
 final class LobbyIT extends IntegrationSpec implements WithAssertions {
     private static final Gson parser = new Gson();

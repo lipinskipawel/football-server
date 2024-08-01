@@ -1,9 +1,8 @@
-package com.github.lipinskipawel.extension;
+package com.github.lipinskipawel;
 
 import com.github.lipinskipawel.api.PlayPairing;
 import com.github.lipinskipawel.api.RequestToPlay;
 import com.github.lipinskipawel.api.WaitingPlayers;
-import com.github.lipinskipawel.client.SimpleWebSocketClient;
 import com.github.lipinskipawel.client.StubAuthClient;
 import com.github.lipinskipawel.server.WebSocketServer;
 import com.google.gson.Gson;
@@ -14,7 +13,7 @@ import java.net.ServerSocket;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 
-import static com.github.lipinskipawel.client.SimpleWebSocketClient.createClient;
+import static com.github.lipinskipawel.SimpleWebSocketClient.createClient;
 import static java.time.Duration.ofSeconds;
 import static org.awaitility.Awaitility.await;
 
