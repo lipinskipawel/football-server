@@ -29,7 +29,7 @@ public final class RejectMove {
     @Override
     public String toString() {
         return "RejectMove{" +
-                "gameMove=" + gameMove +
-                '}';
+            "gameMove=" + gameMove +
+            '}';
     }
 }

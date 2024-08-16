@@ -78,11 +78,11 @@ public final class Register {
      */
     public Optional<String> findUsernameForToken(final String token) {
         final var entries = usernamesToTokens
-                .entrySet()
-                .stream()
-                .filter(it -> it.getValue().equals(token))
-                .map(Map.Entry::getKey)
-                .toList();
+            .entrySet()
+            .stream()
+            .filter(it -> it.getValue().equals(token))
+            .map(Map.Entry::getKey)
+            .toList();
         if (entries.isEmpty()) {
             return empty();
         }

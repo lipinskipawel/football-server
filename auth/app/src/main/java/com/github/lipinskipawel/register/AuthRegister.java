@@ -14,8 +14,8 @@ public final class AuthRegister {
 
     public Optional<String> handle(Map<String, String> headers) {
         return ofNullable(headers.get("username"))
-                .filter(register::register)
-                .map(register::getTokenForUsername);
+            .filter(register::register)
+            .map(register::getTokenForUsername);
     }
 
     public Optional<String> findUsernameByToken(final String token) {

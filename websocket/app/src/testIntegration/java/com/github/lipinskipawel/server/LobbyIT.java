@@ -1,8 +1,8 @@
 package com.github.lipinskipawel.server;
 
+import com.github.lipinskipawel.IntegrationSpec;
 import com.github.lipinskipawel.api.Player;
 import com.github.lipinskipawel.api.WaitingPlayers;
-import com.github.lipinskipawel.IntegrationSpec;
 import com.google.gson.Gson;
 import org.assertj.core.api.WithAssertions;
 import org.junit.jupiter.api.Test;
@@ -50,7 +50,7 @@ final class LobbyIT extends IntegrationSpec implements WithAssertions {
     void shouldReceiveWaitingPlayersMessageWhenOnlyOnePlayerIsInTheLobby() throws InterruptedException {
         registerUsername("first");
         final var expectedWaitingPlayers = WaitingPlayers.fromPlayers(
-                List.of(Player.fromUsername("first"))
+            List.of(Player.fromUsername("first"))
         );
         final var client = createClient(SERVER_URI);
         client.addHeader("cookie", "first_token");
@@ -82,10 +82,10 @@ final class LobbyIT extends IntegrationSpec implements WithAssertions {
 
         final var waitingPlayers = parser.fromJson(secondClient.getMessages().get(0), WaitingPlayers.class);
         assertThat(waitingPlayers)
-                .extracting(WaitingPlayers::players)
-                .asList()
-                .hasSize(2)
-                .containsExactly(expectedFirst, expectedSecond);
+            .extracting(WaitingPlayers::players)
+            .asList()
+            .hasSize(2)
+            .containsExactly(expectedFirst, expectedSecond);
     }
 
     @Test

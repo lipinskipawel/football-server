@@ -43,7 +43,7 @@ public final class WaitingPlayers {
     @Override
     public String toString() {
         return "WaitingPlayers{" +
-                "players=" + players +
-                '}';
+            "players=" + players +
+            '}';
     }
 }

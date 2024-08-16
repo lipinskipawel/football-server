@@ -31,12 +31,12 @@ final class WebSocketInitializer extends ChannelInitializer<SocketChannel> {
         p.addLast(new WebSocketFilter());
         p.addLast(new WebSocketServerCompressionHandler());
         final var webSocketConfig = WebSocketServerProtocolConfig
-                .newBuilder()
-                .websocketPath("/ws")
-                .subprotocols(null)
-                .allowExtensions(true)
-                .checkStartsWith(true)
-                .build();
+            .newBuilder()
+            .websocketPath("/ws")
+            .subprotocols(null)
+            .allowExtensions(true)
+            .checkStartsWith(true)
+            .build();
         p.addLast(new WebSocketServerProtocolHandler(webSocketConfig));
         p.addLast(new WebSocketLobbyHandler(lobby, activeGames, factory));
         p.addLast(new WebSocketGameHandler(activeGames, factory));

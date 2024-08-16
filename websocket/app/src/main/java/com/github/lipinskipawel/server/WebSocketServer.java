@@ -36,16 +36,16 @@ public final class WebSocketServer {
         try {
             final var nettyServer = new ServerBootstrap();
             nettyServer
-                    .option(ChannelOption.SO_BACKLOG, 1024)
-                    .localAddress(address)
-                    .group(boss, worker)
-                    .channel(NioServerSocketChannel.class)
-                    .handler(new LoggingHandler(LogLevel.INFO))
-                    .childHandler(new WebSocketInitializer(
-                            Lobby.of(),
-                            new ConnectedClientFactory(authClient),
-                            ActiveGames.of())
-                    );
+                .option(ChannelOption.SO_BACKLOG, 1024)
+                .localAddress(address)
+                .group(boss, worker)
+                .channel(NioServerSocketChannel.class)
+                .handler(new LoggingHandler(LogLevel.INFO))
+                .childHandler(new WebSocketInitializer(
+                    Lobby.of(),
+                    new ConnectedClientFactory(authClient),
+                    ActiveGames.of())
+                );
 
             this.channel = nettyServer.bind().sync().channel();
         } catch (InterruptedException e) {

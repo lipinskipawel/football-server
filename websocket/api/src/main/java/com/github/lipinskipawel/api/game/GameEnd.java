@@ -35,7 +35,7 @@ public final class GameEnd {
     @Override
     public String toString() {
         return "GameEnd{" +
-                "winner=" + winner +
-                '}';
+            "winner=" + winner +
+            '}';
     }
 }

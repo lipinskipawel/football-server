@@ -96,10 +96,10 @@ public final class ActiveGames {
      */
     public void registerMove(final GameMove move, final ConnectedClient client) {
         final var games = this.gamesPerUrl
-                .values()
-                .stream()
-                .filter(gameLifeCycle -> gameLifeCycle.isClientAllowedToPlay(client))
-                .toList();
+            .values()
+            .stream()
+            .filter(gameLifeCycle -> gameLifeCycle.isClientAllowedToPlay(client))
+            .toList();
         if (games.size() == 1) {
             games.get(0).tryMakeMove(move, client);
             return;

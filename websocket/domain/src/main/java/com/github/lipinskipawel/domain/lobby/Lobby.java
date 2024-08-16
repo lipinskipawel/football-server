@@ -60,9 +60,9 @@ public final class Lobby {
 
     private void sendWaitingPlayersToAllInTheLobby() {
         final var players = this.connectedClients
-                .stream()
-                .map(it -> Player.fromUsername(it.getUsername()))
-                .collect(Collectors.toList());
+            .stream()
+            .map(it -> Player.fromUsername(it.getUsername()))
+            .collect(Collectors.toList());
         this.connectedClients.forEach(it -> it.send(WaitingPlayers.fromPlayers(players)));
     }
 
@@ -98,11 +98,11 @@ public final class Lobby {
         });
         if (areBothInLobby) {
             final var reply = PlayPairing
-                    .aPlayPairing()
-                    .withRedirectEndpoint(endpoint.get())
-                    .withFirst(Player.fromUsername(first.getUsername()))
-                    .withSecond(Player.fromUsername(second.getUsername()))
-                    .build();
+                .aPlayPairing()
+                .withRedirectEndpoint(endpoint.get())
+                .withFirst(Player.fromUsername(first.getUsername()))
+                .withSecond(Player.fromUsername(second.getUsername()))
+                .build();
             first.send(reply);
             second.send(reply);
             first.close();

@@ -15,40 +15,40 @@ class GameBoardStateTest implements WithAssertions {
         @Test
         void shouldAllowToMakeAMove() {
             final var state = new GameBoardState.Builder()
-                    .withFirstPlayer("firstPlayer")
-                    .withSecondPlayer("secondPlayer")
-                    .build();
+                .withFirstPlayer("firstPlayer")
+                .withSecondPlayer("secondPlayer")
+                .build();
 
             final var isMade = state.makeMoveBy(new Move(List.of(Direction.E)), "firstPlayer");
 
             assertThat(isMade).isTrue();
             assertThat(state)
-                    .extracting(GameBoardState::currentPlayerToMove)
-                    .isEqualTo("secondPlayer");
+                .extracting(GameBoardState::currentPlayerToMove)
+                .isEqualTo("secondPlayer");
         }
 
         @Test
         void shouldAllowToMakeAMoveForSecondPlayer() {
             final var state = new GameBoardState.Builder()
-                    .withFirstPlayer("firstPlayer")
-                    .withSecondPlayer("secondPlayer")
-                    .build();
+                .withFirstPlayer("firstPlayer")
+                .withSecondPlayer("secondPlayer")
+                .build();
 
             state.makeMoveBy(new Move(List.of(Direction.E)), "firstPlayer");
             final var isMade = state.makeMoveBy(new Move(List.of(Direction.S)), "secondPlayer");
 
             assertThat(isMade).isTrue();
             assertThat(state)
-                    .extracting(GameBoardState::currentPlayerToMove)
-                    .isEqualTo("firstPlayer");
+                .extracting(GameBoardState::currentPlayerToMove)
+                .isEqualTo("firstPlayer");
         }
 
         @Test
         void shouldNotAllowToMakeAMoveWhenMoveDoesNotChangeTurn() {
             final var state = new GameBoardState.Builder()
-                    .withFirstPlayer("firstPlayer")
-                    .withSecondPlayer("secondPlayer")
-                    .build();
+                .withFirstPlayer("firstPlayer")
+                .withSecondPlayer("secondPlayer")
+                .build();
             state.makeMoveBy(new Move(List.of(Direction.N)), "firstPlayer");
             state.makeMoveBy(new Move(List.of(Direction.W)), "secondPlayer");
 
@@ -56,8 +56,8 @@ class GameBoardStateTest implements WithAssertions {
 
             assertThat(isMade).isFalse();
             assertThat(state)
-                    .extracting(GameBoardState::currentPlayerToMove)
-                    .isEqualTo("firstPlayer");
+                .extracting(GameBoardState::currentPlayerToMove)
+                .isEqualTo("firstPlayer");
         }
     }
 }

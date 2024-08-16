@@ -23,9 +23,9 @@ public final class StubAuthClient implements AuthClient {
     @Override
     public Optional<String> findUsernameByToken(String token) {
         return usernamesToTokens.entrySet()
-                .stream()
-                .filter(it -> it.getValue().equals(token))
-                .map(Map.Entry::getKey)
-                .findFirst();
+            .stream()
+            .filter(it -> it.getValue().equals(token))
+            .map(Map.Entry::getKey)
+            .findFirst();
     }
 }

@@ -46,13 +46,13 @@ public final class GameMove {
 
     private static boolean isIncorrectDirection(final String direction) {
         return !(direction.equals("N") ||
-                direction.equals("NE") ||
-                direction.equals("E") ||
-                direction.equals("SE") ||
-                direction.equals("S") ||
-                direction.equals("SW") ||
-                direction.equals("W") ||
-                direction.equals("NW"));
+            direction.equals("NE") ||
+            direction.equals("E") ||
+            direction.equals("SE") ||
+            direction.equals("S") ||
+            direction.equals("SW") ||
+            direction.equals("W") ||
+            direction.equals("NW"));
     }
 
     public List<String> getMove() {
@@ -75,7 +75,7 @@ public final class GameMove {
     @Override
     public String toString() {
         return "GameState{" +
-                "move=" + move +
-                '}';
+            "move=" + move +
+            '}';
     }
 }

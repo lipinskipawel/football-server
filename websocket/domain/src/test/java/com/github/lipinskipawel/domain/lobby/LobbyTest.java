@@ -22,8 +22,8 @@ class LobbyTest implements WithAssertions {
             lobby.accept(client);
 
             assertThat(list)
-                    .hasSize(1)
-                    .containsExactly(client);
+                .hasSize(1)
+                .containsExactly(client);
         }
 
         @Test
@@ -37,8 +37,8 @@ class LobbyTest implements WithAssertions {
             lobby.accept(secondClient);
 
             assertThat(numberOfConnectedClients)
-                    .hasSize(2)
-                    .containsExactly(firstClient, secondClient);
+                .hasSize(2)
+                .containsExactly(firstClient, secondClient);
         }
 
         @Test
@@ -52,8 +52,8 @@ class LobbyTest implements WithAssertions {
             lobby.accept(secondClient);
 
             assertThat(numberOfConnectedClients)
-                    .hasSize(2)
-                    .containsExactly(firstClient, secondClient);
+                .hasSize(2)
+                .containsExactly(firstClient, secondClient);
         }
     }
 
@@ -98,9 +98,9 @@ class LobbyTest implements WithAssertions {
 
             assertThat(numberOfConnectedClients).hasSize(0);
             assertThat(firstClient)
-                    .extracting(TestConnectedClient::isClosed, as(InstanceOfAssertFactories.BOOLEAN)).isTrue();
+                .extracting(TestConnectedClient::isClosed, as(InstanceOfAssertFactories.BOOLEAN)).isTrue();
             assertThat(secondClient)
-                    .extracting(TestConnectedClient::isClosed, as(InstanceOfAssertFactories.BOOLEAN)).isTrue();
+                .extracting(TestConnectedClient::isClosed, as(InstanceOfAssertFactories.BOOLEAN)).isTrue();
         }
     }
 }

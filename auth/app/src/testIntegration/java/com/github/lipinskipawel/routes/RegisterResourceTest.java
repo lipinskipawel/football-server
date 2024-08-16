@@ -6,8 +6,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class RegisterResourceTest
-        extends IntegrationSpec
-        implements WithAssertions {
+    extends IntegrationSpec
+    implements WithAssertions {
 
     @BeforeEach
     public void beforeEach() {

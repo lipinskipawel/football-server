@@ -1,8 +1,8 @@
 package com.github.lipinskipawel.server;
 
-import com.github.lipinskipawel.api.Player;
-import com.github.lipinskipawel.SimpleWebSocketClient;
 import com.github.lipinskipawel.IntegrationSpec;
+import com.github.lipinskipawel.SimpleWebSocketClient;
+import com.github.lipinskipawel.api.Player;
 import org.junit.jupiter.api.Test;
 
 import static com.github.lipinskipawel.SimpleWebSocketClient.createClient;
@@ -65,9 +65,9 @@ final class WebSocketServerIT extends IntegrationSpec {
         pairedClients[1].closeBlocking();
         waitFor(() -> pairedClients[1].getClose().size() == 1);
         assertThat(pairedClients[1])
-                .extracting(SimpleWebSocketClient::getMessages)
-                .asList()
-                .hasSize(0);
+            .extracting(SimpleWebSocketClient::getMessages)
+            .asList()
+            .hasSize(0);
     }
 
     @Test

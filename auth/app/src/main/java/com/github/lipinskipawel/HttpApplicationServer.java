@@ -37,8 +37,8 @@ public final class HttpApplicationServer {
 
     private static List<EndpointGroup> createRoutes(Dependencies dependencies) {
         return List.of(
-                new LoggingResource(),
-                new RegisterResource(dependencies.authRegister)
+            new LoggingResource(),
+            new RegisterResource(dependencies.authRegister)
         );
     }
 }

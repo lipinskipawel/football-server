@@ -48,10 +48,10 @@ public final class PlayPairing {
     @Override
     public String toString() {
         return "PlayPairing{" +
-                "redirectEndpoint='" + redirectEndpoint + '\'' +
-                ", first=" + first +
-                ", second=" + second +
-                '}';
+            "redirectEndpoint='" + redirectEndpoint + '\'' +
+            ", first=" + first +
+            ", second=" + second +
+            '}';
     }
 
     public static Builder aPlayPairing() {

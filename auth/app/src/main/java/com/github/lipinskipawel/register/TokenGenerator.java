@@ -30,12 +30,12 @@ public final class TokenGenerator implements Supplier<String> {
     public String get() {
         final var numberOfAllowedCharacters = ALLOWED_CHARACTERS.length();
         return IntStream
-                .range(0, tokenLength)
-                .mapToObj(number -> {
-                    final var randNumber = random.nextInt(numberOfAllowedCharacters);
-                    return ALLOWED_CHARACTERS.charAt(randNumber);
-                })
-                .collect(StringBuilder::new, StringBuilder::append, StringBuilder::append)
-                .toString();
+            .range(0, tokenLength)
+            .mapToObj(number -> {
+                final var randNumber = random.nextInt(numberOfAllowedCharacters);
+                return ALLOWED_CHARACTERS.charAt(randNumber);
+            })
+            .collect(StringBuilder::new, StringBuilder::append, StringBuilder::append)
+            .toString();
     }
 }

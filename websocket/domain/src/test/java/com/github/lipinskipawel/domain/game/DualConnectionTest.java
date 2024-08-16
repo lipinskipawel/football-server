@@ -129,8 +129,8 @@ final class DualConnectionTest {
         dualConnection.sendMessageTo(EXAMPLE_TEST_MESSAGE, notAccepted);
 
         assertThat(notAccepted)
-                .extracting(TestConnectedClient::getMessages)
-                .asList()
-                .hasSize(0);
+            .extracting(TestConnectedClient::getMessages)
+            .asList()
+            .hasSize(0);
     }
 }

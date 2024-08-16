@@ -19,8 +19,8 @@ final class Main {
     public static void main(String[] args) throws InterruptedException {
         try {
             wsServer.start(
-                    new InetSocketAddress("localhost", 8080),
-                    httpAuthClient(httpConfig())
+                new InetSocketAddress("localhost", 8080),
+                httpAuthClient(httpConfig())
             );
 
             wsServer.waitForClosureOfServerSocket();

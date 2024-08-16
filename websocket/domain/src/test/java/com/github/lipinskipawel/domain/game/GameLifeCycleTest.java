@@ -31,15 +31,15 @@ class GameLifeCycleTest implements WithAssertions {
         game.tryMakeMove(gameMove, firstClient);
 
         assertThat(secondClient)
-                .extracting(TestConnectedClient::getMessages)
-                .asList()
-                .hasSize(1)
-                .containsExactly(gameMove.toString());
+            .extracting(TestConnectedClient::getMessages)
+            .asList()
+            .hasSize(1)
+            .containsExactly(gameMove.toString());
         assertThat(firstClient)
-                .extracting(TestConnectedClient::getMessages)
-                .asList()
-                .hasSize(1)
-                .containsExactly(new AcceptMove().toString());
+            .extracting(TestConnectedClient::getMessages)
+            .asList()
+            .hasSize(1)
+            .containsExactly(new AcceptMove().toString());
     }
 
     @Test
@@ -54,15 +54,15 @@ class GameLifeCycleTest implements WithAssertions {
         game.tryMakeMove(gameMove, firstClient);
 
         assertThat(secondClient)
-                .extracting(TestConnectedClient::getMessages)
-                .asList()
-                .hasSize(1)
-                .containsExactly(gameMove.toString());
+            .extracting(TestConnectedClient::getMessages)
+            .asList()
+            .hasSize(1)
+            .containsExactly(gameMove.toString());
         assertThat(firstClient)
-                .extracting(TestConnectedClient::getMessages)
-                .asList()
-                .hasSize(2)
-                .containsExactly(new AcceptMove().toString(), new RejectMove(gameMove).toString());
+            .extracting(TestConnectedClient::getMessages)
+            .asList()
+            .hasSize(2)
+            .containsExactly(new AcceptMove().toString(), new RejectMove(gameMove).toString());
     }
 
     @Test
@@ -78,15 +78,15 @@ class GameLifeCycleTest implements WithAssertions {
         game.tryMakeMove(illegalMove, secondClient);
 
         assertThat(secondClient)
-                .extracting(TestConnectedClient::getMessages)
-                .asList()
-                .hasSize(2)
-                .containsExactly(gameMove.toString(), new RejectMove(illegalMove).toString());
+            .extracting(TestConnectedClient::getMessages)
+            .asList()
+            .hasSize(2)
+            .containsExactly(gameMove.toString(), new RejectMove(illegalMove).toString());
         assertThat(firstClient)
-                .extracting(TestConnectedClient::getMessages)
-                .asList()
-                .hasSize(1)
-                .containsExactly(new AcceptMove().toString());
+            .extracting(TestConnectedClient::getMessages)
+            .asList()
+            .hasSize(1)
+            .containsExactly(new AcceptMove().toString());
     }
 
     @Test
@@ -106,21 +106,21 @@ class GameLifeCycleTest implements WithAssertions {
         game.tryMakeMove(northMove, secondClient);
 
         final var msgWithoutAccept = List.of(
-                northMove.toString(), northMove.toString(), northMove.toString(), expectedWinner.toString()
+            northMove.toString(), northMove.toString(), northMove.toString(), expectedWinner.toString()
         );
         assertThat(secondClient)
-                .extracting(TestConnectedClient::getMessages)
-                .asList()
-                .map(it -> (String) it)
-                .filteredOn(it -> !it.contains("AcceptMove"))
-                .hasSize(4)
-                .containsExactlyElementsOf(msgWithoutAccept);
+            .extracting(TestConnectedClient::getMessages)
+            .asList()
+            .map(it -> (String) it)
+            .filteredOn(it -> !it.contains("AcceptMove"))
+            .hasSize(4)
+            .containsExactlyElementsOf(msgWithoutAccept);
         assertThat(firstClient)
-                .extracting(TestConnectedClient::getMessages)
-                .asList()
-                .map(it -> (String) it)
-                .filteredOn(it -> !it.contains("AcceptMove"))
-                .hasSize(4)
-                .containsExactlyElementsOf(msgWithoutAccept);
+            .extracting(TestConnectedClient::getMessages)
+            .asList()
+            .map(it -> (String) it)
+            .filteredOn(it -> !it.contains("AcceptMove"))
+            .hasSize(4)
+            .containsExactlyElementsOf(msgWithoutAccept);
     }
 }

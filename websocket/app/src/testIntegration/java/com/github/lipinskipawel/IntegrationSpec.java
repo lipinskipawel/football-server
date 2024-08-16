@@ -45,7 +45,7 @@ public abstract class IntegrationSpec {
      * @return two connected clients
      */
     public static SimpleWebSocketClient[] getPairedClients(final String serverEndpoint)
-            throws InterruptedException {
+        throws InterruptedException {
         registerUsername("firstClient");
         registerUsername("secondClient");
         final var result = new SimpleWebSocketClient[2];
@@ -88,8 +88,8 @@ public abstract class IntegrationSpec {
     private static void sendRequestToPlayFrom(final SimpleWebSocketClient firstClient) {
         final var message = firstClient.getMessages().get(1);
         final var opponent = parser.fromJson(message, WaitingPlayers.class)
-                .players()
-                .get(1);
+            .players()
+            .get(1);
         final var requestToPlay = RequestToPlay.with(opponent);
         firstClient.send(parser.toJson(requestToPlay));
     }

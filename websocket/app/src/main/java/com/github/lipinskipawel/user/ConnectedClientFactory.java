@@ -59,10 +59,10 @@ public final class ConnectedClientFactory {
 
     private boolean noConnectionAndNoToken(String token, ConnectedClientWithToken authenticatedUser) {
         return authenticatedUser == null && authenticatedConnectedClients
-                .values()
-                .stream()
-                .map(it -> it.token)
-                .noneMatch(it -> it.equals(token));
+            .values()
+            .stream()
+            .map(it -> it.token)
+            .noneMatch(it -> it.equals(token));
     }
 
     /**
@@ -87,10 +87,10 @@ public final class ConnectedClientFactory {
      */
     public Optional<ConnectedClient> findByUsername(final String username) {
         final var connectedClients = authenticatedConnectedClients
-                .values()
-                .stream()
-                .filter(it -> it.client.getUsername().equals(username))
-                .toList();
+            .values()
+            .stream()
+            .filter(it -> it.client.getUsername().equals(username))
+            .toList();
         if (connectedClients.size() != 1) {
             return Optional.empty();
         }

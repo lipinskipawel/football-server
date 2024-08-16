@@ -40,7 +40,7 @@ public final class Player {
     @Override
     public String toString() {
         return "Player{" +
-                "username='" + username + '\'' +
-                '}';
+            "username='" + username + '\'' +
+            '}';
     }
 }

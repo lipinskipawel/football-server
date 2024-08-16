@@ -22,8 +22,8 @@ class WebSocketLobbyHandlerTest implements WithAssertions {
         final var channel = new EmbeddedChannel(new WebSocketLobbyHandler(lobby, activeGames, factory));
         factory.from(channel, "me_token");
         final var frame = new TextWebSocketFrame("""
-                {move="N"}
-                """);
+            {move="N"}
+            """);
 
         channel.writeInbound(frame);
 

@@ -40,7 +40,7 @@ public final class RequestToPlay {
     @Override
     public String toString() {
         return "RequestToPlay{" +
-                "opponent=" + opponent +
-                '}';
+            "opponent=" + opponent +
+            '}';
     }
 }

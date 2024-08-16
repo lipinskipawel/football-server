@@ -40,11 +40,11 @@ final class WebSocketLobbyHandler extends SimpleChannelInboundHandler<WebSocketF
                 final var client = optionalClient.get();
 
                 parseRequestToPlay(text)
-                        .flatMap(request -> factory.findByUsername(request.getOpponent().getUsername()))
-                        .ifPresentOrElse(
-                                opponent -> pairBothClients(client, opponent),
-                                () -> onNotRequestToPlay(ctx, client, frame)
-                        );
+                    .flatMap(request -> factory.findByUsername(request.getOpponent().getUsername()))
+                    .ifPresentOrElse(
+                        opponent -> pairBothClients(client, opponent),
+                        () -> onNotRequestToPlay(ctx, client, frame)
+                    );
             }
         }
     }
@@ -64,9 +64,9 @@ final class WebSocketLobbyHandler extends SimpleChannelInboundHandler<WebSocketF
     }
 
     private void onNotRequestToPlay(
-            final ChannelHandlerContext ctx,
-            final ConnectedClient client,
-            final TextWebSocketFrame frame) {
+        final ChannelHandlerContext ctx,
+        final ConnectedClient client,
+        final TextWebSocketFrame frame) {
         if (this.lobby.isInLobby(client)) {
             log.info("Server allows RequestToPlay. Server received: " + frame.text());
             log.info("Server closes connection.");

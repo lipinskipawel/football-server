@@ -30,9 +30,9 @@ final class GameLifeCycle {
 
     static GameLifeCycle of(final String first, final String second) {
         final var gameState = GameBoardState.aGameBoardState()
-                .withFirstPlayer(first)
-                .withSecondPlayer(second)
-                .build();
+            .withFirstPlayer(first)
+            .withSecondPlayer(second)
+            .build();
         return new GameLifeCycle(new DualConnection(), gameState);
     }
 

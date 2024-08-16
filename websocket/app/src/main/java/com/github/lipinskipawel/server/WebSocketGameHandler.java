@@ -34,10 +34,10 @@ final class WebSocketGameHandler extends SimpleChannelInboundHandler<WebSocketFr
                 final var client = optionalClient.get();
 
                 parseToGameMove(text)
-                        .ifPresentOrElse(
-                                move -> this.activeGames.registerMove(move, client),
-                                () -> log.info("Can not parse given message to GameMove object. " + text)
-                        );
+                    .ifPresentOrElse(
+                        move -> this.activeGames.registerMove(move, client),
+                        () -> log.info("Can not parse given message to GameMove object. " + text)
+                    );
             }
         }
     }

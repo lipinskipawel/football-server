@@ -27,8 +27,8 @@ public abstract class IntegrationSpec {
 
     private static HttpConfig httpConfig() {
         return new HttpConfig(
-                ofSeconds(1),
-                new HttpRequestConfig(create("http://localhost:%d".formatted(PORT)), ofSeconds(1)));
+            ofSeconds(1),
+            new HttpRequestConfig(create("http://localhost:%d".formatted(PORT)), ofSeconds(1)));
     }
 
     public static void clearUsernames() {

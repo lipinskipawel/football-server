@@ -1,10 +1,10 @@
 package com.github.lipinskipawel.server;
 
+import com.github.lipinskipawel.IntegrationSpec;
+import com.github.lipinskipawel.SimpleWebSocketClient;
 import com.github.lipinskipawel.api.move.AcceptMove;
 import com.github.lipinskipawel.api.move.GameMove;
 import com.github.lipinskipawel.api.move.RejectMove;
-import com.github.lipinskipawel.SimpleWebSocketClient;
-import com.github.lipinskipawel.IntegrationSpec;
 import com.google.gson.Gson;
 import org.assertj.core.api.WithAssertions;
 import org.junit.jupiter.api.Test;
@@ -29,15 +29,15 @@ final class GamePlayIT extends IntegrationSpec implements WithAssertions {
         pairedClients[1].closeBlocking();
 
         assertThat(pairedClients[1])
-                .extracting(SimpleWebSocketClient::getMessages)
-                .asList()
-                .hasSize(1)
-                .containsExactly(message);
+            .extracting(SimpleWebSocketClient::getMessages)
+            .asList()
+            .hasSize(1)
+            .containsExactly(message);
         assertThat(pairedClients[0])
-                .extracting(SimpleWebSocketClient::getMessages)
-                .asList()
-                .hasSize(1)
-                .containsExactly(ACCEPT_RESPONSE);
+            .extracting(SimpleWebSocketClient::getMessages)
+            .asList()
+            .hasSize(1)
+            .containsExactly(ACCEPT_RESPONSE);
     }
 
     @Test
@@ -57,15 +57,15 @@ final class GamePlayIT extends IntegrationSpec implements WithAssertions {
         pairedClients[0].closeBlocking();
         pairedClients[1].closeBlocking();
         assertThat(pairedClients[1])
-                .extracting(SimpleWebSocketClient::getMessages)
-                .asList()
-                .hasSize(2)
-                .containsExactly(messageForSecond, ACCEPT_RESPONSE);
+            .extracting(SimpleWebSocketClient::getMessages)
+            .asList()
+            .hasSize(2)
+            .containsExactly(messageForSecond, ACCEPT_RESPONSE);
         assertThat(pairedClients[0])
-                .extracting(SimpleWebSocketClient::getMessages)
-                .asList()
-                .hasSize(2)
-                .containsExactly(ACCEPT_RESPONSE, messageForFirst);
+            .extracting(SimpleWebSocketClient::getMessages)
+            .asList()
+            .hasSize(2)
+            .containsExactly(ACCEPT_RESPONSE, messageForFirst);
     }
 
     @Test
@@ -85,14 +85,14 @@ final class GamePlayIT extends IntegrationSpec implements WithAssertions {
         pairedClients[0].closeBlocking();
         pairedClients[1].closeBlocking();
         assertThat(pairedClients[1])
-                .extracting(SimpleWebSocketClient::getMessages)
-                .asList()
-                .hasSize(1)
-                .containsExactly(messageForSecond);
+            .extracting(SimpleWebSocketClient::getMessages)
+            .asList()
+            .hasSize(1)
+            .containsExactly(messageForSecond);
         assertThat(pairedClients[0])
-                .extracting(SimpleWebSocketClient::getMessages)
-                .asList()
-                .hasSize(2)
-                .containsExactly(ACCEPT_RESPONSE, parser.toJson(new RejectMove(moveToSecondAgain)));
+            .extracting(SimpleWebSocketClient::getMessages)
+            .asList()
+            .hasSize(2)
+            .containsExactly(ACCEPT_RESPONSE, parser.toJson(new RejectMove(moveToSecondAgain)));
     }
 }

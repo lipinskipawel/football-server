@@ -14,11 +14,11 @@ final class GameMoveTest implements WithAssertions {
         final var gameMove = GameMove.from(List.of("N")).get();
 
         assertThat(gameMove)
-                .isNotNull()
-                .extracting(GameMove::getMove)
-                .asList()
-                .hasSize(1)
-                .containsExactly("N");
+            .isNotNull()
+            .extracting(GameMove::getMove)
+            .asList()
+            .hasSize(1)
+            .containsExactly("N");
     }
 
     @Test
@@ -26,11 +26,11 @@ final class GameMoveTest implements WithAssertions {
         final var gameMove = GameMove.from(List.of("N", "SE")).get();
 
         assertThat(gameMove)
-                .isNotNull()
-                .extracting(GameMove::getMove)
-                .asList()
-                .hasSize(2)
-                .containsExactly("N", "SE");
+            .isNotNull()
+            .extracting(GameMove::getMove)
+            .asList()
+            .hasSize(2)
+            .containsExactly("N", "SE");
     }
 
     @Test

@@ -29,8 +29,8 @@ final class WebSocketFilter extends SimpleChannelInboundHandler<FullHttpRequest>
     static boolean shouldFilter(Iterable<Map.Entry<String, String>> headers, String url) {
         for (var entry : headers) {
             if (entry.getKey().equals("Upgrade") &&
-                    entry.getValue().equals("websocket") &&
-                    !url.startsWith("/ws")) {
+                entry.getValue().equals("websocket") &&
+                !url.startsWith("/ws")) {
                 return true;
             }
         }

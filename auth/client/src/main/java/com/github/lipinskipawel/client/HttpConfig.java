@@ -6,8 +6,8 @@ import java.time.Duration;
 import static java.util.Objects.requireNonNull;
 
 public record HttpConfig(
-        Duration connectTimeout,
-        HttpRequestConfig httpRequestConfig
+    Duration connectTimeout,
+    HttpRequestConfig httpRequestConfig
 ) {
     public HttpConfig {
         requireNonNull(connectTimeout);
@@ -15,8 +15,8 @@ public record HttpConfig(
     }
 
     public record HttpRequestConfig(
-            URI baseUri,
-            Duration timeout
+        URI baseUri,
+        Duration timeout
     ) {
         public HttpRequestConfig {
             requireNonNull(baseUri);

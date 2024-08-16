@@ -18,8 +18,8 @@ public final class HttpAuthClient implements AuthClient {
 
     private HttpAuthClient(HttpConfig httpConfig) {
         this.httpClient = newBuilder()
-                .connectTimeout(httpConfig.connectTimeout())
-                .build();
+            .connectTimeout(httpConfig.connectTimeout())
+            .build();
         this.requestConfig = httpConfig.httpRequestConfig();
     }
 
@@ -30,14 +30,14 @@ public final class HttpAuthClient implements AuthClient {
     @Override
     public Optional<String> register(String username) {
         final var request = HttpRequest.newBuilder(requestConfig.baseUri().resolve("/register"))
-                .POST(noBody())
-                .header("username", username)
-                .timeout(requestConfig.timeout())
-                .build();
+            .POST(noBody())
+            .header("username", username)
+            .timeout(requestConfig.timeout())
+            .build();
         try {
             return httpClient.send(request, discarding())
-                    .headers()
-                    .firstValue("token");
+                .headers()
+                .firstValue("token");
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -46,14 +46,14 @@ public final class HttpAuthClient implements AuthClient {
     @Override
     public Optional<String> findUsernameByToken(String token) {
         final var request = HttpRequest.newBuilder(requestConfig.baseUri().resolve("/find-username"))
-                .GET()
-                .header("token", token)
-                .timeout(requestConfig.timeout())
-                .build();
+            .GET()
+            .header("token", token)
+            .timeout(requestConfig.timeout())
+            .build();
         try {
             return httpClient.send(request, discarding())
-                    .headers()
-                    .firstValue("username");
+                .headers()
+                .firstValue("username");
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }

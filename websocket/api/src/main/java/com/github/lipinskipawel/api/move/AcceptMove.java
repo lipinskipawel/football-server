@@ -29,7 +29,7 @@ public final class AcceptMove {
     @Override
     public String toString() {
         return "AcceptMove{" +
-                "response='" + response + '\'' +
-                '}';
+            "response='" + response + '\'' +
+            '}';
     }
 }

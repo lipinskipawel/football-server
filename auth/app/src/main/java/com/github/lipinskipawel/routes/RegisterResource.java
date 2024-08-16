@@ -37,7 +37,7 @@ public final class RegisterResource implements EndpointGroup {
 
         private final Handler register = ctx -> {
             final var token = authRegister.handle(ctx.headerMap())
-                    .orElseThrow(UnauthorizedResponse::new);
+                .orElseThrow(UnauthorizedResponse::new);
             ctx.res().addHeader("token", token);
         };
 

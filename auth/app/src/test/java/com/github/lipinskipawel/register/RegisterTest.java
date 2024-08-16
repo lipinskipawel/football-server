@@ -41,8 +41,8 @@ final class RegisterTest implements WithAssertions {
     @Test
     void shouldNotReturnTokenForNotRegisteredUsername() {
         assertThatThrownBy(() -> register.getTokenForUsername("mark"))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("The mark has not been registered yet.");
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("The mark has not been registered yet.");
     }
 
     @Test
