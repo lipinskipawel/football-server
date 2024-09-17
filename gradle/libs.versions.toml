@@ -1,5 +1,7 @@
 [versions]
+flyway = "10.17.1"
 log4j = "2.21.0"
+postgresqlDriver = "42.7.3"
 
 [libraries]
 lipinskipawel-gameEngine = "com.github.lipinskipawel:game-engine:5.0.0"
@@ -8,10 +10,14 @@ com-apache-log4j-api = { group = "org.apache.logging.log4j", name = "log4j-api",
 com-apache-log4j-core = { group = "org.apache.logging.log4j", name = "log4j-core", version.ref = "log4j" }
 com-apache-log4j-slf4j2 = "org.apache.logging.log4j:log4j-slf4j2-impl:2.21.0"
 com-google-gson = "com.google.code.gson:gson:2.8.8"
+com-zaxxer-hikariCP = "com.zaxxer:HikariCP:5.1.0"
 io-javalin = "io.javalin:javalin:5.6.2"
 io-netty = "io.netty:netty-all:4.1.73.Final"
 org-awaitility = "org.awaitility:awaitility:4.1.1"
+org-flyway-core = { group = "org.flywaydb", name = "flyway-core", version.ref = "flyway" }
+org-flyway-postgresql = { group = "org.flywaydb", name = "flyway-database-postgresql", version.ref = "flyway" }
 org-javaWebSocket = "org.java-websocket:Java-WebSocket:1.5.2"
+org-postgresql-driver = { group = "org.postgresql", name = "postgresql", version.ref = "postgresqlDriver" }
 # fix this versions
 org-slf4j-api2 = "org.slf4j:slf4j-api:2.0.9"
 org-slf4j-api = "org.slf4j:slf4j-api:1.8.0-beta4"
