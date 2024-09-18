@@ -1,12 +1,13 @@
 package com.github.lipinskipawel.db;
 
 import com.github.lipinskipawel.jooq.tables.records.UsersRecord;
+import org.jooq.TableRecord;
 
 import static java.util.Optional.ofNullable;
 
 final class UserMapper {
 
-    static UsersRecord toRecord(User user) {
+    static TableRecord toRecord(User user) {
         return new UsersRecord(
             user.id(),
             user.username(),

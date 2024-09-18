@@ -23,6 +23,8 @@ dependencies {
     jooqGenerator(libs.org.postgresql.driver)
 
     implementation(libs.com.zaxxer.hikariCP)
+
+    testImplementation("org.mockito:mockito-core:5.12.0")
 }
 
 val mainApplicationClassToRun = "com.github.lipinskipawel.Application"
@@ -39,6 +41,7 @@ testing {
             dependencies {
                 implementation(project)
                 implementation(project(":auth:client"))
+                implementation(libs.org.postgresql.driver)
             }
 
             targets {
@@ -51,6 +54,10 @@ testing {
             }
         }
     }
+}
+
+tasks.named("check") {
+    dependsOn(testing.suites.named("testIntegration"))
 }
 
 application {

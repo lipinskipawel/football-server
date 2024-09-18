@@ -2,16 +2,16 @@ package com.github.lipinskipawel.routes;
 
 import com.github.lipinskipawel.IntegrationSpec;
 import org.assertj.core.api.WithAssertions;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 public class RegisterResourceTest
     extends IntegrationSpec
     implements WithAssertions {
 
-    @BeforeEach
-    public void beforeEach() {
-        clearUsernames();
+    @AfterEach
+    public void afterEach() {
+        truncateUsers();
     }
 
     @Test

@@ -3,6 +3,9 @@ package com.github.lipinskipawel;
 import com.github.lipinskipawel.client.HttpAuthClient;
 import com.github.lipinskipawel.client.HttpConfig;
 import com.github.lipinskipawel.client.HttpConfig.HttpRequestConfig;
+import org.postgresql.ds.PGSimpleDataSource;
+
+import javax.sql.DataSource;
 
 import static com.github.lipinskipawel.HttpApplicationServer.httpServer;
 import static com.github.lipinskipawel.client.HttpAuthClient.httpAuthClient;
@@ -18,7 +21,9 @@ public abstract class IntegrationSpec {
     public static final HttpAuthClient authClient;
 
     static {
-        dependencies = new Dependencies();
+        final var database = new Flyway(dataSource());
+        database.migrate();
+        dependencies = new Dependencies(dataSource());
         httpServer = httpServer(dependencies);
         httpServer.start(PORT);
 
@@ -31,7 +36,19 @@ public abstract class IntegrationSpec {
             new HttpRequestConfig(create("http://localhost:%d".formatted(PORT)), ofSeconds(1)));
     }
 
-    public static void clearUsernames() {
+    public static void truncateUsers() {
         dependencies.authRegister.clearAll();
+        dependencies.userRepository.truncate();
+    }
+
+    private static DataSource dataSource() {
+        final var config = new PGSimpleDataSource();
+
+        config.setUser("postgres");
+        config.setPassword("password");
+        config.setDatabaseName("postgres");
+        config.setPortNumbers(new int[]{6543});
+
+        return config;
     }
 }

@@ -26,5 +26,9 @@
         <Logger name="org.eclipse" level="WARN" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>
+        <!-- Configure jooq logging -->
+        <Logger name="org.jooq" level="ALL" additivity="false">
+            <AppenderRef ref="Console"/>
+        </Logger>
     </Loggers>
 </Configuration>
