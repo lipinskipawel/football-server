@@ -4,6 +4,8 @@ import com.github.lipinskipawel.client.HttpAuthClient;
 import com.github.lipinskipawel.client.HttpConfig;
 import com.github.lipinskipawel.client.HttpConfig.HttpRequestConfig;
 import org.postgresql.ds.PGSimpleDataSource;
+import org.testcontainers.containers.JdbcDatabaseContainer;
+import org.testcontainers.containers.PostgreSQLContainer;
 
 import javax.sql.DataSource;
 
@@ -21,9 +23,10 @@ public abstract class IntegrationSpec {
     public static final HttpAuthClient authClient;
 
     static {
-        final var database = new Flyway(dataSource());
-        database.migrate();
-        dependencies = new Dependencies(dataSource());
+        final var dataSource = dataSource(dbInstance());
+        final var flyway = new Flyway(dataSource);
+        flyway.migrate();
+        dependencies = new Dependencies(dataSource);
         httpServer = httpServer(dependencies);
         httpServer.start(PORT);
 
@@ -41,14 +44,22 @@ public abstract class IntegrationSpec {
         dependencies.userRepository.truncate();
     }
 
-    private static DataSource dataSource() {
+    private static DataSource dataSource(JdbcDatabaseContainer<?> dbInstance) {
         final var config = new PGSimpleDataSource();
 
-        config.setUser("postgres");
-        config.setPassword("password");
-        config.setDatabaseName("postgres");
-        config.setPortNumbers(new int[]{6543});
+        config.setUrl(dbInstance.getJdbcUrl());
+        config.setUser(dbInstance.getUsername());
+        config.setPassword(dbInstance.getPassword());
 
         return config;
+    }
+
+    private static JdbcDatabaseContainer<?> dbInstance() {
+        final var postgresSQLContainer = new PostgreSQLContainer<>("postgres:16.4")
+            .withDatabaseName("auth")
+            .withUsername("postgres")
+            .withPassword("password");
+        postgresSQLContainer.start();
+        return postgresSQLContainer;
     }
 }
