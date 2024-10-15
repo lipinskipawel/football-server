@@ -6,6 +6,8 @@ plugins {
 version = "1.0.0"
 
 dependencies {
+    implementation(platform(libs.lipinskipawel.football.platform))
+
     implementation(libs.io.javalin)
     implementation(libs.org.slf4j.api2)
     implementation(libs.com.apache.log4j.api)
@@ -31,11 +33,19 @@ tasks.withType<Jar> {
 
 testing {
     suites {
+        withType<JvmTestSuite> {
+            useJUnitJupiter()
+            dependencies {
+                implementation(platform(libs.lipinskipawel.football.platform))
+                implementation(libs.testing.assertj)
+            }
+        }
         val test by getting(JvmTestSuite::class)
         val testIntegration by registering(JvmTestSuite::class) {
             dependencies {
-                implementation(project)
+                implementation(project())
                 implementation(project(":auth:client"))
+
                 implementation(libs.org.postgresql.driver)
                 implementation("org.testcontainers:testcontainers:1.20.1")
                 implementation("org.testcontainers:postgresql:1.20.1")

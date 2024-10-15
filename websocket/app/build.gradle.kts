@@ -3,6 +3,8 @@ plugins {
 }
 
 dependencies {
+    implementation(platform(libs.lipinskipawel.football.platform))
+
     implementation(project(":websocket:api"))
     implementation(project(":websocket:domain"))
     implementation(project(":auth:client"))
@@ -19,10 +21,17 @@ dependencies {
 
 testing {
     suites {
+        withType<JvmTestSuite> {
+            useJUnitJupiter()
+            dependencies {
+                implementation(platform(libs.lipinskipawel.football.platform))
+                implementation(libs.testing.assertj)
+            }
+        }
         val test by getting(JvmTestSuite::class)
         val testIntegration by registering(JvmTestSuite::class) {
             dependencies {
-                implementation(project)
+                implementation(project())
                 implementation(project(":websocket:api"))
                 implementation(project(":websocket:domain"))
                 implementation(project(":auth:client"))

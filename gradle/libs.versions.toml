@@ -5,6 +5,7 @@ postgresqlDriver = "42.7.3"
 
 [libraries]
 lipinskipawel-gameEngine = "com.github.lipinskipawel:game-engine:5.0.0"
+lipinskipawel-football-platform = "com.github.lipinskipawel:football-platform:1.+"
 
 com-apache-log4j-api = { group = "org.apache.logging.log4j", name = "log4j-api", version.ref = "log4j" }
 com-apache-log4j-core = { group = "org.apache.logging.log4j", name = "log4j-core", version.ref = "log4j" }
