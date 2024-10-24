@@ -1,4 +1,5 @@
 plugins {
+    id("groovy")
     id("football-server.application-conventions")
     id("com.revolut.jooq-docker") version "0.3.12"
 }
@@ -49,6 +50,9 @@ testing {
                 implementation(libs.org.postgresql.driver)
                 implementation("org.testcontainers:testcontainers:1.20.1")
                 implementation("org.testcontainers:postgresql:1.20.1")
+
+                implementation("org.apache.groovy:groovy-all:4.0.23")
+                implementation("org.spockframework:spock-core:2.4-M4-groovy-4.0")
             }
 
             targets {
