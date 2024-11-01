@@ -12,6 +12,7 @@ final class Flyway {
     public void migrate() {
         final var flyway = org.flywaydb.core.Flyway.configure()
             .dataSource(dataSource)
+            .schemas("public")
             .load();
         flyway.migrate();
     }

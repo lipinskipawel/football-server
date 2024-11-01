@@ -14,13 +14,14 @@ dependencies {
     implementation(libs.com.apache.log4j.api)
     implementation(libs.com.apache.log4j.core)
     implementation(libs.com.apache.log4j.slf4j2)
+    implementation(libs.org.postgresql.driver)
+    implementation(libs.com.zaxxer.hikariCP)
 
     implementation("org.jooq:jooq:3.19.11")
     implementation(libs.org.flyway.core)
+
     runtimeOnly(libs.org.flyway.postgresql)
     jdbc(libs.org.postgresql.driver)
-
-    implementation(libs.com.zaxxer.hikariCP)
 
     testImplementation("org.mockito:mockito-core:5.12.0")
 }
