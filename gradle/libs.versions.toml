@@ -1,12 +1,18 @@
 [versions]
 flyway = "10.17.1"
+groovy = "4.0.23"
+jooq = "3.19.11"
+mockito = "5.12.0"
 log4j = "2.21.0"
 postgresqlDriver = "42.7.3"
+spock = "2.4-M4-groovy-4.0"
+testcontainers = "1.20.1"
 
 [libraries]
-lipinskipawel-gameEngine = "com.github.lipinskipawel:game-engine:5.0.0"
+lipinskipawel-football-gameEngine = "com.github.lipinskipawel:game-engine:5.0.0"
 lipinskipawel-football-platform = "com.github.lipinskipawel:football-platform:1.+"
 
+com-apache-groovy = { group = "org.apache.groovy", name = "groovy-all", version.ref = "groovy" }
 com-apache-log4j-api = { group = "org.apache.logging.log4j", name = "log4j-api", version.ref = "log4j" }
 com-apache-log4j-core = { group = "org.apache.logging.log4j", name = "log4j-core", version.ref = "log4j" }
 com-apache-log4j-slf4j2 = "org.apache.logging.log4j:log4j-slf4j2-impl:2.21.0"
@@ -18,13 +24,18 @@ org-awaitility = "org.awaitility:awaitility:4.1.1"
 org-flyway-core = { group = "org.flywaydb", name = "flyway-core", version.ref = "flyway" }
 org-flyway-postgresql = { group = "org.flywaydb", name = "flyway-database-postgresql", version.ref = "flyway" }
 org-javaWebSocket = "org.java-websocket:Java-WebSocket:1.5.2"
+org-jooq = { group = "org.jooq", name = "jooq", version.ref = "jooq" }
 org-postgresql-driver = { group = "org.postgresql", name = "postgresql", version.ref = "postgresqlDriver" }
+org-spock = { group = "org.spockframework", name = "spock-core", version.ref = "spock" }
 # fix this versions
 org-slf4j-api2 = "org.slf4j:slf4j-api:2.0.9"
 org-slf4j-api = "org.slf4j:slf4j-api:1.8.0-beta4"
 
+testing-assertj = { module = "org.assertj:assertj-core" }
 testing-junit-api = { group = "org.junit.jupiter", name = "junit-jupiter-api" }
 testing-junit-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine" }
-testing-assertj = { module = "org.assertj:assertj-core" }
+testing-mockito = { group = "org.mockito", name = "mockito-core", version.ref = "mockito" }
+testing-tcontainers = { group = "org.testcontainers", name = "testcontainers", version.ref = "testcontainers" }
+testing-tcontainers-postgresql = { group = "org.testcontainers", name = "postgresql", version.ref = "testcontainers" }
 
 gradlePlugin-shadowJar = { module = "gradle.plugin.com.github.johnrengelman:shadow", version = "7.1.2" }

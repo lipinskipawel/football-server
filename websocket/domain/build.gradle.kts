@@ -6,7 +6,7 @@ dependencies {
     implementation(platform(libs.lipinskipawel.football.platform))
 
     implementation(project(":websocket:api"))
-    implementation(libs.lipinskipawel.gameEngine)
+    implementation(libs.lipinskipawel.football.gameEngine)
 
     implementation(libs.org.slf4j.api)
 }

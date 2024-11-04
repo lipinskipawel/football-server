@@ -17,13 +17,13 @@ dependencies {
     implementation(libs.org.postgresql.driver)
     implementation(libs.com.zaxxer.hikariCP)
 
-    implementation("org.jooq:jooq:3.19.11")
+    implementation(libs.org.jooq)
     implementation(libs.org.flyway.core)
 
     runtimeOnly(libs.org.flyway.postgresql)
     jdbc(libs.org.postgresql.driver)
 
-    testImplementation("org.mockito:mockito-core:5.12.0")
+    testImplementation(libs.testing.mockito)
 }
 
 val mainApplicationClassToRun = "com.github.lipinskipawel.Application"
@@ -49,11 +49,11 @@ testing {
                 implementation(project(":auth:client"))
 
                 implementation(libs.org.postgresql.driver)
-                implementation("org.testcontainers:testcontainers:1.20.1")
-                implementation("org.testcontainers:postgresql:1.20.1")
+                implementation(libs.testing.tcontainers)
+                implementation(libs.testing.tcontainers.postgresql)
 
-                implementation("org.apache.groovy:groovy-all:4.0.23")
-                implementation("org.spockframework:spock-core:2.4-M4-groovy-4.0")
+                implementation(libs.com.apache.groovy)
+                implementation(libs.org.spock)
             }
 
             targets {

@@ -8,7 +8,7 @@ dependencies {
     implementation(project(":websocket:api"))
     implementation(project(":websocket:domain"))
     implementation(project(":auth:client"))
-    implementation(libs.lipinskipawel.gameEngine)
+    implementation(libs.lipinskipawel.football.gameEngine)
     implementation(libs.io.netty)
     implementation(libs.com.google.gson)
 
