@@ -1,4 +1,4 @@
-package com.github.lipinskipawel.db;
+package com.github.lipinskipawel.model;
 
 import com.github.lipinskipawel.jooq.tables.records.UsersRecord;
 import org.jooq.TableRecord;

@@ -1,6 +1,6 @@
 package com.github.lipinskipawel.register;
 
-import com.github.lipinskipawel.db.UserRepository;
+import com.github.lipinskipawel.model.UserRepository;
 import org.assertj.core.api.WithAssertions;
 import org.junit.jupiter.api.Test;
 

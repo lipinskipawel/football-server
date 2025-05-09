@@ -1,4 +1,4 @@
-package com.github.lipinskipawel.db;
+package com.github.lipinskipawel.model;
 
 public enum UserState {
     CREATED,

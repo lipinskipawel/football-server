@@ -1,6 +1,6 @@
 package com.github.lipinskipawel;
 
-import com.github.lipinskipawel.db.UserRepository;
+import com.github.lipinskipawel.model.UserRepository;
 import com.github.lipinskipawel.register.AuthRegister;
 import com.github.lipinskipawel.register.Register;
 import com.github.lipinskipawel.register.TokenGenerator;

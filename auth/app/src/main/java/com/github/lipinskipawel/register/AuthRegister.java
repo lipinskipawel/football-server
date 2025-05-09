@@ -1,13 +1,13 @@
 package com.github.lipinskipawel.register;
 
-import com.github.lipinskipawel.db.User;
-import com.github.lipinskipawel.db.UserRepository;
+import com.github.lipinskipawel.model.User;
+import com.github.lipinskipawel.model.UserRepository;
 
 import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.github.lipinskipawel.db.User.Builder.createdUser;
+import static com.github.lipinskipawel.model.User.Builder.createdUser;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 

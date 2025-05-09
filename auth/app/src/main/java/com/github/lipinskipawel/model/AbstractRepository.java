@@ -1,4 +1,4 @@
-package com.github.lipinskipawel.db;
+package com.github.lipinskipawel.model;
 
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;

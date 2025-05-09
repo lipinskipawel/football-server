@@ -1,10 +1,10 @@
-package com.github.lipinskipawel.db;
+package com.github.lipinskipawel.model;
 
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
-import static com.github.lipinskipawel.db.UserState.CREATED;
+import static com.github.lipinskipawel.model.UserState.CREATED;
 import static java.util.Objects.hash;
 import static java.util.Objects.requireNonNull;
 import static java.util.UUID.randomUUID;

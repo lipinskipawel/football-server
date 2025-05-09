@@ -1,10 +1,10 @@
-package com.github.lipinskipawel.db;
+package com.github.lipinskipawel.model;
 
 import javax.sql.DataSource;
 import java.util.Optional;
 
-import static com.github.lipinskipawel.db.UserMapper.toRecord;
-import static com.github.lipinskipawel.db.UserState.DELETED;
+import static com.github.lipinskipawel.model.UserMapper.toRecord;
+import static com.github.lipinskipawel.model.UserState.DELETED;
 import static com.github.lipinskipawel.jooq.Tables.USERS;
 
 public final class UserRepository extends AbstractRepository {
