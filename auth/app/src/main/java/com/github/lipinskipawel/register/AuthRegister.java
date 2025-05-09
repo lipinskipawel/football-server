@@ -7,10 +7,9 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.github.lipinskipawel.db.User.Builder.userBuilder;
+import static com.github.lipinskipawel.db.User.Builder.createdUser;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
-import static java.util.UUID.randomUUID;
 
 public final class AuthRegister {
     private final Register register;
@@ -30,11 +29,12 @@ public final class AuthRegister {
     private Optional<User> register(String username) {
         final var registered = register.register(username);
         if (registered) {
-            final var user = userBuilder()
-                .id(randomUUID())
+            final var now = Instant.now();
+            final var user = createdUser()
                 .username(username)
                 .token(register.getTokenForUsername(username))
-                .created(Instant.now())
+                .createdDate(now)
+                .updatedDate(now)
                 .build();
             final var saved = userRepository.save(user);
             return saved > 0 ? Optional.of(user) : empty();

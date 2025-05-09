@@ -3,8 +3,6 @@ package com.github.lipinskipawel.db;
 import com.github.lipinskipawel.jooq.tables.records.UsersRecord;
 import org.jooq.TableRecord;
 
-import static java.util.Optional.ofNullable;
-
 final class UserMapper {
 
     static TableRecord toRecord(User user) {
@@ -12,18 +10,19 @@ final class UserMapper {
             user.id(),
             user.username(),
             user.token(),
-            user.created(),
-            user.terminated().orElse(null)
+            user.state().name(),
+            user.createdDate(),
+            user.updatedDate()
         );
     }
 
     static User fromRecord(UsersRecord record) {
-        return User.Builder.userBuilder()
+        return User.Builder.createdUser()
             .id(record.getId())
             .username(record.getUsername())
             .token(record.getToken())
-            .created(record.getCreated())
-            .terminated(ofNullable(record.getTerminated()))
+            .createdDate(record.getCreatedDate())
+            .updatedDate(record.getUpdatedDate())
             .build();
     }
 }

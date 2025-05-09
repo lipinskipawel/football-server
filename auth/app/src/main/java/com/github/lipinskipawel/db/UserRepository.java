@@ -4,6 +4,7 @@ import javax.sql.DataSource;
 import java.util.Optional;
 
 import static com.github.lipinskipawel.db.UserMapper.toRecord;
+import static com.github.lipinskipawel.db.UserState.DELETED;
 import static com.github.lipinskipawel.jooq.Tables.USERS;
 
 public final class UserRepository extends AbstractRepository {
@@ -24,10 +25,7 @@ public final class UserRepository extends AbstractRepository {
     public Optional<User> findByToken(String token) {
         return db.selectFrom(USERS)
             .where(USERS.TOKEN.eq(token)
-                .and(USERS.TERMINATED.isNull()))
-            .fetch()
-            .map(UserMapper::fromRecord)
-            .stream()
-            .findAny();
+                .and(USERS.STATE.notEqual(DELETED.name())))
+            .fetchOptional(UserMapper::fromRecord);
     }
 }

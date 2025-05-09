@@ -99,7 +99,7 @@ tasks {
                 // https://stackoverflow.com/questions/71576487/in-jooq-how-do-we-use-java-instant-to-map-to-postgresqls-timestamp-type
                 org.jooq.meta.jaxb.ForcedType()
                     .withName("Instant")
-                    .withIncludeExpression("CREATED|TERMINATED")
+                    .withIncludeExpression("CREATED_DATE|UPDATED_DATE")
                     .withIncludeTypes("timestamp")
             )
         }
