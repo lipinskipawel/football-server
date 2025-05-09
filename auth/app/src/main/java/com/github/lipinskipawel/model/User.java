@@ -11,30 +11,45 @@ import static java.util.UUID.randomUUID;
 
 public final class User {
     private final UUID id;
-    private final String username;
-    private final String token;
+    private final Username username;
+    private final Token token;
     private final UserState state;
     private final Instant createdDate;
     private final Instant updatedDate;
 
     private User(Builder builder) {
         this.id = requireNonNull(builder.id);
-        this.username = requireLength(builder.username);
-        this.token = requireNonNull(builder.token);
+        this.username = builder.username;
+        this.token = builder.token;
         this.state = requireNonNull(builder.state);
+
         this.createdDate = requireNonNull(builder.createdDate);
         this.updatedDate = requireNonNull(builder.updatedDate);
+        validateTime(createdDate, updatedDate);
+    }
+
+    private void validateTime(Instant createdDate, Instant updatedDate) {
+        if (createdDate.equals(updatedDate)) {
+            return;
+        }
+        check(createdDate.isBefore(updatedDate), "Created date [%s] can not be after updated date [%s]".formatted(createdDate, updatedDate));
+    }
+
+    private void check(boolean condition, String errorMessage) {
+        if (!condition) {
+            throw new IllegalArgumentException(errorMessage);
+        }
     }
 
     public UUID id() {
         return id;
     }
 
-    public String username() {
+    public Username username() {
         return username;
     }
 
-    public String token() {
+    public Token token() {
         return token;
     }
 
@@ -48,14 +63,6 @@ public final class User {
 
     public Instant updatedDate() {
         return updatedDate;
-    }
-
-    private String requireLength(String string) {
-        final var str = requireNonNull(string);
-        if (str.length() < 3 || str.length() > 16) {
-            throw new IllegalArgumentException("Username length must be between 3-16, but was [%s]".formatted(str));
-        }
-        return str;
     }
 
     @Override
@@ -78,8 +85,8 @@ public final class User {
 
     public static class Builder {
         private UUID id;
-        private String username;
-        private String token;
+        private Username username;
+        private Token token;
         private UserState state;
         private Instant createdDate;
         private Instant updatedDate;
@@ -99,12 +106,12 @@ public final class User {
             return this;
         }
 
-        public Builder username(String username) {
+        public Builder username(Username username) {
             this.username = username;
             return this;
         }
 
-        public Builder token(String token) {
+        public Builder token(Token token) {
             this.token = token;
             return this;
         }
