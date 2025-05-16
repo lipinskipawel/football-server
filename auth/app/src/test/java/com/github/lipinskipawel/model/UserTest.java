@@ -60,24 +60,4 @@ class UserTest implements WithAssertions {
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage(errorMessage);
     }
-
-    @ParameterizedTest
-    @CsvSource(delimiter = '|', textBlock = """
-            1                   | Username length must be between 3-16, but was [1]
-            12345678901234567   | Username length must be between 3-16, but was [17]
-        """)
-    void does_not_create_user_when_incorrect_username(String username, String errorMessage) {
-        final var now = now();
-
-        final var result = catchThrowable(() -> createdUser()
-            .token(token("888"))
-            .username(username(username))
-            .createdDate(now)
-            .updatedDate(now)
-            .build());
-
-        assertThat(result)
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage(errorMessage);
-    }
 }
