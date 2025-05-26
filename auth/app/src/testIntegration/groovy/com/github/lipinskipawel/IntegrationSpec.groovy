@@ -11,6 +11,8 @@ import static com.github.lipinskipawel.HttpApplicationServer.httpServer
 import static com.github.lipinskipawel.client.HttpAuthClient.httpAuthClient
 import static java.net.URI.create
 import static java.time.Duration.ofSeconds
+import static org.testcontainers.containers.PostgreSQLContainer.POSTGRESQL_PORT
+import static org.testcontainers.containers.wait.strategy.Wait.forListeningPorts
 
 abstract class IntegrationSpec extends Specification {
 
@@ -57,6 +59,7 @@ abstract class IntegrationSpec extends Specification {
             .withDatabaseName("auth")
             .withUsername("postgres")
             .withPassword("password")
+            .waitingFor(forListeningPorts(POSTGRESQL_PORT))
         postgresSQLContainer.start()
         return postgresSQLContainer
     }
