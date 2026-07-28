@@ -1,7 +1,7 @@
 package com.github.lipinskipawel.domain.game;
 
-import com.github.lipinskipawel.board.engine.Direction;
-import com.github.lipinskipawel.board.engine.Move;
+import io.github.lipinskipawel.board.engine.Direction;
+import io.github.lipinskipawel.board.engine.Move;
 import org.assertj.core.api.WithAssertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

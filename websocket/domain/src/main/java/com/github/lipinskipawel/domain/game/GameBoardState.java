@@ -1,8 +1,8 @@
 package com.github.lipinskipawel.domain.game;
 
-import com.github.lipinskipawel.board.engine.Board;
-import com.github.lipinskipawel.board.engine.Boards;
-import com.github.lipinskipawel.board.engine.Move;
+import io.github.lipinskipawel.board.engine.Board;
+import io.github.lipinskipawel.board.engine.Boards;
+import io.github.lipinskipawel.board.engine.Move;
 
 /**
  * This class represents a game state.

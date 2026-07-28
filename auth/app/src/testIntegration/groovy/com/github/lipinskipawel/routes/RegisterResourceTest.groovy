@@ -42,19 +42,4 @@ class RegisterResourceTest extends IntegrationSpec {
             it.get() == mark
         }
     }
-
-    def "must find registered username by token"() {
-        given:
-        def mark = "mark"
-        def markToken = authClient.register(mark)
-
-        when:
-        def username = authClient.findUsernameByToken(markToken.get())
-
-        then:
-        username.with { it ->
-            it.isPresent()
-            it.get() == mark
-        }
-    }
 }

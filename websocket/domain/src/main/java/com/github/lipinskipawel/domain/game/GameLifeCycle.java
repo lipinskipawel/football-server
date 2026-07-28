@@ -5,9 +5,9 @@ import com.github.lipinskipawel.api.game.GameEnd;
 import com.github.lipinskipawel.api.move.AcceptMove;
 import com.github.lipinskipawel.api.move.GameMove;
 import com.github.lipinskipawel.api.move.RejectMove;
-import com.github.lipinskipawel.board.engine.Direction;
-import com.github.lipinskipawel.board.engine.Move;
 import com.github.lipinskipawel.user.ConnectedClient;
+import io.github.lipinskipawel.board.engine.Direction;
+import io.github.lipinskipawel.board.engine.Move;
 
 import java.util.List;
 import java.util.stream.Collectors;
